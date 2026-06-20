@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>V11 Combat RPG Engine</title>
+<title>V12 AI RPG Engine</title>
 
 <style>
 body {
@@ -25,6 +25,7 @@ button {
   color:white;
   cursor:pointer;
 }
+
 button:hover { background:#3c4280; }
 
 .petCard {
@@ -42,10 +43,17 @@ button:hover { background:#3c4280; }
   border-radius:10px;
   overflow:hidden;
 }
+
 .hpBar div {
   height:100%;
   width:100%;
   background:linear-gradient(90deg,#00ff88,#00c3ff);
+}
+
+#log {
+  max-height:160px;
+  overflow:auto;
+  font-size:14px;
 }
 </style>
 </head>
@@ -54,7 +62,7 @@ button:hover { background:#3c4280; }
 
 <!-- MENU -->
 <div id="menu" class="scene active">
-  <h1>🐾 V11 RPG COMBAT</h1>
+  <h1>🐾 V12 AI RPG ENGINE</h1>
   <div id="petList"></div>
 
   <button onclick="Game.createPet('Fox')">Fox 🔥</button>
@@ -64,7 +72,7 @@ button:hover { background:#3c4280; }
 
 <!-- BATTLE -->
 <div id="battle" class="scene">
-  <h2>⚔️ Battle</h2>
+  <h2>⚔️ AI Battle System</h2>
 
   <div id="playerName"></div>
   <div class="hpBar"><div id="playerHP"></div></div>
@@ -74,8 +82,9 @@ button:hover { background:#3c4280; }
   <div id="enemyName"></div>
   <div class="hpBar"><div id="enemyHP"></div></div>
 
-  <h3>Skills</h3>
-  <div id="skills"></div>
+  <h3>Actions</h3>
+
+  <div id="actions"></div>
 
   <div id="log"></div>
 </div>
@@ -111,7 +120,7 @@ const Game = {
   },
 
   createPet(type) {
-    if (this.state.pets.length >= 5) return alert("Max 5");
+    if (this.state.pets.length >= 5) return alert("Max 5 pets");
 
     this.state.pets.push({
       id: Date.now(),
@@ -145,7 +154,7 @@ const Game = {
 
       d.innerHTML = `
         ${p.type} Lv.${p.level}<br>
-        <button onclick="Game.selectPet(${p.id})">Fight</button>
+        <button onclick="Game.selectPet(${p.id})">Battle</button>
       `;
 
       list.appendChild(d);
@@ -154,17 +163,7 @@ const Game = {
 };
 
 /* =========================
-   ELEMENT SYSTEM
-========================= */
-
-function element(type) {
-  if (type === "Fox") return "fire";
-  if (type === "Cat") return "shadow";
-  return "lightning";
-}
-
-/* =========================
-   BATTLE V11
+   BATTLE V12
 ========================= */
 
 const Battle = {
@@ -172,101 +171,176 @@ const Battle = {
     let p = Game.state.active;
 
     let e = {
-      type: "Enemy",
-      element: "shadow",
+      type: "Enemy AI",
       stats: {
-        hp: 18,
-        maxHp: 18,
-        atk: 3,
-        def: 1,
+        hp: 22,
+        maxHp: 22,
+        atk: 4,
+        def: 2,
         spd: 2
-      }
+      },
+      cooldowns: { heavy: 0, heal: 0, defend: 0 }
     };
 
-    Game.state.battle = { p: structuredClone(p), e };
+    Game.state.battle = {
+      p: structuredClone(p),
+      e,
+      pCooldowns: { heavy: 0, heal: 0, defend: 0 }
+    };
 
-    this.updateSkills();
-    this.update();
+    let b = Game.state.battle;
+    b.p.stats.hp = b.p.stats.maxHp;
+
+    this.updateUI();
+    this.renderActions();
 
     Game.setScene("battle");
     this.log("Battle started!");
   },
 
-  updateSkills() {
-    const s = document.getElementById("skills");
+  /* =========================
+     PLAYER ACTIONS
+  ========================= */
 
-    s.innerHTML = `
-      <button onclick="Battle.skill('attack')">Attack</button>
-      <button onclick="Battle.skill('heavy')">Heavy (CD)</button>
-      <button onclick="Battle.skill('heal')">Heal</button>
-    `;
-  },
-
-  skill(type) {
+  act(type) {
     let b = Game.state.battle;
 
-    let crit = Math.random() < 0.2;
-    let dodge = Math.random() < 0.1;
-
     if (type === "attack") {
-      let dmg = this.calc(b.p, b.e, 1);
-      if (!dodge) b.e.stats.hp -= dmg;
-      this.log("Attack: " + dmg);
+      let dmg = this.damage(b.p, b.e);
+      b.e.stats.hp -= dmg;
+      this.log("You attack for " + dmg);
     }
 
     if (type === "heavy") {
-      let dmg = this.calc(b.p, b.e, 2);
-      if (!dodge) b.e.stats.hp -= dmg;
-      this.log("Heavy Hit: " + dmg);
+      if (b.pCooldowns.heavy > 0) return this.log("Heavy on cooldown!");
+      let dmg = this.damage(b.p, b.e) * 2;
+      b.e.stats.hp -= dmg;
+      b.pCooldowns.heavy = 2;
+      this.log("Heavy hit " + dmg);
     }
 
     if (type === "heal") {
-      b.p.stats.hp += 4;
+      if (b.pCooldowns.heal > 0) return this.log("Heal cooldown!");
+      b.p.stats.hp += 6;
       if (b.p.stats.hp > b.p.stats.maxHp)
         b.p.stats.hp = b.p.stats.maxHp;
 
-      this.log("Heal +4");
+      b.pCooldowns.heal = 3;
+      this.log("You heal +6");
+    }
+
+    if (type === "defend") {
+      b.p.defending = 1;
+      this.log("You defend");
     }
 
     this.enemyTurn();
-    this.update();
+    this.tickCooldowns();
+    this.updateUI();
     this.checkEnd();
   },
 
-  calc(p, e, mult) {
-    let base = p.stats.atk * mult;
-
-    let typeAdv =
-      (element(p.type) === "fire" && e.element === "shadow") ? 1.3 :
-      (element(p.type) === "shadow" && e.element === "lightning") ? 1.3 :
-      (element(p.type) === "lightning" && e.element === "fire") ? 1.3 : 1;
-
-    let crit = Math.random() < 0.2 ? 2 : 1;
-
-    return Math.floor(base * typeAdv * crit);
-  },
+  /* =========================
+     ENEMY AI
+  ========================= */
 
   enemyTurn() {
     let b = Game.state.battle;
+    let e = b.e;
 
-    let dmg = Math.max(1, b.e.stats.atk - b.p.stats.def);
+    let hpRatio = e.stats.hp / e.stats.maxHp;
 
-    b.p.stats.hp -= dmg;
+    let action;
 
-    this.log("Enemy hits " + dmg);
+    if (hpRatio < 0.3 && e.cooldowns.heal === 0) {
+      action = "heal";
+    }
+    else if (Math.random() < 0.3 && e.cooldowns.heavy === 0) {
+      action = "heavy";
+    }
+    else if (hpRatio < 0.6 && Math.random() < 0.5) {
+      action = "defend";
+    }
+    else {
+      action = "attack";
+    }
+
+    if (action === "attack") {
+      let dmg = this.damage(e, b.p);
+      if (b.p.defending) dmg = Math.floor(dmg / 2);
+
+      b.p.stats.hp -= dmg;
+      this.log("Enemy attacks " + dmg);
+    }
+
+    if (action === "heavy") {
+      let dmg = this.damage(e, b.p) * 2;
+      if (b.p.defending) dmg = Math.floor(dmg / 2);
+
+      b.p.stats.hp -= dmg;
+      e.cooldowns.heavy = 2;
+
+      this.log("Enemy heavy " + dmg);
+    }
+
+    if (action === "heal") {
+      e.stats.hp += 5;
+      if (e.stats.hp > e.stats.maxHp)
+        e.stats.hp = e.stats.maxHp;
+
+      e.cooldowns.heal = 3;
+      this.log("Enemy heals");
+    }
+
+    if (action === "defend") {
+      e.defending = 1;
+      this.log("Enemy defends");
+    }
   },
 
-  update() {
+  /* =========================
+     CORE SYSTEMS
+  ========================= */
+
+  damage(a, d) {
+    return Math.max(1, a.stats.atk - d.stats.def + Math.floor(Math.random() * 3));
+  },
+
+  tickCooldowns() {
+    let b = Game.state.battle;
+
+    for (let k in b.pCooldowns) {
+      if (b.pCooldowns[k] > 0) b.pCooldowns[k]--;
+    }
+
+    for (let k in b.e.cooldowns) {
+      if (b.e.cooldowns[k] > 0) b.e.cooldowns[k]--;
+    }
+
+    b.p.defending = 0;
+    b.e.defending = 0;
+  },
+
+  updateUI() {
     let b = Game.state.battle;
 
     document.getElementById("playerName").innerText = b.p.type;
-    document.getElementById("enemyName").innerText = "Enemy";
+    document.getElementById("enemyName").innerText = b.e.type;
 
     document.getElementById("playerHP").style.width =
       (b.p.stats.hp / b.p.stats.maxHp) * 100 + "%";
 
     document.getElementById("enemyHP").style.width =
       (b.e.stats.hp / b.e.stats.maxHp) * 100 + "%";
+  },
+
+  renderActions() {
+    document.getElementById("actions").innerHTML = `
+      <button onclick="Battle.act('attack')">Attack</button>
+      <button onclick="Battle.act('heavy')">Heavy</button>
+      <button onclick="Battle.act('heal')">Heal</button>
+      <button onclick="Battle.act('defend')">Defend</button>
+    `;
   },
 
   checkEnd() {
@@ -287,7 +361,7 @@ const Battle = {
   },
 
   log(t) {
-    let d = document.createElement("div");
+    const d = document.createElement("div");
     d.innerText = t;
     document.getElementById("log").appendChild(d);
   }

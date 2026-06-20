@@ -1,13 +1,6 @@
 let pets = JSON.parse(localStorage.getItem("pets")) || [];
 let activePet = null;
 
-// BAR SYSTEM
-let position = 0;
-let direction = 1;
-let speed = 2;
-let interval;
-let timeLeft = 15;
-
 // UI
 const petList = document.getElementById("petList");
 const trainingScreen = document.getElementById("trainingScreen");
@@ -18,74 +11,123 @@ const marker = document.getElementById("marker");
 const feedback = document.getElementById("feedback");
 const timer = document.getElementById("timer");
 const resultText = document.getElementById("resultText");
-const statsUI = document.getElementById("petStats");
+
+let position = 0;
+let direction = 1;
+let speed = 2;
+let interval;
+let timeLeft = 15;
 
 let hits = { miss:0, ok:0, good:0, perfect:0 };
 
+// =======================
+// SAVE / LOAD
+// =======================
 function save() {
   localStorage.setItem("pets", JSON.stringify(pets));
 }
 
+// =======================
+// PET CREATION
+// =======================
 function createPet(type) {
-  const pet = {
+  pets.push({
     id: Date.now(),
     type,
     level: 1,
     xp: 0,
     xpToLevel: 100,
-    stats: {
-      power: 1,
-      agility: 1,
-      loyalty: 1
-    },
+    stats: { power: 2, agility: 2, loyalty: 2 },
     rarity: "Common"
-  };
+  });
 
-  pets.push(pet);
   save();
   renderPets();
 }
 
+// =======================
+// EVOLUTION SYSTEM
+// =======================
+function getStage(level) {
+  if (level >= 15) return 4;
+  if (level >= 10) return 3;
+  if (level >= 5) return 2;
+  return 1;
+}
+
+function getPetEmoji(pet) {
+  const stage = getStage(pet.level);
+
+  const base = {
+    Fox: ["🦊", "🦊🔥", "🦊⚡", "🦊👑"],
+    Cat: ["🐱", "🐱✨", "🐱⚔️", "🐱💎"],
+    Dog: ["🐶", "🐶🔥", "🐶⚡", "🐶👑"]
+  };
+
+  return base[pet.type][stage - 1];
+}
+
+// stat multiplier per evolution stage
+function getStatMultiplier(level) {
+  if (level >= 15) return 2.0;
+  if (level >= 10) return 1.6;
+  if (level >= 5) return 1.3;
+  return 1.0;
+}
+
+// =======================
+// RENDER PET LIST
+// =======================
 function renderPets() {
   petList.innerHTML = "";
 
   pets.forEach(pet => {
     const btn = document.createElement("button");
+
     btn.innerHTML = `
-      ${getEmoji(pet.type)} ${pet.type}
+      ${getPetEmoji(pet)} ${pet.type}
       Lv.${pet.level} (${pet.rarity})
     `;
 
-    btn.onclick = () => startTraining(pet.id);
+    btn.onclick = () => openPetMenu(pet.id);
     petList.appendChild(btn);
   });
 }
 
-function getEmoji(type) {
-  return type === "Fox" ? "🦊" :
-         type === "Cat" ? "🐱" : "🐶";
-}
-
-function startTraining(id) {
+// =======================
+// PET MENU (TRAIN OR BATTLE)
+// =======================
+function openPetMenu(id) {
   activePet = pets.find(p => p.id === id);
 
+  const choice = confirm(
+    `${activePet.type} Lv.${activePet.level}\n\nOK = Train\nCancel = Battle`
+  );
+
+  if (choice) startTraining();
+  else startBattle();
+}
+
+// =======================
+// TRAINING
+// =======================
+function startTraining() {
   petSelectScreen.classList.remove("active");
   trainingScreen.classList.add("active");
 
   reset();
+
   interval = setInterval(updateBar, 16);
 
   let countdown = setInterval(() => {
     timeLeft--;
     timer.innerText = `Time: ${timeLeft}`;
+
     if (timeLeft <= 0) {
       clearInterval(countdown);
       endTraining();
     }
   }, 1000);
-
-  document.getElementById("trainingTitle").innerText =
-    `Training ${activePet.type}`;
 }
 
 function reset() {
@@ -93,7 +135,6 @@ function reset() {
   direction = 1;
   speed = 2;
   timeLeft = 15;
-
   hits = { miss:0, ok:0, good:0, perfect:0 };
 }
 
@@ -106,61 +147,55 @@ function updateBar() {
   marker.style.left = position + "%";
 }
 
-document.getElementById("trainBtn").addEventListener("click", () => {
+// timing hit
+document.getElementById("trainBtn").onclick = () => {
   const zoneStart = 42;
   const zoneEnd = 58;
-
-  let result;
 
   if (position >= zoneStart && position <= zoneEnd) {
     if (Math.abs(position - 50) < 2) {
       hits.perfect++;
-      result = "PERFECT";
       feedback.innerText = "🔥 PERFECT!";
     } else {
       hits.good++;
-      result = "GOOD";
       feedback.innerText = "👍 GOOD!";
     }
   } else if (position >= 30 && position <= 70) {
     hits.ok++;
-    result = "OK";
     feedback.innerText = "🙂 OK!";
   } else {
     hits.miss++;
-    result = "MISS";
     feedback.innerText = "❌ MISS!";
   }
 
   speed += 0.15;
-});
+};
 
+// =======================
+// END TRAINING
+// =======================
 function endTraining() {
   clearInterval(interval);
 
+  const mult = getStatMultiplier(activePet.level);
+
   const xp =
-    hits.ok * 5 +
-    hits.good * 10 +
-    hits.perfect * 25;
+    (hits.ok * 5 +
+     hits.good * 10 +
+     hits.perfect * 25) * mult;
 
-  activePet.xp += xp;
+  activePet.xp += Math.floor(xp);
 
-  // LEVEL UP SYSTEM
+  // LEVEL UP
   while (activePet.xp >= activePet.xpToLevel) {
     activePet.xp -= activePet.xpToLevel;
     activePet.level++;
 
     activePet.xpToLevel = Math.floor(activePet.xpToLevel * 1.25);
 
-    // STAT GROWTH
     activePet.stats.power += 1;
     activePet.stats.agility += 1;
     activePet.stats.loyalty += 1;
-
-    // RARITY EVOLUTION
-    if (activePet.level >= 15) activePet.rarity = "Epic";
-    else if (activePet.level >= 8) activePet.rarity = "Rare";
-    else if (activePet.level >= 3) activePet.rarity = "Uncommon";
   }
 
   save();
@@ -169,28 +204,80 @@ function endTraining() {
   resultScreen.classList.add("active");
 
   resultText.innerHTML = `
-    🐾 ${activePet.type}<br>
+    🧬 ${getPetEmoji(activePet)} ${activePet.type}<br>
     Level: ${activePet.level}<br>
-    XP: ${activePet.xp}/${activePet.xpToLevel}<br><br>
+    XP: ${activePet.xp}/${activePet.xpToLevel}<br>
+    Stage: ${getStage(activePet.level)}<br><br>
 
-    Stats:<br>
+    ⚔️ Stats:<br>
     Power: ${activePet.stats.power}<br>
     Agility: ${activePet.stats.agility}<br>
-    Loyalty: ${activePet.stats.loyalty}<br><br>
-
-    Hits:<br>
-    Perfect: ${hits.perfect}<br>
-    Good: ${hits.good}<br>
-    OK: ${hits.ok}<br>
-    Miss: ${hits.miss}
+    Loyalty: ${activePet.stats.loyalty}
   `;
 }
 
-function backToMenu() {
-  resultScreen.classList.remove("active");
-  petSelectScreen.classList.add("active");
+// =======================
+// BATTLE SYSTEM
+// =======================
+function startBattle() {
+  const enemy = generateEnemy(activePet.level);
+
+  const playerPower = calcPower(activePet);
+  const enemyPower = calcPower(enemy);
+
+  let result;
+
+  if (playerPower > enemyPower) result = "WIN";
+  else if (playerPower < enemyPower) result = "LOSE";
+  else result = "DRAW";
+
+  let reward = 0;
+
+  if (result === "WIN") {
+    reward = 40;
+    activePet.xp += reward;
+  } else if (result === "LOSE") {
+    reward = 10;
+    activePet.xp += reward;
+  } else {
+    reward = 20;
+    activePet.xp += reward;
+  }
+
+  save();
+
+  alert(
+    `⚔️ BATTLE RESULT\n\n` +
+    `You: ${activePet.type} (${playerPower})\n` +
+    `Enemy: ${enemy.type} (${enemyPower})\n\n` +
+    `${result} +${reward} XP`
+  );
+
   renderPets();
 }
 
+function generateEnemy(level) {
+  const types = ["Fox", "Cat", "Dog"];
+  return {
+    type: types[Math.floor(Math.random() * types.length)],
+    level,
+    stats: {
+      power: level + Math.random() * 3,
+      agility: level + Math.random() * 3,
+      loyalty: level + Math.random() * 3
+    }
+  };
+}
+
+function calcPower(pet) {
+  return (
+    pet.stats.power * 2 +
+    pet.stats.agility +
+    pet.stats.loyalty * 1.5
+  );
+}
+
+// =======================
 // INIT
+// =======================
 renderPets();

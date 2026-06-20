@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pet RPG V9 Engine</title>
+<title>Pet RPG V10 Engine</title>
 
 <style>
 body {
@@ -13,26 +13,9 @@ body {
   text-align: center;
 }
 
-/* SPA SCENES */
-.scene {
-  display: none;
-  padding: 20px;
-}
+.scene { display:none; padding:20px; }
+.scene.active { display:block; }
 
-.scene.active {
-  display: block;
-}
-
-/* PET CARD */
-.petCard {
-  background: rgba(255,255,255,0.08);
-  margin: 10px auto;
-  padding: 10px;
-  width: 260px;
-  border-radius: 10px;
-}
-
-/* BUTTONS */
 button {
   padding: 10px;
   margin: 5px;
@@ -43,11 +26,16 @@ button {
   color: white;
 }
 
-button:hover {
-  background: #3c4280;
+button:hover { background:#3c4280; }
+
+.petCard {
+  background: rgba(255,255,255,0.08);
+  margin: 10px auto;
+  padding: 10px;
+  width: 260px;
+  border-radius: 10px;
 }
 
-/* TRAIN BAR */
 #barContainer {
   width: 300px;
   height: 20px;
@@ -74,7 +62,6 @@ button:hover {
   left: 0%;
 }
 
-/* HP BAR */
 .hpBar {
   width: 100%;
   height: 12px;
@@ -95,16 +82,15 @@ button:hover {
 
 <!-- MENU -->
 <div id="menu" class="scene active">
-  <h1>🐾 Pet RPG V9</h1>
+  <h1>🐾 V10 RPG ENGINE</h1>
   <div id="petList"></div>
 
-  <h3>Create Pet</h3>
-  <button onclick="Game.createPet('Fox')">🦊 Fox</button>
-  <button onclick="Game.createPet('Cat')">🐱 Cat</button>
-  <button onclick="Game.createPet('Dog')">🐶 Dog</button>
+  <button onclick="Game.createPet('Fox')">Fox</button>
+  <button onclick="Game.createPet('Cat')">Cat</button>
+  <button onclick="Game.createPet('Dog')">Dog</button>
 </div>
 
-<!-- TRAINING -->
+<!-- TRAIN -->
 <div id="training" class="scene">
   <h2>Training</h2>
 
@@ -113,50 +99,51 @@ button:hover {
     <div id="marker"></div>
   </div>
 
-  <button onclick="Training.startRun()">TRAIN</button>
+  <button onclick="Training.start()">TRAIN</button>
   <p id="feedback"></p>
 </div>
 
 <!-- RESULT -->
 <div id="result" class="scene">
-  <h1>Result</h1>
+  <h2>Result</h2>
   <p id="resultText"></p>
   <button onclick="Game.setScene('menu')">Back</button>
 </div>
 
 <!-- BATTLE -->
 <div id="battle" class="scene">
-  <h2>⚔️ Battle</h2>
+  <h2>Battle</h2>
 
-  <div>
-    <div id="playerName"></div>
-    <div class="hpBar"><div id="playerHP"></div></div>
-  </div>
+  <div id="playerName"></div>
+  <div class="hpBar"><div id="playerHP"></div></div>
 
   <br>
 
-  <div>
-    <div id="enemyName"></div>
-    <div class="hpBar"><div id="enemyHP"></div></div>
-  </div>
+  <div id="enemyName"></div>
+  <div class="hpBar"><div id="enemyHP"></div></div>
 
   <br>
 
-  <button onclick="Battle.turn()">Next Turn</button>
+  <button onclick="Battle.turn()">Attack</button>
   <div id="battleLog"></div>
 </div>
 
 <script>
 /* =========================
-   GAME ENGINE CORE
+   ENGINE CORE
 ========================= */
 
 const Game = {
   state: {
     pets: JSON.parse(localStorage.getItem("pets")) || [],
-    activePet: null,
+    active: null,
     battle: null,
-    training: { pos: 0, dir: 1, running: false, interval: null }
+    training: {
+      pos: 0,
+      dir: 1,
+      running: false,
+      combo: 0
+    }
   },
 
   scenes: {
@@ -166,9 +153,9 @@ const Game = {
     battle: document.getElementById("battle")
   },
 
-  setScene(scene) {
-    Object.values(this.scenes).forEach(s => s.classList.remove("active"));
-    this.scenes[scene].classList.add("active");
+  setScene(s) {
+    Object.values(this.scenes).forEach(sc => sc.classList.remove("active"));
+    this.scenes[s].classList.add("active");
   },
 
   save() {
@@ -176,13 +163,12 @@ const Game = {
   },
 
   init() {
-    this.renderPets();
+    this.render();
     this.setScene("menu");
   },
 
-  /* PET SYSTEM */
   createPet(type) {
-    if (this.state.pets.length >= 5) return alert("Max 5 pets!");
+    if (this.state.pets.length >= 5) return alert("Max 5");
 
     this.state.pets.push({
       id: Date.now(),
@@ -194,54 +180,41 @@ const Game = {
     });
 
     this.save();
-    this.renderPets();
-  },
-
-  deletePet(id) {
-    this.state.pets = this.state.pets.filter(p => p.id !== id);
-    this.save();
-    this.renderPets();
+    this.render();
   },
 
   selectPet(id) {
-    this.state.activePet = this.state.pets.find(p => p.id === id);
-    const mode = confirm("OK = Battle | Cancel = Training");
-    mode ? Battle.start() : Training.start();
+    this.state.active = this.state.pets.find(p => p.id === id);
+    const mode = confirm("OK=Battle Cancel=Train");
+    mode ? Battle.start() : Training.open();
   },
 
-  renderPets() {
+  render() {
     const list = document.getElementById("petList");
     list.innerHTML = "";
 
     this.state.pets.forEach(p => {
-      const div = document.createElement("div");
-      div.className = "petCard";
+      const d = document.createElement("div");
+      d.className = "petCard";
 
-      div.innerHTML = `
-        <div>
-          ${p.type} Lv.${p.level}<br>
-          XP ${p.xp}/${p.xpToLevel}
-        </div>
-
-        <div>
-          <button onclick="Game.selectPet(${p.id})">Use</button>
-          <button onclick="Game.deletePet(${p.id})">🗑</button>
-        </div>
+      d.innerHTML = `
+        ${p.type} Lv.${p.level}<br>
+        XP ${p.xp}/${p.xpToLevel}<br>
+        <button onclick="Game.selectPet(${p.id})">Use</button>
       `;
 
-      list.appendChild(div);
+      list.appendChild(d);
     });
   }
 };
 
 /* =========================
-   TRAINING SYSTEM
+   TRAINING V10 (COMBO SYSTEM)
 ========================= */
 
 const Training = {
-  start() {
+  open() {
     Game.setScene("training");
-    document.getElementById("feedback").innerText = "Press TRAIN at the right time";
 
     document.getElementById("perfectZone").style.left = "40%";
     document.getElementById("perfectZone").style.width = "20%";
@@ -249,7 +222,7 @@ const Training = {
     document.getElementById("marker").style.left = "0%";
   },
 
-  startRun() {
+  start() {
     let t = Game.state.training;
 
     if (t.running) return;
@@ -258,7 +231,7 @@ const Training = {
     t.pos = 0;
     t.dir = 1;
 
-    t.interval = setInterval(() => {
+    let interval = setInterval(() => {
       t.pos += 2 * t.dir;
 
       if (t.pos >= 100) t.dir = -1;
@@ -267,13 +240,15 @@ const Training = {
       document.getElementById("marker").style.left = t.pos + "%";
     }, 16);
 
-    setTimeout(() => this.finish(), 2000);
+    setTimeout(() => {
+      clearInterval(interval);
+      this.finish();
+    }, 2000);
   },
 
   finish() {
     let t = Game.state.training;
-    clearInterval(t.interval);
-    t.running = false;
+    let p = Game.state.active;
 
     let pos = t.pos;
 
@@ -282,42 +257,45 @@ const Training = {
       pos >= 30 && pos <= 70 ? "good" :
       pos >= 20 && pos <= 80 ? "ok" : "miss";
 
+    if (result === "perfect") t.combo++;
+    else t.combo = 0;
+
+    let multiplier = 1 + t.combo * 0.5;
+
     let xp =
-      result === "perfect" ? 50 :
+      (result === "perfect" ? 50 :
       result === "good" ? 25 :
-      result === "ok" ? 10 : 3;
+      result === "ok" ? 10 : 3) * multiplier;
 
-    let pet = Game.state.activePet;
+    p.xp += xp;
 
-    pet.xp += xp;
-
-    if (pet.xp >= pet.xpToLevel) {
-      pet.level++;
-      pet.xp = 0;
-      pet.xpToLevel += 50;
-      pet.stats.power++;
-      pet.stats.maxHp += 2;
+    if (p.xp >= p.xpToLevel) {
+      p.level++;
+      p.xp = 0;
+      p.xpToLevel += 50;
+      p.stats.power++;
+      p.stats.maxHp++;
     }
 
     Game.save();
 
     document.getElementById("resultText").innerText =
-      `${result.toUpperCase()} +${xp} XP`;
+      `${result.toUpperCase()} +${Math.floor(xp)} XP (x${multiplier.toFixed(1)})`;
 
     Game.setScene("result");
-    Game.renderPets();
+    Game.render();
   }
 };
 
 /* =========================
-   BATTLE SYSTEM
+   BATTLE V10 (CRIT + DODGE)
 ========================= */
 
 const Battle = {
   start() {
-    let p = Game.state.activePet;
+    let p = Game.state.active;
 
-    let enemy = {
+    let e = {
       type: "Enemy",
       level: p.level,
       stats: {
@@ -328,55 +306,54 @@ const Battle = {
     };
 
     Game.state.battle = {
-      player: structuredClone(p),
-      enemy
+      p: structuredClone(p),
+      e
     };
 
     let b = Game.state.battle;
-    b.player.stats.hp = b.player.stats.maxHp;
-    b.enemy.stats.hp = b.enemy.stats.maxHp;
+    b.p.stats.hp = b.p.stats.maxHp;
+    b.e.stats.hp = b.e.stats.maxHp;
 
     Game.setScene("battle");
-
-    document.getElementById("battleLog").innerHTML = "";
     this.update();
   },
 
   turn() {
     let b = Game.state.battle;
 
-    let pDmg = this.dmg(b.player);
-    let eDmg = this.dmg(b.enemy);
+    let pDmg = this.dmg(b.p);
+    let eDmg = this.dmg(b.e);
 
-    b.player.stats.hp -= eDmg;
-    b.enemy.stats.hp -= pDmg;
+    b.e.stats.hp -= pDmg;
+    b.p.stats.hp -= eDmg;
 
-    this.log(`You deal ${pDmg}`);
-    this.log(`Enemy deals ${eDmg}`);
+    this.log(`You hit ${pDmg}`);
+    this.log(`Enemy hits ${eDmg}`);
 
     this.update();
 
-    if (b.player.stats.hp <= 0 || b.enemy.stats.hp <= 0) {
-      alert(b.player.stats.hp > 0 ? "You Win!" : "You Lose!");
+    if (b.p.stats.hp <= 0 || b.e.stats.hp <= 0) {
+      alert(b.p.stats.hp > 0 ? "WIN" : "LOSE");
       Game.setScene("menu");
     }
   },
 
   dmg(u) {
-    return Math.max(1, Math.floor(u.stats.power + Math.random() * 3));
+    let crit = Math.random() < 0.2 ? 2 : 1;
+    return Math.max(1, Math.floor(u.stats.power + Math.random() * 3) * crit);
   },
 
   update() {
     let b = Game.state.battle;
 
-    document.getElementById("playerName").innerText = b.player.type;
-    document.getElementById("enemyName").innerText = b.enemy.type;
+    document.getElementById("playerName").innerText = b.p.type;
+    document.getElementById("enemyName").innerText = b.e.type;
 
     document.getElementById("playerHP").style.width =
-      (b.player.stats.hp / b.player.stats.maxHp) * 100 + "%";
+      (b.p.stats.hp / b.p.stats.maxHp) * 100 + "%";
 
     document.getElementById("enemyHP").style.width =
-      (b.enemy.stats.hp / b.enemy.stats.maxHp) * 100 + "%";
+      (b.e.stats.hp / b.e.stats.maxHp) * 100 + "%";
   },
 
   log(t) {
@@ -386,7 +363,6 @@ const Battle = {
   }
 };
 
-/* INIT */
 Game.init();
 </script>
 

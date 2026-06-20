@@ -1,59 +1,37 @@
 body {
-  font-family: Arial, sans-serif;
+  font-family: Arial;
   background: #0f1220;
   color: white;
   text-align: center;
 }
 
-.screen {
-  display: none;
-  padding: 30px;
-}
+.screen { display: none; padding: 20px; }
+.screen.active { display: block; }
 
-.screen.active {
+#petList button {
   display: block;
-}
-
-.pet-list {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  margin-top: 30px;
-}
-
-.pet-btn {
-  font-size: 20px;
-  padding: 15px;
-  border-radius: 10px;
+  margin: 10px auto;
+  padding: 10px;
+  width: 200px;
   cursor: pointer;
-  background: #2a2f55;
-  color: white;
-  border: none;
-  transition: 0.2s;
+  border-radius: 8px;
 }
 
-.pet-btn:hover {
-  transform: scale(1.05);
-  background: #3a4180;
-}
-
-/* BAR */
 #barContainer {
-  position: relative;
   width: 80%;
   height: 40px;
-  margin: 40px auto;
+  margin: 30px auto;
   background: #222;
+  position: relative;
   border-radius: 10px;
-  overflow: hidden;
 }
 
 #perfectZone {
   position: absolute;
-  left: 40%;
-  width: 20%;
+  left: 42%;
+  width: 16%;
   height: 100%;
-  background: rgba(0, 255, 100, 0.3);
+  background: rgba(0,255,100,0.3);
 }
 
 #marker {
@@ -61,17 +39,4 @@ body {
   width: 10px;
   height: 100%;
   background: red;
-  left: 0%;
-}
-
-#trainBtn {
-  padding: 15px 25px;
-  font-size: 18px;
-  margin-top: 20px;
-  cursor: pointer;
-}
-
-#feedback {
-  font-size: 22px;
-  margin-top: 20px;
 }

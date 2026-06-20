@@ -1,0 +1,77 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #0f1220;
+  color: white;
+  text-align: center;
+}
+
+.screen {
+  display: none;
+  padding: 30px;
+}
+
+.screen.active {
+  display: block;
+}
+
+.pet-list {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.pet-btn {
+  font-size: 20px;
+  padding: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #2a2f55;
+  color: white;
+  border: none;
+  transition: 0.2s;
+}
+
+.pet-btn:hover {
+  transform: scale(1.05);
+  background: #3a4180;
+}
+
+/* BAR */
+#barContainer {
+  position: relative;
+  width: 80%;
+  height: 40px;
+  margin: 40px auto;
+  background: #222;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#perfectZone {
+  position: absolute;
+  left: 40%;
+  width: 20%;
+  height: 100%;
+  background: rgba(0, 255, 100, 0.3);
+}
+
+#marker {
+  position: absolute;
+  width: 10px;
+  height: 100%;
+  background: red;
+  left: 0%;
+}
+
+#trainBtn {
+  padding: 15px 25px;
+  font-size: 18px;
+  margin-top: 20px;
+  cursor: pointer;
+}
+
+#feedback {
+  font-size: 22px;
+  margin-top: 20px;
+}

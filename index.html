@@ -71,9 +71,17 @@ button:hover{transform:translateY(-2px);}
     height:100%;
 }
 
-#okZone{left:15%;width:70%;background:rgba(255,255,255,.08);}
-#goodZone{left:35%;width:30%;background:rgba(0,255,140,.12);}
-#perfectZone{left:47%;width:6%;background:rgba(255,255,140,.4);}
+#goodZone{
+    left:15%;
+    width:70%;
+    background:rgba(0,255,140,.12);
+}
+
+#perfectZone{
+    left:47%;
+    width:6%;
+    background:rgba(255,255,140,.4);
+}
 
 #marker{
     position:absolute;
@@ -143,10 +151,9 @@ button:hover{transform:translateY(-2px);}
 <div id="trainingScreen" class="screen">
     <h2>🎯 Training</h2>
 
-    <p>Stop the marker in the perfect zone!</p>
+    <p>Hit GOOD or PERFECT!</p>
 
     <div id="barContainer">
-        <div id="okZone" class="zone"></div>
         <div id="goodZone" class="zone"></div>
         <div id="perfectZone" class="zone"></div>
         <div id="marker"></div>
@@ -172,6 +179,7 @@ let animId = null;
 
 let sessionXP = 0;
 let missCount = 0;
+let speed = 0.7;
 
 /* SAVE */
 function save(){
@@ -185,7 +193,7 @@ function showScreen(id){
     document.getElementById(id).classList.add("active");
 }
 
-/* XP */
+/* XP SYSTEM */
 function xpNeeded(level){
     return level * 100;
 }
@@ -262,7 +270,7 @@ function selectPet(id){
     showScreen("petScreen");
 }
 
-/* UPDATE PET SCREEN */
+/* UPDATE */
 function updatePetScreen(){
     const p=selectedPet;
     const need=xpNeeded(p.level);
@@ -277,10 +285,11 @@ function updatePetScreen(){
         `Power: ${p.stats.power}<br>Agility: ${p.stats.agility}`;
 }
 
-/* TRAINING */
+/* TRAIN START */
 function openTraining(){
     sessionXP=0;
     missCount=0;
+    speed=0.7;
 
     document.getElementById("sessionXP").innerText="Session XP: 0";
     document.getElementById("misses").innerText="Misses: 0 / 3";
@@ -302,7 +311,7 @@ function startTraining(){
     function loop(){
         if(!trainingRunning) return;
 
-        markerPos+=direction*0.7;
+        markerPos+=direction*speed;
 
         if(markerPos>=100){markerPos=100;direction=-1;}
         if(markerPos<=0){markerPos=0;direction=1;}
@@ -315,7 +324,7 @@ function startTraining(){
     loop();
 }
 
-/* STOP BUTTON */
+/* STOP */
 document.getElementById("stopBtn").addEventListener("click",()=>{
 
     if(!trainingRunning) return;
@@ -326,18 +335,20 @@ document.getElementById("stopBtn").addEventListener("click",()=>{
     let text="";
 
     if(markerPos>=47 && markerPos<=53){
-        xp=35;text="🌟 PERFECT +35";
-    }
-    else if(markerPos>=35 && markerPos<=65){
-        xp=20;text="✅ GOOD +20";
+        xp=35;
+        text="🌟 PERFECT +35";
+        speed+=0.08;
     }
     else if(markerPos>=15 && markerPos<=85){
-        xp=10;text="👍 OK +10";
+        xp=20;
+        text="✅ GOOD +20";
+        speed+=0.05;
     }
     else{
         xp=0;
         missCount++;
         text=`❌ MISS (${missCount}/3)`;
+        speed=Math.max(0.5,speed-0.03);
     }
 
     sessionXP+=xp;
@@ -363,10 +374,10 @@ document.getElementById("stopBtn").addEventListener("click",()=>{
         return;
     }
 
-    setTimeout(()=>startTraining(),250);
+    setTimeout(()=>startTraining(),200);
 });
 
-/* XP SYSTEM */
+/* LEVELING */
 function gainXP(pet,amount){
 
     pet.xp+=amount;
@@ -382,12 +393,6 @@ function gainXP(pet,amount){
             pet.stats.power+=2;
         }
     }
-}
-
-/* BACK */
-function returnToPet(){
-    updatePetScreen();
-    showScreen("petScreen");
 }
 
 renderPets();

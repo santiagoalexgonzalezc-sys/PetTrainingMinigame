@@ -5,18 +5,22 @@ body {
   text-align: center;
 }
 
-.screen { display: none; padding: 20px; }
-.screen.active { display: block; }
-
-#petList button {
-  display: block;
-  margin: 10px auto;
-  padding: 10px;
-  width: 200px;
-  cursor: pointer;
-  border-radius: 8px;
+.screen {
+  display: none;
+  padding: 20px;
 }
 
+.screen.active {
+  display: block;
+}
+
+button {
+  padding: 10px 15px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+/* TRAINING BAR */
 #barContainer {
   width: 80%;
   height: 40px;
@@ -39,4 +43,22 @@ body {
   width: 10px;
   height: 100%;
   background: red;
+}
+
+/* BATTLE LOG */
+#battleLog {
+  width: 80%;
+  height: 250px;
+  margin: 20px auto;
+  background: #111;
+  text-align: left;
+  padding: 10px;
+  overflow-y: auto;
+  font-family: monospace;
+  border-radius: 10px;
+}
+
+.log {
+  margin: 4px 0;
+  opacity: 0.9;
 }

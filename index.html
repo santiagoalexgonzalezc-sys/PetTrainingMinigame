@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -7,9 +6,7 @@
 <title>🐾 Pet Training RPG</title>
 
 <style>
-*{
-    box-sizing:border-box;
-}
+*{box-sizing:border-box;}
 
 body{
     margin:0;
@@ -19,18 +16,8 @@ body{
     text-align:center;
 }
 
-.screen{
-    display:none;
-    padding:20px;
-}
-
-.screen.active{
-    display:block;
-}
-
-h1,h2,h3{
-    margin-top:10px;
-}
+.screen{display:none;padding:20px;}
+.screen.active{display:block;}
 
 button{
     border:none;
@@ -43,23 +30,17 @@ button{
     transition:.15s;
 }
 
-button:hover{
-    transform:translateY(-2px);
-}
+button:hover{transform:translateY(-2px);}
 
 .petCard{
     width:min(450px,90%);
     margin:10px auto;
     background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.08);
     border-radius:16px;
     padding:14px;
 }
 
-.stat{
-    opacity:.9;
-    font-size:.95rem;
-}
+.stat{opacity:.9;font-size:.95rem;}
 
 .xpBar{
     width:100%;
@@ -67,7 +48,6 @@ button:hover{
     background:#1f2230;
     border-radius:999px;
     overflow:hidden;
-    margin-top:8px;
 }
 
 .xpFill{
@@ -88,31 +68,15 @@ button:hover{
 
 .zone{
     position:absolute;
-    top:0;
     height:100%;
 }
 
-#okZone{
-    left:15%;
-    width:70%;
-    background:rgba(255,255,255,.08);
-}
-
-#goodZone{
-    left:35%;
-    width:30%;
-    background:rgba(0,255,140,.12);
-}
-
-#perfectZone{
-    left:47%;
-    width:6%;
-    background:rgba(255,255,140,.4);
-}
+#okZone{left:15%;width:70%;background:rgba(255,255,255,.08);}
+#goodZone{left:35%;width:30%;background:rgba(0,255,140,.12);}
+#perfectZone{left:47%;width:6%;background:rgba(255,255,140,.4);}
 
 #marker{
     position:absolute;
-    top:0;
     width:8px;
     height:100%;
     background:white;
@@ -120,13 +84,9 @@ button:hover{
 }
 
 .bigResult{
-    font-size:1.4rem;
-    margin-top:20px;
+    font-size:1.3rem;
+    margin-top:15px;
     min-height:40px;
-}
-
-.selected{
-    border:2px solid #00b7ff;
 }
 
 .infoBox{
@@ -137,79 +97,68 @@ button:hover{
     padding:16px;
 }
 </style>
-
 </head>
+
 <body>
 
 <!-- MAIN -->
-
 <div id="mainScreen" class="screen active">
     <h1>🐾 Pet Training RPG</h1>
-    <p>Maximum 5 pets</p>
+    <p>Max 5 pets</p>
 
-```
-<div id="petList"></div>
+    <div id="petList"></div>
 
-<div style="margin-top:20px;">
-    <button onclick="createPet('Fox')">🦊 Create Fox</button>
-    <button onclick="createPet('Cat')">🐱 Create Cat</button>
-    <button onclick="createPet('Dog')">🐶 Create Dog</button>
-</div>
-```
-
+    <button onclick="createPet('Fox')">🦊 Fox</button>
+    <button onclick="createPet('Cat')">🐱 Cat</button>
+    <button onclick="createPet('Dog')">🐶 Dog</button>
 </div>
 
 <!-- PET -->
-
 <div id="petScreen" class="screen">
     <h2 id="petTitle"></h2>
 
-```
-<div class="infoBox">
-    <div id="petEvolution"></div>
-    <br>
+    <div class="infoBox">
+        <div id="petEvolution"></div>
+        <br>
 
-    <div id="petLevel"></div>
-    <div id="petXP"></div>
+        <div id="petLevel"></div>
+        <div id="petXP"></div>
 
-    <div class="xpBar">
-        <div id="petXPFill" class="xpFill"></div>
+        <div class="xpBar">
+            <div id="petXPFill" class="xpFill"></div>
+        </div>
+
+        <br>
+
+        <div id="petStats"></div>
+
+        <br>
+
+        <button onclick="openTraining()">🎯 Train</button>
+        <button onclick="showScreen('mainScreen')">⬅ Back</button>
     </div>
-
-    <br>
-
-    <div id="petStats"></div>
-
-    <br>
-
-    <button onclick="openTraining()">🎯 Train</button>
-    <button onclick="showScreen('mainScreen')">⬅ Back</button>
-</div>
-```
-
 </div>
 
 <!-- TRAIN -->
-
 <div id="trainingScreen" class="screen">
     <h2>🎯 Training</h2>
 
-```
-<p>Stop the marker in the center!</p>
+    <p>Stop the marker in the perfect zone!</p>
 
-<div id="barContainer">
-    <div id="okZone" class="zone"></div>
-    <div id="goodZone" class="zone"></div>
-    <div id="perfectZone" class="zone"></div>
-    <div id="marker"></div>
-</div>
+    <div id="barContainer">
+        <div id="okZone" class="zone"></div>
+        <div id="goodZone" class="zone"></div>
+        <div id="perfectZone" class="zone"></div>
+        <div id="marker"></div>
+    </div>
 
-<button id="stopBtn">STOP</button>
-<button onclick="returnToPet()">Back</button>
+    <button id="stopBtn">STOP</button>
+    <button onclick="returnToPet()">Back</button>
 
-<div id="trainResult" class="bigResult"></div>
-```
+    <div id="trainResult" class="bigResult"></div>
 
+    <h3 id="sessionXP">Session XP: 0</h3>
+    <h3 id="misses">Misses: 0 / 3</h3>
 </div>
 
 <script>
@@ -221,255 +170,221 @@ let markerPos = 0;
 let direction = 1;
 let animId = null;
 
+let sessionXP = 0;
+let missCount = 0;
+
+/* SAVE */
 function save(){
     localStorage.setItem("pets", JSON.stringify(pets));
 }
 
+/* SCREENS */
 function showScreen(id){
     document.querySelectorAll(".screen")
         .forEach(s=>s.classList.remove("active"));
-
-    document.getElementById(id)
-        .classList.add("active");
+    document.getElementById(id).classList.add("active");
 }
 
+/* XP */
 function xpNeeded(level){
     return level * 100;
 }
 
+/* EVOLUTION */
 function getEvolution(pet){
-
-    const evo = {
-        Fox:[
-            "🦊 Fox",
-            "🔥 Swift Fox",
-            "👑 Spirit Fox"
-        ],
-        Cat:[
-            "🐱 Cat",
-            "🌙 Shadow Cat",
-            "⭐ Star Cat"
-        ],
-        Dog:[
-            "🐶 Dog",
-            "🛡 Alpha Dog",
-            "👑 Guardian Dog"
-        ]
+    const evo={
+        Fox:["🦊 Fox","🔥 Swift Fox","👑 Spirit Fox"],
+        Cat:["🐱 Cat","🌙 Shadow Cat","⭐ Star Cat"],
+        Dog:["🐶 Dog","🛡 Alpha Dog","👑 Guardian Dog"]
     };
-
-    if(pet.level >= 10) return evo[pet.type][2];
-    if(pet.level >= 5) return evo[pet.type][1];
+    if(pet.level>=10) return evo[pet.type][2];
+    if(pet.level>=5) return evo[pet.type][1];
     return evo[pet.type][0];
 }
 
+/* CREATE PET */
 function createPet(type){
-
-    if(pets.length >= 5){
-        alert("Maximum 5 pets.");
-        return;
-    }
+    if(pets.length>=5) return alert("Max 5 pets");
 
     pets.push({
         id:Date.now(),
         type,
         level:1,
         xp:0,
-        stats:{
-            power:1,
-            agility:1
-        }
+        stats:{power:1,agility:1}
     });
 
     save();
     renderPets();
 }
 
+/* DELETE */
 function deletePet(id){
-
-    if(!confirm("Delete this pet?")) return;
-
-    pets = pets.filter(p=>p.id!==id);
-
+    pets=pets.filter(p=>p.id!==id);
     save();
     renderPets();
 }
 
+/* RENDER */
 function renderPets(){
-
-    const list = document.getElementById("petList");
-    list.innerHTML = "";
+    const list=document.getElementById("petList");
+    list.innerHTML="";
 
     pets.forEach(p=>{
+        const need=xpNeeded(p.level);
+        const pct=(p.xp/need)*100;
 
-        const need = xpNeeded(p.level);
-        const pct = (p.xp / need) * 100;
+        const div=document.createElement("div");
+        div.className="petCard";
 
-        const div = document.createElement("div");
-        div.className = "petCard";
-
-        div.innerHTML = `
+        div.innerHTML=`
             <h3>${getEvolution(p)}</h3>
-
-            <div class="stat">
-                Level ${p.level}
-            </div>
+            <div>Level ${p.level}</div>
 
             <div class="xpBar">
                 <div class="xpFill" style="width:${pct}%"></div>
             </div>
 
-            <div class="stat">
-                XP ${p.xp} / ${need}
-            </div>
+            <div>XP ${p.xp}/${need}</div>
 
-            <br>
-
-            <button onclick="selectPet(${p.id})">
-                Select
-            </button>
-
-            <button onclick="deletePet(${p.id})">
-                Delete
-            </button>
+            <button onclick="selectPet(${p.id})">Select</button>
+            <button onclick="deletePet(${p.id})">Delete</button>
         `;
 
         list.appendChild(div);
     });
 }
 
+/* SELECT */
 function selectPet(id){
-
-    selectedPet = pets.find(p=>p.id===id);
-
+    selectedPet=pets.find(p=>p.id===id);
     updatePetScreen();
-
     showScreen("petScreen");
 }
 
+/* UPDATE PET SCREEN */
 function updatePetScreen(){
+    const p=selectedPet;
+    const need=xpNeeded(p.level);
 
-    if(!selectedPet) return;
+    document.getElementById("petTitle").innerText=p.type;
+    document.getElementById("petEvolution").innerText=getEvolution(p);
+    document.getElementById("petLevel").innerText="Level "+p.level;
+    document.getElementById("petXP").innerText=`XP ${p.xp}/${need}`;
+    document.getElementById("petXPFill").style.width=(p.xp/need)*100+"%";
 
-    const need = xpNeeded(selectedPet.level);
-
-    document.getElementById("petTitle").textContent =
-        selectedPet.type;
-
-    document.getElementById("petEvolution").textContent =
-        getEvolution(selectedPet);
-
-    document.getElementById("petLevel").textContent =
-        "Level: " + selectedPet.level;
-
-    document.getElementById("petXP").textContent =
-        `XP: ${selectedPet.xp} / ${need}`;
-
-    document.getElementById("petXPFill").style.width =
-        (selectedPet.xp / need * 100) + "%";
-
-    document.getElementById("petStats").innerHTML =
-        `
-        ⚔ Power: ${selectedPet.stats.power}<br>
-        ⚡ Agility: ${selectedPet.stats.agility}
-        `;
+    document.getElementById("petStats").innerHTML=
+        `Power: ${p.stats.power}<br>Agility: ${p.stats.agility}`;
 }
 
+/* TRAINING */
 function openTraining(){
+    sessionXP=0;
+    missCount=0;
 
-    document.getElementById("trainResult").textContent = "";
+    document.getElementById("sessionXP").innerText="Session XP: 0";
+    document.getElementById("misses").innerText="Misses: 0 / 3";
+    document.getElementById("trainResult").innerText="";
 
     showScreen("trainingScreen");
-
     startTraining();
 }
 
 function startTraining(){
-
     cancelAnimationFrame(animId);
 
-    trainingRunning = true;
-    markerPos = 0;
-    direction = 1;
+    trainingRunning=true;
+    markerPos=0;
+    direction=1;
 
-    const marker = document.getElementById("marker");
+    const marker=document.getElementById("marker");
 
     function loop(){
-
         if(!trainingRunning) return;
 
-        markerPos += direction * 0.7;
+        markerPos+=direction*0.7;
 
-        if(markerPos >= 100){
-            markerPos = 100;
-            direction = -1;
-        }
+        if(markerPos>=100){markerPos=100;direction=-1;}
+        if(markerPos<=0){markerPos=0;direction=1;}
 
-        if(markerPos <= 0){
-            markerPos = 0;
-            direction = 1;
-        }
+        marker.style.left=markerPos+"%";
 
-        marker.style.left = markerPos + "%";
-
-        animId = requestAnimationFrame(loop);
+        animId=requestAnimationFrame(loop);
     }
 
     loop();
 }
 
-document.getElementById("stopBtn")
-.addEventListener("click", ()=>{
+/* STOP BUTTON */
+document.getElementById("stopBtn").addEventListener("click",()=>{
 
     if(!trainingRunning) return;
 
-    trainingRunning = false;
+    trainingRunning=false;
 
-    let xp = 0;
-    let text = "";
+    let xp=0;
+    let text="";
 
-    if(markerPos >= 47 && markerPos <= 53){
-        xp = 35;
-        text = "🌟 PERFECT! +35 XP";
+    if(markerPos>=47 && markerPos<=53){
+        xp=35;text="🌟 PERFECT +35";
     }
-    else if(markerPos >= 35 && markerPos <= 65){
-        xp = 20;
-        text = "✅ GOOD! +20 XP";
+    else if(markerPos>=35 && markerPos<=65){
+        xp=20;text="✅ GOOD +20";
     }
-    else if(markerPos >= 15 && markerPos <= 85){
-        xp = 10;
-        text = "👍 OK! +10 XP";
+    else if(markerPos>=15 && markerPos<=85){
+        xp=10;text="👍 OK +10";
     }
     else{
-        xp = 5;
-        text = "❌ MISS! +5 XP";
+        xp=0;
+        missCount++;
+        text=`❌ MISS (${missCount}/3)`;
     }
 
-    gainXP(selectedPet,xp);
+    sessionXP+=xp;
 
-    document.getElementById("trainResult").textContent = text;
+    document.getElementById("trainResult").innerText=text;
+    document.getElementById("sessionXP").innerText=`Session XP: ${sessionXP}`;
+    document.getElementById("misses").innerText=`Misses: ${missCount}/3`;
 
-    save();
+    if(missCount>=3){
+
+        gainXP(selectedPet,sessionXP);
+        save();
+
+        setTimeout(()=>{
+
+            alert(`Training Complete!\nXP Earned: ${sessionXP}`);
+
+            updatePetScreen();
+            showScreen("petScreen");
+
+        },300);
+
+        return;
+    }
+
+    setTimeout(()=>startTraining(),250);
 });
 
+/* XP SYSTEM */
 function gainXP(pet,amount){
 
-    pet.xp += amount;
+    pet.xp+=amount;
 
-    while(pet.xp >= xpNeeded(pet.level)){
-
-        pet.xp -= xpNeeded(pet.level);
-
+    while(pet.xp>=xpNeeded(pet.level)){
+        pet.xp-=xpNeeded(pet.level);
         pet.level++;
 
-        pet.stats.power += 1;
-        pet.stats.agility += 1;
+        pet.stats.power++;
+        pet.stats.agility++;
 
-        if(pet.level % 5 === 0){
-            pet.stats.power += 2;
+        if(pet.level%5===0){
+            pet.stats.power+=2;
         }
     }
 }
 
+/* BACK */
 function returnToPet(){
     updatePetScreen();
     showScreen("petScreen");

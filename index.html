@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Pet Training System</title>
+  <title>Pet Training RPG</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="game">
 
-  <!-- PET SELECT -->
+  <!-- PET MENU -->
   <div id="petSelectScreen" class="screen active">
     <h1>🐾 Your Pets</h1>
 
     <div id="petList"></div>
 
-    <h3>Create New Pet</h3>
+    <h3>Create Pet</h3>
     <button onclick="createPet('Fox')">🦊 Fox</button>
     <button onclick="createPet('Cat')">🐱 Cat</button>
     <button onclick="createPet('Dog')">🐶 Dog</button>
@@ -26,14 +26,13 @@
 
     <h2 id="trainingTitle"></h2>
 
-    <div id="petStats"></div>
-
     <div id="barContainer">
       <div id="perfectZone"></div>
       <div id="marker"></div>
     </div>
 
     <button id="trainBtn">TRAIN</button>
+
     <p id="feedback"></p>
     <p id="timer"></p>
 
@@ -41,9 +40,18 @@
 
   <!-- RESULT -->
   <div id="resultScreen" class="screen">
-    <h1>Training Complete</h1>
+    <h1>Result</h1>
     <p id="resultText"></p>
     <button onclick="backToMenu()">Back</button>
+  </div>
+
+  <!-- BATTLE -->
+  <div id="battleScreen" class="screen">
+    <h2>⚔️ Battle</h2>
+
+    <div id="battleLog"></div>
+
+    <button id="nextTurnBtn">Next Turn</button>
   </div>
 
 </div>

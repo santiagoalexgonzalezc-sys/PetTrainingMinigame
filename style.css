@@ -6,20 +6,14 @@ body {
   text-align: center;
 }
 
-.screen {
-  display: none;
-  padding: 20px;
-}
-
-.screen.active {
-  display: block;
-}
+.screen { display:none; padding:20px; }
+.screen.active { display:block; }
 
 button {
-  padding: 10px 16px;
+  padding: 10px 14px;
   margin: 6px;
-  border-radius: 10px;
   border: none;
+  border-radius: 10px;
   cursor: pointer;
   background: #2a2f55;
   color: white;
@@ -31,51 +25,16 @@ button:hover {
   background: #3c4280;
 }
 
-/* TRAINING BAR */
-#barContainer {
-  width: 80%;
-  height: 40px;
-  margin: 30px auto;
-  background: #222;
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-#perfectZone {
-  position: absolute;
-  left: 42%;
-  width: 16%;
-  height: 100%;
-  background: rgba(0,255,100,0.3);
-}
-
-#marker {
-  position: absolute;
-  width: 10px;
-  height: 100%;
-  background: red;
-}
-
-/* BATTLE LAYOUT */
-#battleField {
+/* PET CARD */
+.petCard {
   display: flex;
-  justify-content: space-around;
+  justify-content: space-between;
   align-items: center;
-  margin: 20px;
-}
-
-.unit {
   background: rgba(255,255,255,0.06);
-  padding: 15px;
+  padding: 10px;
+  margin: 8px auto;
+  width: 260px;
   border-radius: 12px;
-  width: 200px;
-  backdrop-filter: blur(10px);
-}
-
-.vs {
-  font-size: 28px;
-  opacity: 0.6;
 }
 
 /* HP BAR */
@@ -85,36 +44,13 @@ button:hover {
   background: #222;
   border-radius: 20px;
   overflow: hidden;
-  margin-top: 8px;
 }
 
 .hpBar div {
   height: 100%;
   width: 100%;
-  background: linear-gradient(90deg, #00ff88, #00c3ff);
-  transition: width 0.5s ease;
-}
-
-/* LOG */
-#battleLog {
-  width: 80%;
-  height: 220px;
-  margin: 20px auto;
-  background: rgba(0,0,0,0.3);
-  border-radius: 12px;
-  padding: 10px;
-  overflow-y: auto;
-  text-align: left;
-  font-family: monospace;
-}
-
-.log {
-  opacity: 0;
-  animation: pop 0.2s forwards;
-}
-
-@keyframes pop {
-  to { opacity: 1; }
+  background: linear-gradient(90deg,#00ff88,#00c3ff);
+  transition: width 0.4s ease;
 }
 
 /* DAMAGE POPUP */
@@ -127,6 +63,30 @@ button:hover {
 }
 
 @keyframes floatUp {
-  0% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-60px); }
+  0% { opacity:1; transform:translateY(0); }
+  100% { opacity:0; transform:translateY(-70px); }
+}
+
+/* ATTACK SHAKE */
+.shake {
+  animation: shake 0.25s;
+}
+
+@keyframes shake {
+  0% { transform: translate(0); }
+  25% { transform: translate(-5px,2px); }
+  50% { transform: translate(5px,-2px); }
+  75% { transform: translate(-3px,1px); }
+  100% { transform: translate(0); }
+}
+
+/* FLASH */
+.flash {
+  animation: flash 0.25s;
+}
+
+@keyframes flash {
+  0% { background: transparent; }
+  50% { background: rgba(255,255,255,0.15); }
+  100% { background: transparent; }
 }

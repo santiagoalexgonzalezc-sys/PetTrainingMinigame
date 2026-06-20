@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pet Training Minigame</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="game">
+
+  <!-- PET SELECT -->
+  <div id="petSelectScreen" class="screen active">
+    <h1>🐾 Choose Your Pet</h1>
+
+    <div class="pet-list">
+      <button class="pet-btn" data-pet="Fox">🦊 Fox</button>
+      <button class="pet-btn" data-pet="Cat">🐱 Cat</button>
+      <button class="pet-btn" data-pet="Dog">🐶 Dog</button>
+    </div>
+
+  </div>
+
+  <!-- TRAINING SCREEN -->
+  <div id="trainingScreen" class="screen">
+
+    <h2 id="trainingTitle">Training...</h2>
+
+    <div id="barContainer">
+      <div id="perfectZone"></div>
+      <div id="marker"></div>
+    </div>
+
+    <button id="trainBtn">CLICK AT PERFECT TIME</button>
+
+    <p id="timer">Time: 0</p>
+    <p id="feedback"></p>
+
+  </div>
+
+  <!-- RESULT SCREEN -->
+  <div id="resultScreen" class="screen">
+    <h1>Training Complete</h1>
+    <p id="resultText"></p>
+    <button onclick="location.reload()">Train Again</button>
+  </div>
+
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>

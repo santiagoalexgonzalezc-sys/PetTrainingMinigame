@@ -1,349 +1,483 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>V13 RPG Framework Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐾 Pet Training RPG</title>
 
 <style>
-body {
-  margin:0;
-  font-family:Arial;
-  background:#0b0d18;
-  color:white;
-  text-align:center;
+*{
+    box-sizing:border-box;
 }
 
-.scene { display:none; padding:20px; }
-.scene.active { display:block; }
-
-button {
-  padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:8px;
-  background:#2a2f55;
-  color:white;
-  cursor:pointer;
-}
-button:hover { background:#3c4280; }
-
-.petCard {
-  background:rgba(255,255,255,0.08);
-  margin:10px auto;
-  padding:10px;
-  width:260px;
-  border-radius:10px;
+body{
+    margin:0;
+    font-family:Segoe UI,Arial,sans-serif;
+    background:linear-gradient(180deg,#131827,#0b0d18);
+    color:white;
+    text-align:center;
 }
 
-.hpBar {
-  width:100%;
-  height:12px;
-  background:#222;
-  border-radius:10px;
-  overflow:hidden;
+.screen{
+    display:none;
+    padding:20px;
 }
 
-.hpBar div {
-  height:100%;
-  width:100%;
-  background:linear-gradient(90deg,#00ff88,#00c3ff);
+.screen.active{
+    display:block;
 }
 
-#log {
-  max-height:180px;
-  overflow:auto;
-  font-size:13px;
+h1,h2,h3{
+    margin-top:10px;
+}
+
+button{
+    border:none;
+    border-radius:12px;
+    padding:10px 16px;
+    cursor:pointer;
+    color:white;
+    background:#2f3b7a;
+    margin:4px;
+    transition:.15s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+}
+
+.petCard{
+    width:min(450px,90%);
+    margin:10px auto;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:16px;
+    padding:14px;
+}
+
+.stat{
+    opacity:.9;
+    font-size:.95rem;
+}
+
+.xpBar{
+    width:100%;
+    height:18px;
+    background:#1f2230;
+    border-radius:999px;
+    overflow:hidden;
+    margin-top:8px;
+}
+
+.xpFill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#00d084,#00b7ff);
+}
+
+#barContainer{
+    width:min(650px,90%);
+    height:34px;
+    background:#1d2232;
+    border-radius:999px;
+    margin:35px auto;
+    position:relative;
+    overflow:hidden;
+}
+
+.zone{
+    position:absolute;
+    top:0;
+    height:100%;
+}
+
+#okZone{
+    left:15%;
+    width:70%;
+    background:rgba(255,255,255,.08);
+}
+
+#goodZone{
+    left:35%;
+    width:30%;
+    background:rgba(0,255,140,.12);
+}
+
+#perfectZone{
+    left:47%;
+    width:6%;
+    background:rgba(255,255,140,.4);
+}
+
+#marker{
+    position:absolute;
+    top:0;
+    width:8px;
+    height:100%;
+    background:white;
+    box-shadow:0 0 10px white;
+}
+
+.bigResult{
+    font-size:1.4rem;
+    margin-top:20px;
+    min-height:40px;
+}
+
+.selected{
+    border:2px solid #00b7ff;
+}
+
+.infoBox{
+    width:min(500px,90%);
+    margin:auto;
+    background:rgba(255,255,255,.06);
+    border-radius:16px;
+    padding:16px;
 }
 </style>
-</head>
 
+</head>
 <body>
 
-<!-- MENU -->
-<div id="menu" class="scene active">
-  <h1>🐾 V13 RPG FRAMEWORK</h1>
-  <div id="petList"></div>
+<!-- MAIN -->
 
-  <button onclick="Game.createPet('Fox')">Fox 🔥</button>
-  <button onclick="Game.createPet('Cat')">Cat 🌙</button>
-  <button onclick="Game.createPet('Dog')">Dog ⚡</button>
+<div id="mainScreen" class="screen active">
+    <h1>🐾 Pet Training RPG</h1>
+    <p>Maximum 5 pets</p>
+
+```
+<div id="petList"></div>
+
+<div style="margin-top:20px;">
+    <button onclick="createPet('Fox')">🦊 Create Fox</button>
+    <button onclick="createPet('Cat')">🐱 Create Cat</button>
+    <button onclick="createPet('Dog')">🐶 Create Dog</button>
+</div>
+```
+
 </div>
 
-<!-- BATTLE -->
-<div id="battle" class="scene">
-  <h2>⚔️ Framework Battle</h2>
+<!-- PET -->
 
-  <div id="playerName"></div>
-  <div class="hpBar"><div id="playerHP"></div></div>
+<div id="petScreen" class="screen">
+    <h2 id="petTitle"></h2>
 
-  <br>
+```
+<div class="infoBox">
+    <div id="petEvolution"></div>
+    <br>
 
-  <div id="enemyName"></div>
-  <div class="hpBar"><div id="enemyHP"></div></div>
+    <div id="petLevel"></div>
+    <div id="petXP"></div>
 
-  <h3>Skills</h3>
-  <div id="skills"></div>
+    <div class="xpBar">
+        <div id="petXPFill" class="xpFill"></div>
+    </div>
 
-  <div id="log"></div>
+    <br>
+
+    <div id="petStats"></div>
+
+    <br>
+
+    <button onclick="openTraining()">🎯 Train</button>
+    <button onclick="showScreen('mainScreen')">⬅ Back</button>
+</div>
+```
+
+</div>
+
+<!-- TRAIN -->
+
+<div id="trainingScreen" class="screen">
+    <h2>🎯 Training</h2>
+
+```
+<p>Stop the marker in the center!</p>
+
+<div id="barContainer">
+    <div id="okZone" class="zone"></div>
+    <div id="goodZone" class="zone"></div>
+    <div id="perfectZone" class="zone"></div>
+    <div id="marker"></div>
+</div>
+
+<button id="stopBtn">STOP</button>
+<button onclick="returnToPet()">Back</button>
+
+<div id="trainResult" class="bigResult"></div>
+```
+
 </div>
 
 <script>
-/* =========================
-   RPG FRAMEWORK CORE
-========================= */
+let pets = JSON.parse(localStorage.getItem("pets")) || [];
+let selectedPet = null;
 
-const Game = {
-  state: {
-    pets: JSON.parse(localStorage.getItem("pets")) || [],
-    active: null,
-    battle: null
-  },
+let trainingRunning = false;
+let markerPos = 0;
+let direction = 1;
+let animId = null;
 
-  scenes: {
-    menu: document.getElementById("menu"),
-    battle: document.getElementById("battle")
-  },
+function save(){
+    localStorage.setItem("pets", JSON.stringify(pets));
+}
 
-  setScene(s) {
-    Object.values(this.scenes).forEach(x => x.classList.remove("active"));
-    this.scenes[s].classList.add("active");
-  },
+function showScreen(id){
+    document.querySelectorAll(".screen")
+        .forEach(s=>s.classList.remove("active"));
 
-  save() {
-    localStorage.setItem("pets", JSON.stringify(this.state.pets));
-  },
+    document.getElementById(id)
+        .classList.add("active");
+}
 
-  init() {
-    this.render();
-  },
+function xpNeeded(level){
+    return level * 100;
+}
 
-  createPet(type) {
-    this.state.pets.push({
-      id: Date.now(),
-      type,
-      level: 1,
-      stats: {
-        hp: 25,
-        maxHp: 25,
-        atk: 5,
-        def: 2
-      },
-      skills: ["attack", "fireball"]
+function getEvolution(pet){
+
+    const evo = {
+        Fox:[
+            "🦊 Fox",
+            "🔥 Swift Fox",
+            "👑 Spirit Fox"
+        ],
+        Cat:[
+            "🐱 Cat",
+            "🌙 Shadow Cat",
+            "⭐ Star Cat"
+        ],
+        Dog:[
+            "🐶 Dog",
+            "🛡 Alpha Dog",
+            "👑 Guardian Dog"
+        ]
+    };
+
+    if(pet.level >= 10) return evo[pet.type][2];
+    if(pet.level >= 5) return evo[pet.type][1];
+    return evo[pet.type][0];
+}
+
+function createPet(type){
+
+    if(pets.length >= 5){
+        alert("Maximum 5 pets.");
+        return;
+    }
+
+    pets.push({
+        id:Date.now(),
+        type,
+        level:1,
+        xp:0,
+        stats:{
+            power:1,
+            agility:1
+        }
     });
 
-    this.save();
-    this.render();
-  },
+    save();
+    renderPets();
+}
 
-  selectPet(id) {
-    this.state.active = this.state.pets.find(p => p.id === id);
-    Battle.start();
-  },
+function deletePet(id){
 
-  render() {
+    if(!confirm("Delete this pet?")) return;
+
+    pets = pets.filter(p=>p.id!==id);
+
+    save();
+    renderPets();
+}
+
+function renderPets(){
+
     const list = document.getElementById("petList");
     list.innerHTML = "";
 
-    this.state.pets.forEach(p => {
-      const d = document.createElement("div");
-      d.className = "petCard";
+    pets.forEach(p=>{
 
-      d.innerHTML = `
-        ${p.type} Lv.${p.level}<br>
-        <button onclick="Game.selectPet(${p.id})">Battle</button>
-      `;
+        const need = xpNeeded(p.level);
+        const pct = (p.xp / need) * 100;
 
-      list.appendChild(d);
+        const div = document.createElement("div");
+        div.className = "petCard";
+
+        div.innerHTML = `
+            <h3>${getEvolution(p)}</h3>
+
+            <div class="stat">
+                Level ${p.level}
+            </div>
+
+            <div class="xpBar">
+                <div class="xpFill" style="width:${pct}%"></div>
+            </div>
+
+            <div class="stat">
+                XP ${p.xp} / ${need}
+            </div>
+
+            <br>
+
+            <button onclick="selectPet(${p.id})">
+                Select
+            </button>
+
+            <button onclick="deletePet(${p.id})">
+                Delete
+            </button>
+        `;
+
+        list.appendChild(div);
     });
-  }
-};
+}
 
-/* =========================
-   SKILL DATABASE (FRAMEWORK CORE)
-========================= */
+function selectPet(id){
 
-const Skills = {
-  attack: {
-    name: "Attack",
-    cd: 0,
-    use(a, d) {
-      return Math.max(1, a.stats.atk - d.stats.def + rand(3));
+    selectedPet = pets.find(p=>p.id===id);
+
+    updatePetScreen();
+
+    showScreen("petScreen");
+}
+
+function updatePetScreen(){
+
+    if(!selectedPet) return;
+
+    const need = xpNeeded(selectedPet.level);
+
+    document.getElementById("petTitle").textContent =
+        selectedPet.type;
+
+    document.getElementById("petEvolution").textContent =
+        getEvolution(selectedPet);
+
+    document.getElementById("petLevel").textContent =
+        "Level: " + selectedPet.level;
+
+    document.getElementById("petXP").textContent =
+        `XP: ${selectedPet.xp} / ${need}`;
+
+    document.getElementById("petXPFill").style.width =
+        (selectedPet.xp / need * 100) + "%";
+
+    document.getElementById("petStats").innerHTML =
+        `
+        ⚔ Power: ${selectedPet.stats.power}<br>
+        ⚡ Agility: ${selectedPet.stats.agility}
+        `;
+}
+
+function openTraining(){
+
+    document.getElementById("trainResult").textContent = "";
+
+    showScreen("trainingScreen");
+
+    startTraining();
+}
+
+function startTraining(){
+
+    cancelAnimationFrame(animId);
+
+    trainingRunning = true;
+    markerPos = 0;
+    direction = 1;
+
+    const marker = document.getElementById("marker");
+
+    function loop(){
+
+        if(!trainingRunning) return;
+
+        markerPos += direction * 0.7;
+
+        if(markerPos >= 100){
+            markerPos = 100;
+            direction = -1;
+        }
+
+        if(markerPos <= 0){
+            markerPos = 0;
+            direction = 1;
+        }
+
+        marker.style.left = markerPos + "%";
+
+        animId = requestAnimationFrame(loop);
     }
-  },
 
-  fireball: {
-    name: "Fireball",
-    cd: 2,
-    use(a, d) {
-      let dmg = a.stats.atk * 2 + rand(2);
-      Status.apply(d, "burn", 2);
-      return dmg;
+    loop();
+}
+
+document.getElementById("stopBtn")
+.addEventListener("click", ()=>{
+
+    if(!trainingRunning) return;
+
+    trainingRunning = false;
+
+    let xp = 0;
+    let text = "";
+
+    if(markerPos >= 47 && markerPos <= 53){
+        xp = 35;
+        text = "🌟 PERFECT! +35 XP";
     }
-  }
-};
-
-/* =========================
-   STATUS SYSTEM (FRAMEWORK CORE)
-========================= */
-
-const Status = {
-  apply(target, type, turns) {
-    if (!target.status) target.status = {};
-    target.status[type] = turns;
-  },
-
-  tick(target, log) {
-    if (!target.status) return;
-
-    if (target.status.burn > 0) {
-      target.stats.hp -= 2;
-      log("🔥 Burn deals 2");
-      target.status.burn--;
+    else if(markerPos >= 35 && markerPos <= 65){
+        xp = 20;
+        text = "✅ GOOD! +20 XP";
+    }
+    else if(markerPos >= 15 && markerPos <= 85){
+        xp = 10;
+        text = "👍 OK! +10 XP";
+    }
+    else{
+        xp = 5;
+        text = "❌ MISS! +5 XP";
     }
 
-    if (target.status.burn === 0) {
-      delete target.status.burn;
+    gainXP(selectedPet,xp);
+
+    document.getElementById("trainResult").textContent = text;
+
+    save();
+});
+
+function gainXP(pet,amount){
+
+    pet.xp += amount;
+
+    while(pet.xp >= xpNeeded(pet.level)){
+
+        pet.xp -= xpNeeded(pet.level);
+
+        pet.level++;
+
+        pet.stats.power += 1;
+        pet.stats.agility += 1;
+
+        if(pet.level % 5 === 0){
+            pet.stats.power += 2;
+        }
     }
-  }
-};
+}
 
-/* =========================
-   AI SYSTEM (FRAMEWORK CORE)
-========================= */
+function returnToPet(){
+    updatePetScreen();
+    showScreen("petScreen");
+}
 
-const AI = {
-  choose(enemy, player) {
-    let hp = enemy.stats.hp / enemy.stats.maxHp;
-
-    if (hp < 0.3 && enemy.skills.includes("heal")) return "heal";
-    if (hp < 0.6 && Math.random() < 0.5) return "defend";
-
-    return Math.random() < 0.7 ? "attack" : "fireball";
-  }
-};
-
-/* =========================
-   BATTLE ENGINE (FRAMEWORK CORE)
-========================= */
-
-const Battle = {
-  start() {
-    let p = Game.state.active;
-
-    let e = {
-      type: "Enemy",
-      stats: { hp: 30, maxHp: 30, atk: 5, def: 2 },
-      skills: ["attack", "fireball"],
-      status: {}
-    };
-
-    Game.state.battle = {
-      p: structuredClone(p),
-      e
-    };
-
-    let b = Game.state.battle;
-    b.p.status = {};
-
-    this.renderSkills();
-    this.update();
-
-    Game.setScene("battle");
-    this.log("Battle started");
-  },
-
-  renderSkills() {
-    const s = document.getElementById("skills");
-    let p = Game.state.battle.p;
-
-    s.innerHTML = "";
-
-    p.skills.forEach(sk => {
-      let btn = document.createElement("button");
-      btn.innerText = Skills[sk].name;
-      btn.onclick = () => this.playerUse(sk);
-      s.appendChild(btn);
-    });
-  },
-
-  playerUse(skillName) {
-    let b = Game.state.battle;
-
-    let skill = Skills[skillName];
-
-    let dmg = skill.use(b.p, b.e);
-    b.e.stats.hp -= dmg;
-
-    this.log("Player uses " + skill.name + " → " + dmg);
-
-    this.tick();
-  },
-
-  enemyTurn() {
-    let b = Game.state.battle;
-
-    let action = AI.choose(b.e, b.p);
-
-    if (Skills[action]) {
-      let dmg = Skills[action].use(b.e, b.p);
-      b.p.stats.hp -= dmg;
-      this.log("Enemy uses " + Skills[action].name + " → " + dmg);
-    }
-  },
-
-  tick() {
-    let b = Game.state.battle;
-
-    Status.tick(b.p, this.log);
-    Status.tick(b.e, this.log);
-
-    this.enemyTurn();
-
-    this.update();
-    this.checkEnd();
-  },
-
-  update() {
-    let b = Game.state.battle;
-
-    document.getElementById("playerName").innerText = b.p.type;
-    document.getElementById("enemyName").innerText = b.e.type;
-
-    document.getElementById("playerHP").style.width =
-      (b.p.stats.hp / b.p.stats.maxHp) * 100 + "%";
-
-    document.getElementById("enemyHP").style.width =
-      (b.e.stats.hp / b.e.stats.maxHp) * 100 + "%";
-  },
-
-  checkEnd() {
-    let b = Game.state.battle;
-
-    if (b.p.stats.hp <= 0 && b.e.stats.hp <= 0) {
-      alert("Draw");
-      Game.setScene("menu");
-    }
-    else if (b.e.stats.hp <= 0) {
-      alert("Win");
-      Game.setScene("menu");
-    }
-    else if (b.p.stats.hp <= 0) {
-      alert("Lose");
-      Game.setScene("menu");
-    }
-  },
-
-  log(t) {
-    const d = document.createElement("div");
-    d.innerText = t;
-    document.getElementById("log").appendChild(d);
-  }
-};
-
-function rand(n){ return Math.floor(Math.random()*n); }
-
-Game.init();
+renderPets();
 </script>
 
 </body>
 </html>
+

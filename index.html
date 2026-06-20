@@ -2,78 +2,50 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pet RPG V10 Engine</title>
+<title>V11 Combat RPG Engine</title>
 
 <style>
 body {
-  margin: 0;
-  font-family: Arial;
-  background: #0b0d18;
-  color: white;
-  text-align: center;
+  margin:0;
+  font-family:Arial;
+  background:#0b0d18;
+  color:white;
+  text-align:center;
 }
 
 .scene { display:none; padding:20px; }
 .scene.active { display:block; }
 
 button {
-  padding: 10px;
-  margin: 5px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  background: #2a2f55;
-  color: white;
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  background:#2a2f55;
+  color:white;
+  cursor:pointer;
 }
-
 button:hover { background:#3c4280; }
 
 .petCard {
-  background: rgba(255,255,255,0.08);
-  margin: 10px auto;
-  padding: 10px;
-  width: 260px;
-  border-radius: 10px;
-}
-
-#barContainer {
-  width: 300px;
-  height: 20px;
-  margin: 20px auto;
-  background: #222;
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-#perfectZone {
-  position: absolute;
-  height: 100%;
-  background: rgba(0,255,120,0.3);
-  left: 40%;
-  width: 20%;
-}
-
-#marker {
-  position: absolute;
-  width: 6px;
-  height: 100%;
-  background: white;
-  left: 0%;
+  background:rgba(255,255,255,0.08);
+  margin:10px auto;
+  padding:10px;
+  width:260px;
+  border-radius:10px;
 }
 
 .hpBar {
-  width: 100%;
-  height: 12px;
-  background: #222;
-  border-radius: 10px;
-  overflow: hidden;
+  width:100%;
+  height:12px;
+  background:#222;
+  border-radius:10px;
+  overflow:hidden;
 }
-
 .hpBar div {
-  height: 100%;
-  width: 100%;
-  background: linear-gradient(90deg,#00ff88,#00c3ff);
+  height:100%;
+  width:100%;
+  background:linear-gradient(90deg,#00ff88,#00c3ff);
 }
 </style>
 </head>
@@ -82,37 +54,17 @@ button:hover { background:#3c4280; }
 
 <!-- MENU -->
 <div id="menu" class="scene active">
-  <h1>🐾 V10 RPG ENGINE</h1>
+  <h1>🐾 V11 RPG COMBAT</h1>
   <div id="petList"></div>
 
-  <button onclick="Game.createPet('Fox')">Fox</button>
-  <button onclick="Game.createPet('Cat')">Cat</button>
-  <button onclick="Game.createPet('Dog')">Dog</button>
-</div>
-
-<!-- TRAIN -->
-<div id="training" class="scene">
-  <h2>Training</h2>
-
-  <div id="barContainer">
-    <div id="perfectZone"></div>
-    <div id="marker"></div>
-  </div>
-
-  <button onclick="Training.start()">TRAIN</button>
-  <p id="feedback"></p>
-</div>
-
-<!-- RESULT -->
-<div id="result" class="scene">
-  <h2>Result</h2>
-  <p id="resultText"></p>
-  <button onclick="Game.setScene('menu')">Back</button>
+  <button onclick="Game.createPet('Fox')">Fox 🔥</button>
+  <button onclick="Game.createPet('Cat')">Cat 🌙</button>
+  <button onclick="Game.createPet('Dog')">Dog ⚡</button>
 </div>
 
 <!-- BATTLE -->
 <div id="battle" class="scene">
-  <h2>Battle</h2>
+  <h2>⚔️ Battle</h2>
 
   <div id="playerName"></div>
   <div class="hpBar"><div id="playerHP"></div></div>
@@ -122,39 +74,31 @@ button:hover { background:#3c4280; }
   <div id="enemyName"></div>
   <div class="hpBar"><div id="enemyHP"></div></div>
 
-  <br>
+  <h3>Skills</h3>
+  <div id="skills"></div>
 
-  <button onclick="Battle.turn()">Attack</button>
-  <div id="battleLog"></div>
+  <div id="log"></div>
 </div>
 
 <script>
 /* =========================
-   ENGINE CORE
+   GAME CORE
 ========================= */
 
 const Game = {
   state: {
     pets: JSON.parse(localStorage.getItem("pets")) || [],
     active: null,
-    battle: null,
-    training: {
-      pos: 0,
-      dir: 1,
-      running: false,
-      combo: 0
-    }
+    battle: null
   },
 
   scenes: {
     menu: document.getElementById("menu"),
-    training: document.getElementById("training"),
-    result: document.getElementById("result"),
     battle: document.getElementById("battle")
   },
 
   setScene(s) {
-    Object.values(this.scenes).forEach(sc => sc.classList.remove("active"));
+    Object.values(this.scenes).forEach(x => x.classList.remove("active"));
     this.scenes[s].classList.add("active");
   },
 
@@ -164,7 +108,6 @@ const Game = {
 
   init() {
     this.render();
-    this.setScene("menu");
   },
 
   createPet(type) {
@@ -174,9 +117,13 @@ const Game = {
       id: Date.now(),
       type,
       level: 1,
-      xp: 0,
-      xpToLevel: 100,
-      stats: { power: 2, hp: 10, maxHp: 10 }
+      stats: {
+        hp: 20,
+        maxHp: 20,
+        atk: 4,
+        def: 2,
+        spd: 2
+      }
     });
 
     this.save();
@@ -185,8 +132,7 @@ const Game = {
 
   selectPet(id) {
     this.state.active = this.state.pets.find(p => p.id === id);
-    const mode = confirm("OK=Battle Cancel=Train");
-    mode ? Battle.start() : Training.open();
+    Battle.start();
   },
 
   render() {
@@ -199,8 +145,7 @@ const Game = {
 
       d.innerHTML = `
         ${p.type} Lv.${p.level}<br>
-        XP ${p.xp}/${p.xpToLevel}<br>
-        <button onclick="Game.selectPet(${p.id})">Use</button>
+        <button onclick="Game.selectPet(${p.id})">Fight</button>
       `;
 
       list.appendChild(d);
@@ -209,86 +154,17 @@ const Game = {
 };
 
 /* =========================
-   TRAINING V10 (COMBO SYSTEM)
+   ELEMENT SYSTEM
 ========================= */
 
-const Training = {
-  open() {
-    Game.setScene("training");
-
-    document.getElementById("perfectZone").style.left = "40%";
-    document.getElementById("perfectZone").style.width = "20%";
-
-    document.getElementById("marker").style.left = "0%";
-  },
-
-  start() {
-    let t = Game.state.training;
-
-    if (t.running) return;
-
-    t.running = true;
-    t.pos = 0;
-    t.dir = 1;
-
-    let interval = setInterval(() => {
-      t.pos += 2 * t.dir;
-
-      if (t.pos >= 100) t.dir = -1;
-      if (t.pos <= 0) t.dir = 1;
-
-      document.getElementById("marker").style.left = t.pos + "%";
-    }, 16);
-
-    setTimeout(() => {
-      clearInterval(interval);
-      this.finish();
-    }, 2000);
-  },
-
-  finish() {
-    let t = Game.state.training;
-    let p = Game.state.active;
-
-    let pos = t.pos;
-
-    let result =
-      pos >= 40 && pos <= 60 ? "perfect" :
-      pos >= 30 && pos <= 70 ? "good" :
-      pos >= 20 && pos <= 80 ? "ok" : "miss";
-
-    if (result === "perfect") t.combo++;
-    else t.combo = 0;
-
-    let multiplier = 1 + t.combo * 0.5;
-
-    let xp =
-      (result === "perfect" ? 50 :
-      result === "good" ? 25 :
-      result === "ok" ? 10 : 3) * multiplier;
-
-    p.xp += xp;
-
-    if (p.xp >= p.xpToLevel) {
-      p.level++;
-      p.xp = 0;
-      p.xpToLevel += 50;
-      p.stats.power++;
-      p.stats.maxHp++;
-    }
-
-    Game.save();
-
-    document.getElementById("resultText").innerText =
-      `${result.toUpperCase()} +${Math.floor(xp)} XP (x${multiplier.toFixed(1)})`;
-
-    Game.setScene("result");
-    Game.render();
-  }
-};
+function element(type) {
+  if (type === "Fox") return "fire";
+  if (type === "Cat") return "shadow";
+  return "lightning";
+}
 
 /* =========================
-   BATTLE V10 (CRIT + DODGE)
+   BATTLE V11
 ========================= */
 
 const Battle = {
@@ -297,57 +173,94 @@ const Battle = {
 
     let e = {
       type: "Enemy",
-      level: p.level,
+      element: "shadow",
       stats: {
-        power: p.level + 2,
-        hp: 10 + p.level * 2,
-        maxHp: 10 + p.level * 2
+        hp: 18,
+        maxHp: 18,
+        atk: 3,
+        def: 1,
+        spd: 2
       }
     };
 
-    Game.state.battle = {
-      p: structuredClone(p),
-      e
-    };
+    Game.state.battle = { p: structuredClone(p), e };
 
-    let b = Game.state.battle;
-    b.p.stats.hp = b.p.stats.maxHp;
-    b.e.stats.hp = b.e.stats.maxHp;
+    this.updateSkills();
+    this.update();
 
     Game.setScene("battle");
-    this.update();
+    this.log("Battle started!");
   },
 
-  turn() {
+  updateSkills() {
+    const s = document.getElementById("skills");
+
+    s.innerHTML = `
+      <button onclick="Battle.skill('attack')">Attack</button>
+      <button onclick="Battle.skill('heavy')">Heavy (CD)</button>
+      <button onclick="Battle.skill('heal')">Heal</button>
+    `;
+  },
+
+  skill(type) {
     let b = Game.state.battle;
 
-    let pDmg = this.dmg(b.p);
-    let eDmg = this.dmg(b.e);
+    let crit = Math.random() < 0.2;
+    let dodge = Math.random() < 0.1;
 
-    b.e.stats.hp -= pDmg;
-    b.p.stats.hp -= eDmg;
-
-    this.log(`You hit ${pDmg}`);
-    this.log(`Enemy hits ${eDmg}`);
-
-    this.update();
-
-    if (b.p.stats.hp <= 0 || b.e.stats.hp <= 0) {
-      alert(b.p.stats.hp > 0 ? "WIN" : "LOSE");
-      Game.setScene("menu");
+    if (type === "attack") {
+      let dmg = this.calc(b.p, b.e, 1);
+      if (!dodge) b.e.stats.hp -= dmg;
+      this.log("Attack: " + dmg);
     }
+
+    if (type === "heavy") {
+      let dmg = this.calc(b.p, b.e, 2);
+      if (!dodge) b.e.stats.hp -= dmg;
+      this.log("Heavy Hit: " + dmg);
+    }
+
+    if (type === "heal") {
+      b.p.stats.hp += 4;
+      if (b.p.stats.hp > b.p.stats.maxHp)
+        b.p.stats.hp = b.p.stats.maxHp;
+
+      this.log("Heal +4");
+    }
+
+    this.enemyTurn();
+    this.update();
+    this.checkEnd();
   },
 
-  dmg(u) {
+  calc(p, e, mult) {
+    let base = p.stats.atk * mult;
+
+    let typeAdv =
+      (element(p.type) === "fire" && e.element === "shadow") ? 1.3 :
+      (element(p.type) === "shadow" && e.element === "lightning") ? 1.3 :
+      (element(p.type) === "lightning" && e.element === "fire") ? 1.3 : 1;
+
     let crit = Math.random() < 0.2 ? 2 : 1;
-    return Math.max(1, Math.floor(u.stats.power + Math.random() * 3) * crit);
+
+    return Math.floor(base * typeAdv * crit);
+  },
+
+  enemyTurn() {
+    let b = Game.state.battle;
+
+    let dmg = Math.max(1, b.e.stats.atk - b.p.stats.def);
+
+    b.p.stats.hp -= dmg;
+
+    this.log("Enemy hits " + dmg);
   },
 
   update() {
     let b = Game.state.battle;
 
     document.getElementById("playerName").innerText = b.p.type;
-    document.getElementById("enemyName").innerText = b.e.type;
+    document.getElementById("enemyName").innerText = "Enemy";
 
     document.getElementById("playerHP").style.width =
       (b.p.stats.hp / b.p.stats.maxHp) * 100 + "%";
@@ -356,10 +269,27 @@ const Battle = {
       (b.e.stats.hp / b.e.stats.maxHp) * 100 + "%";
   },
 
+  checkEnd() {
+    let b = Game.state.battle;
+
+    if (b.p.stats.hp <= 0 && b.e.stats.hp <= 0) {
+      alert("Draw");
+      Game.setScene("menu");
+    }
+    else if (b.e.stats.hp <= 0) {
+      alert("You Win!");
+      Game.setScene("menu");
+    }
+    else if (b.p.stats.hp <= 0) {
+      alert("You Lose!");
+      Game.setScene("menu");
+    }
+  },
+
   log(t) {
-    const d = document.createElement("div");
+    let d = document.createElement("div");
     d.innerText = t;
-    document.getElementById("battleLog").appendChild(d);
+    document.getElementById("log").appendChild(d);
   }
 };
 

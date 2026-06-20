@@ -6,18 +6,25 @@ let battle = null;
 const petList = document.getElementById("petList");
 const petSelectScreen = document.getElementById("petSelectScreen");
 const battleScreen = document.getElementById("battleScreen");
+const trainingScreen = document.getElementById("trainingScreen");
+const resultScreen = document.getElementById("resultScreen");
+
+const marker = document.getElementById("marker");
+const perfectZone = document.getElementById("perfectZone");
+const trainBtn = document.getElementById("trainBtn");
+
+const feedback = document.getElementById("feedback");
+const resultText = document.getElementById("resultText");
+const battleLog = document.getElementById("battleLog");
 
 /* ---------------- SAVE ---------------- */
 function save() {
   localStorage.setItem("pets", JSON.stringify(pets));
 }
 
-/* ---------------- LIMIT 5 PETS ---------------- */
+/* ---------------- PET SYSTEM ---------------- */
 function createPet(type) {
-  if (pets.length >= 5) {
-    alert("You can only have 5 pets!");
-    return;
-  }
+  if (pets.length >= 5) return alert("Max 5 pets!");
 
   pets.push({
     id: Date.now(),
@@ -38,7 +45,7 @@ function createPet(type) {
   renderPets();
 }
 
-/* ---------------- EVOLUTION + ABILITIES ---------------- */
+/* ---------------- EVOLUTION ---------------- */
 function stage(level) {
   if (level >= 15) return 4;
   if (level >= 10) return 3;
@@ -69,6 +76,7 @@ function renderPets() {
     div.innerHTML = `
       <div>
         ${p.type} Lv.${p.level}<br>
+        XP: ${p.xp}/${p.xpToLevel}<br>
         🧠 ${ability(p)}
       </div>
 
@@ -82,107 +90,169 @@ function renderPets() {
   });
 }
 
-/* ---------------- DELETE PET ---------------- */
+/* ---------------- DELETE ---------------- */
 function deletePet(id) {
   pets = pets.filter(p => p.id !== id);
   save();
   renderPets();
 }
 
-/* ---------------- SELECT PET ---------------- */
+/* ---------------- SELECT ---------------- */
 function selectPet(id) {
   activePet = pets.find(p => p.id === id);
-  startBattle();
+  startTraining();
 }
 
-/* ---------------- BATTLE ---------------- */
+/* =========================
+   🎯 TRAINING SYSTEM (NEW)
+========================= */
+
+let trainingInterval;
+let markerPos = 0;
+let direction = 1;
+let isTraining = false;
+
+function startTraining() {
+  petSelectScreen.classList.remove("active");
+  trainingScreen.classList.add("active");
+
+  feedback.innerText = "Click TRAIN at the right time!";
+  setupBar();
+}
+
+function setupBar() {
+  perfectZone.style.left = "40%";
+  perfectZone.style.width = "20%";
+}
+
+trainBtn.onclick = () => {
+  if (isTraining) return;
+
+  isTraining = true;
+  markerPos = 0;
+  direction = 1;
+
+  trainingInterval = setInterval(() => {
+    markerPos += 2 * direction;
+
+    if (markerPos >= 100) direction = -1;
+    if (markerPos <= 0) direction = 1;
+
+    marker.style.left = markerPos + "%";
+  }, 16);
+
+  setTimeout(finishTraining, 2500);
+};
+
+function finishTraining() {
+  clearInterval(trainingInterval);
+  isTraining = false;
+
+  const result = evaluateHit();
+
+  let xpGain = 0;
+
+  if (result === "miss") xpGain = 5;
+  if (result === "ok") xpGain = 15;
+  if (result === "good") xpGain = 25;
+  if (result === "perfect") xpGain = 50;
+
+  activePet.xp += xpGain;
+
+  if (activePet.xp >= activePet.xpToLevel) {
+    activePet.level++;
+    activePet.xp = 0;
+    activePet.xpToLevel += 50;
+
+    activePet.stats.power++;
+    activePet.stats.maxHp += 2;
+    activePet.stats.hp = activePet.stats.maxHp;
+  }
+
+  save();
+
+  resultText.innerText = `${result.toUpperCase()}! +${xpGain} XP`;
+  trainingScreen.classList.remove("active");
+  resultScreen.classList.add("active");
+
+  renderPets();
+}
+
+function evaluateHit() {
+  const zoneStart = 40;
+  const zoneEnd = 60;
+
+  if (markerPos >= zoneStart && markerPos <= zoneEnd) return "perfect";
+  if (markerPos >= 30 && markerPos <= 70) return "good";
+  if (markerPos >= 20 && markerPos <= 80) return "ok";
+  return "miss";
+}
+
+function backToMenu() {
+  resultScreen.classList.remove("active");
+  petSelectScreen.classList.add("active");
+}
+
+/* =========================
+   ⚔️ BATTLE SYSTEM (FIXED)
+========================= */
+
 function startBattle() {
   const enemy = generateEnemy(activePet.level);
 
   battle = {
     player: createUnit(activePet),
-    enemy: createUnit(enemy),
-    turn: 0
+    enemy: createUnit(enemy)
   };
 
   petSelectScreen.classList.remove("active");
   battleScreen.classList.add("active");
 
   updateHP();
-  clearLog();
-
-  log("⚔️ Battle Started!");
+  battleLog.innerHTML = "";
+  log("Battle started!");
 }
 
-/* SAFE UNIT */
 function createUnit(p) {
   return {
     name: p.type,
-    level: p.level,
     ability: ability(p),
-    stats: {
-      power: p.stats.power,
-      agility: p.stats.agility,
-      loyalty: p.stats.loyalty,
-      hp: p.stats.maxHp,
-      maxHp: p.stats.maxHp
-    }
+    stats: { ...p.stats }
   };
 }
 
-/* ---------------- TURN ---------------- */
 document.getElementById("nextTurnBtn").onclick = runTurn;
 
 function runTurn() {
   const p = battle.player;
   const e = battle.enemy;
 
-  battle.turn++;
+  const pDmg = useAbility(p);
+  const eDmg = useAbility(e);
 
-  const pDmg = useAbility(p, e);
-  const eDmg = useAbility(e, p);
+  e.stats.hp -= pDmg;
+  p.stats.hp -= eDmg;
 
-  animateAttack("enemy");
-  animateAttack("player");
+  log(`You used ${p.ability} → ${pDmg}`);
+  log(`Enemy used ${e.ability} → ${eDmg}`);
 
-  setTimeout(() => {
-    e.stats.hp -= pDmg;
-    p.stats.hp -= eDmg;
+  updateHP();
 
-    log(`You used ${p.ability} → ${pDmg}`);
-    log(`Enemy used ${e.ability} → ${eDmg}`);
-
-    showDamage(pDmg, "enemy");
-    showDamage(eDmg, "player");
-
-    updateHP();
-
-    if (p.stats.hp <= 0 || e.stats.hp <= 0) {
-      endBattle();
-    }
-  }, 300);
+  if (p.stats.hp <= 0 || e.stats.hp <= 0) {
+    endBattle();
+  }
 }
 
-/* ---------------- ABILITIES DAMAGE ---------------- */
-function useAbility(u, target) {
+function useAbility(u) {
   let base = u.stats.power;
 
   if (u.ability.includes("Flame")) base *= 1.4;
   if (u.ability.includes("Thunder")) base *= 1.6;
   if (u.ability.includes("Spirit")) base *= 2;
 
-  return Math.max(1, Math.floor(base + Math.random()*2));
+  return Math.max(1, Math.floor(base + Math.random() * 3));
 }
 
-/* ---------------- ANIMATION ---------------- */
-function animateAttack(side) {
-  const el = document.getElementById(side === "enemy" ? "enemyName" : "playerName");
-
-  el.classList.add("shake");
-  setTimeout(() => el.classList.remove("shake"), 250);
-}
-
-/* ---------------- HP ---------------- */
 function updateHP() {
   document.getElementById("playerName").innerText = battle.player.name;
   document.getElementById("enemyName").innerText = battle.enemy.name;
@@ -200,29 +270,26 @@ function updateHP() {
     `${battle.enemy.stats.hp}/${battle.enemy.stats.maxHp}`;
 }
 
-/* ---------------- DAMAGE POPUP ---------------- */
-function showDamage(amount, side) {
-  const d = document.createElement("div");
-  d.className = "damage";
-  d.innerText = "-" + amount;
+function endBattle() {
+  const winner =
+    battle.player.stats.hp > 0 ? "You Win!" : "You Lose!";
 
-  document.body.appendChild(d);
+  alert(winner);
 
-  d.style.left = side === "enemy" ? "70%" : "25%";
-  d.style.top = "40%";
-
-  setTimeout(() => d.remove(), 800);
+  battleScreen.classList.remove("active");
+  petSelectScreen.classList.add("active");
 }
 
-/* ---------------- LOG ---------------- */
 function log(t) {
-  console.log(t);
+  const p = document.createElement("p");
+  p.innerText = t;
+  battleLog.appendChild(p);
 }
 
 /* ---------------- ENEMY ---------------- */
 function generateEnemy(level) {
   return {
-    type: ["Fox","Cat","Dog"][Math.floor(Math.random()*3)],
+    type: ["Fox", "Cat", "Dog"][Math.floor(Math.random() * 3)],
     level,
     stats: {
       power: level + 2,

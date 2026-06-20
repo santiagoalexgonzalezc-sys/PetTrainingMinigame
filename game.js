@@ -2,7 +2,9 @@ let pets = JSON.parse(localStorage.getItem("pets")) || [];
 let activePet = null;
 let battle = null;
 
-/* UI */
+let gameState = "MENU";
+
+/* ---------------- UI ---------------- */
 const petList = document.getElementById("petList");
 const petSelectScreen = document.getElementById("petSelectScreen");
 const trainingScreen = document.getElementById("trainingScreen");
@@ -15,12 +17,27 @@ const feedback = document.getElementById("feedback");
 const resultText = document.getElementById("resultText");
 const battleLog = document.getElementById("battleLog");
 
-/* SAVE */
+/* ---------------- STATE ENGINE ---------------- */
+function setState(state) {
+  gameState = state;
+
+  petSelectScreen.classList.remove("active");
+  trainingScreen.classList.remove("active");
+  battleScreen.classList.remove("active");
+  resultScreen.classList.remove("active");
+
+  if (state === "MENU") petSelectScreen.classList.add("active");
+  if (state === "TRAINING") trainingScreen.classList.add("active");
+  if (state === "BATTLE") battleScreen.classList.add("active");
+  if (state === "RESULT") resultScreen.classList.add("active");
+}
+
+/* ---------------- SAVE ---------------- */
 function save() {
   localStorage.setItem("pets", JSON.stringify(pets));
 }
 
-/* PETS */
+/* ---------------- PET SYSTEM ---------------- */
 function createPet(type) {
   if (pets.length >= 5) return alert("Max 5 pets!");
 
@@ -32,7 +49,6 @@ function createPet(type) {
     xpToLevel: 100,
     stats: {
       power: 2,
-      agility: 2,
       hp: 10,
       maxHp: 10
     }
@@ -42,7 +58,7 @@ function createPet(type) {
   renderPets();
 }
 
-/* RENDER */
+/* ---------------- RENDER ---------------- */
 function renderPets() {
   petList.innerHTML = "";
 
@@ -72,7 +88,7 @@ function deletePet(id) {
   renderPets();
 }
 
-/* SELECT MODE */
+/* ---------------- SELECT ---------------- */
 function selectPet(id) {
   activePet = pets.find(p => p.id === id);
 
@@ -82,7 +98,9 @@ function selectPet(id) {
   else startTraining();
 }
 
-/* ---------------- TRAINING ---------------- */
+/* =========================
+   🎯 TRAINING SYSTEM
+========================= */
 
 let pos = 0;
 let dir = 1;
@@ -90,9 +108,7 @@ let interval;
 let running = false;
 
 function startTraining() {
-  petSelectScreen.classList.remove("active");
-  trainingScreen.classList.add("active");
-
+  setState("TRAINING");
   feedback.innerText = "Hit TRAIN at the right moment!";
   setupBar();
 }
@@ -128,11 +144,10 @@ function endTraining() {
 
   const result = getResult();
 
-  let xp = 0;
-  if (result === "perfect") xp = 50;
-  else if (result === "good") xp = 25;
-  else if (result === "ok") xp = 10;
-  else xp = 3;
+  let xp =
+    result === "perfect" ? 50 :
+    result === "good" ? 25 :
+    result === "ok" ? 10 : 3;
 
   activePet.xp += xp;
 
@@ -143,16 +158,13 @@ function endTraining() {
 
     activePet.stats.power++;
     activePet.stats.maxHp += 2;
-    activePet.stats.hp = activePet.stats.maxHp;
   }
 
   save();
 
   resultText.innerText = `${result.toUpperCase()} +${xp} XP`;
 
-  trainingScreen.classList.remove("active");
-  resultScreen.classList.add("active");
-
+  setState("RESULT");
   renderPets();
 }
 
@@ -164,11 +176,12 @@ function getResult() {
 }
 
 function backToMenu() {
-  resultScreen.classList.remove("active");
-  petSelectScreen.classList.add("active");
+  setState("MENU");
 }
 
-/* ---------------- BATTLE ---------------- */
+/* =========================
+   ⚔️ BATTLE SYSTEM
+========================= */
 
 function startBattle() {
   const enemy = generateEnemy(activePet.level);
@@ -181,8 +194,7 @@ function startBattle() {
   battle.player.stats.hp = battle.player.stats.maxHp;
   battle.enemy.stats.hp = battle.enemy.stats.maxHp;
 
-  petSelectScreen.classList.remove("active");
-  battleScreen.classList.add("active");
+  setState("BATTLE");
 
   battleLog.innerHTML = "";
   updateHP();
@@ -208,10 +220,10 @@ function runTurn() {
   p.stats.hp -= eDmg;
   e.stats.hp -= pDmg;
 
+  updateHP();
+
   log(`You deal ${pDmg}`);
   log(`Enemy deals ${eDmg}`);
-
-  updateHP();
 
   if (p.stats.hp <= 0 || e.stats.hp <= 0) {
     endBattle();
@@ -231,19 +243,11 @@ function updateHP() {
 
   document.getElementById("enemyHP").style.width =
     (battle.enemy.stats.hp / battle.enemy.stats.maxHp) * 100 + "%";
-
-  document.getElementById("playerStats").innerText =
-    `${battle.player.stats.hp}/${battle.player.stats.maxHp}`;
-
-  document.getElementById("enemyStats").innerText =
-    `${battle.enemy.stats.hp}/${battle.enemy.stats.maxHp}`;
 }
 
 function endBattle() {
   alert(battle.player.stats.hp > 0 ? "You Win!" : "You Lose!");
-
-  battleScreen.classList.remove("active");
-  petSelectScreen.classList.add("active");
+  setState("MENU");
 }
 
 function log(t) {
@@ -252,7 +256,7 @@ function log(t) {
   battleLog.appendChild(p);
 }
 
-/* ENEMY */
+/* ---------------- ENEMY ---------------- */
 function generateEnemy(level) {
   return {
     type: ["Fox", "Cat", "Dog"][Math.floor(Math.random() * 3)],
@@ -265,4 +269,6 @@ function generateEnemy(level) {
   };
 }
 
+/* INIT */
 renderPets();
+setState("MENU");

@@ -723,6 +723,7 @@ const Game = {
         UIManager.updateCurrency();
         
         if (!this.hasStarter) {
+            UIManager.renderStarterSelection();
             UIManager.showScreen("starterScreen");
         } else {
             UIManager.showScreen("mainScreen");
@@ -782,6 +783,8 @@ const UIManager = {
     renderPets() {
         const list = document.getElementById("petList");
         list.innerHTML = "";
+        
+        document.getElementById("partyCount").innerText = PetManager.pets.length;
         
         PetManager.pets.forEach(pet => {
             const template = PetTypes[pet.typeId];

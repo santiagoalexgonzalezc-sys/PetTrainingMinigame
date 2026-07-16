@@ -201,13 +201,15 @@ const PetManager = {
     pets: [],
     selectedPet: null,
     maxPartySize: 6,
+    petIdCounter: 0,
 
     createPet(typeId, level = 1) {
         const template = PetTypes[typeId];
         if (!template) return null;
 
+        this.petIdCounter++;
         const pet = {
-            id: Date.now() + Math.random(),
+            id: Date.now() + "_" + this.petIdCounter + "_" + Math.random().toString(36).substr(2, 9),
             typeId: typeId,
             level: level,
             xp: 0,
@@ -535,8 +537,11 @@ const BattleSystem = {
             // Update actual player pet
             const actualPet = PetManager.pets.find(p => p.id === this.playerPet.id);
             if (actualPet) {
+                const oldMaxHP = PetManager.calculateMaxHP(PetTypes[actualPet.typeId], actualPet.level);
+                const hpPercent = this.playerPet.currentHP / oldMaxHP;
                 PetManager.gainXP(actualPet, xpReward);
-                actualPet.currentHP = this.playerPet.currentHP;
+                const newMaxHP = PetManager.calculateMaxHP(PetTypes[actualPet.typeId], actualPet.level);
+                actualPet.currentHP = Math.floor(newMaxHP * hpPercent);
             }
             
             Economy.money += moneyReward;
@@ -612,6 +617,7 @@ const TrainingSystem = {
     },
 
     startLoop() {
+        this.running = true;
         const marker = document.getElementById("marker");
         
         const loop = () => {
@@ -642,7 +648,7 @@ const TrainingSystem = {
             xp = 50;
             text = "🌟 PERFECT +50";
             this.speed += 0.08;
-        } else if (this.markerPos >= 15 && this.markerPos <= 85) {
+        } else if (this.markerPos >= 32 && this.markerPos <= 68) {
             xp = 20;
             text = "✅ GOOD +20";
             this.speed += 0.05;
@@ -668,46 +674,57 @@ const TrainingSystem = {
         const pet = PetManager.selectedPet;
         if (!pet) return;
         
-        // Apply XP based on training type
-        let xpMultiplier = 1;
+        let message = "";
+        
+        // Apply stat boosts based on training type (no XP for stat training)
         switch (this.trainingType) {
             case "power":
-                pet.stats.attack += Math.floor(this.sessionXP / 20);
+                const attackBoost = Math.floor(this.sessionXP / 20);
+                pet.stats.attack += attackBoost;
+                message = `Power Training Complete!\nAttack +${attackBoost}`;
                 break;
             case "defense":
-                pet.stats.defense += Math.floor(this.sessionXP / 20);
+                const defenseBoost = Math.floor(this.sessionXP / 20);
+                pet.stats.defense += defenseBoost;
+                message = `Defense Training Complete!\nDefense +${defenseBoost}`;
                 break;
             case "speed":
-                pet.stats.speed += Math.floor(this.sessionXP / 20);
+                const speedBoost = Math.floor(this.sessionXP / 20);
+                pet.stats.speed += speedBoost;
+                message = `Speed Training Complete!\nSpeed +${speedBoost}`;
                 break;
             case "special":
-                pet.stats.special += Math.floor(this.sessionXP / 20);
+                const specialBoost = Math.floor(this.sessionXP / 20);
+                pet.stats.special += specialBoost;
+                message = `Special Training Complete!\nSpecial +${specialBoost}`;
                 break;
             default:
-                xpMultiplier = 1;
+                // General training grants XP for leveling
+                PetManager.gainXP(pet, this.sessionXP);
+                message = `Training Complete!\nXP Earned: ${this.sessionXP}`;
         }
         
-        PetManager.gainXP(pet, this.sessionXP * xpMultiplier);
         pet.lastTraining = Date.now();
         
         DataManager.save();
         
         setTimeout(() => {
-            alert(`Training Complete!\nXP Earned: ${this.sessionXP}`);
+            alert(message);
             UIManager.showScreen("petScreen");
             UIManager.updatePetScreen();
+            UIManager.renderPets(); // Refresh main screen to show updated stats/XP
         }, 300);
     },
 
     canTrain(pet) {
         if (!pet.lastTraining) return true;
-        const cooldown = 30 * 60 * 1000; // 30 minutes
+        const cooldown = 5 * 60 * 1000; // 5 minutes
         return Date.now() - pet.lastTraining > cooldown;
     },
 
     getCooldownRemaining(pet) {
         if (!pet.lastTraining) return 0;
-        const cooldown = 30 * 60 * 1000;
+        const cooldown = 5 * 60 * 1000;
         const remaining = cooldown - (Date.now() - pet.lastTraining);
         return Math.max(0, Math.ceil(remaining / 1000));
     }
@@ -753,6 +770,17 @@ const UIManager = {
     showScreen(screenId) {
         document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
         document.getElementById(screenId).classList.add("active");
+        
+        // Render content when showing specific screens
+        if (screenId === "shopScreen") {
+            this.renderShop();
+        }
+        if (screenId === "explorationScreen") {
+            this.renderExploration();
+        }
+        if (screenId === "inventoryScreen") {
+            this.renderInventory();
+        }
     },
 
     updateCurrency() {
@@ -910,6 +938,11 @@ const UIManager = {
     },
 
     exploreZone(zoneId) {
+        if (!PetManager.selectedPet) {
+            alert("Select a pet first!");
+            return;
+        }
+        
         const result = Exploration.explore(zoneId);
         this.renderExploration();
         
@@ -1025,6 +1058,8 @@ const UIManager = {
             if (count <= 0) continue;
             
             const item = Economy.shopItems[itemId];
+            if (!item) continue; // Skip invalid items
+            
             const card = document.createElement("div");
             card.className = "inventoryItem";
             card.innerHTML = `

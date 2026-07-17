@@ -21,7 +21,7 @@ const DataManager = {
             PetManager.selectedPet = PetManager.pets.find(p => p.id === data.selectedPet) || null;
             Game.hasStarter = data.hasStarter || false;
             Exploration.cooldowns = data.explorationCooldowns || {};
-        }
+        }   
     }
 };
 
@@ -321,7 +321,7 @@ const Economy = {
     },
 
     sellPet(pet) {
-        const value = pet.level * 25;
+        const value = pet.level * 35;
         this.money += value;
         PetManager.deletePet(pet.id);
         return value;
@@ -361,7 +361,7 @@ const Exploration = {
         }
     },
     cooldowns: {},
-    cooldownTime: 30000, // 30 seconds
+    cooldownTime: 5000, // 5 seconds
 
     explore(zoneId) {
         if (this.cooldowns[zoneId] && Date.now() < this.cooldowns[zoneId]) {
@@ -643,15 +643,16 @@ const TrainingSystem = {
         
         let xp = 0;
         let text = "";
-        
+        //this.speed += 0.08;
+        //this.speed += 0.05;
         if (this.markerPos >= 47 && this.markerPos <= 53) {
-            xp = 50;
+            xp = 1000000;
             text = "🌟 PERFECT +50";
-            this.speed += 0.08;
+            this.speed = 0.05;
         } else if (this.markerPos >= 32 && this.markerPos <= 68) {
             xp = 20;
             text = "✅ GOOD +20";
-            this.speed += 0.05;
+            this.speed = 0.05;
         } else {
             xp = 0;
             this.missCount++;
@@ -666,7 +667,7 @@ const TrainingSystem = {
         if (this.missCount >= this.maxMisses) {
             this.completeTraining();
         } else {
-            setTimeout(() => this.startLoop(), 200);
+            setTimeout(() => this.startLoop(), 50);
         }
     },
 
@@ -718,13 +719,13 @@ const TrainingSystem = {
 
     canTrain(pet) {
         if (!pet.lastTraining) return true;
-        const cooldown = 5 * 60 * 1000; // 5 minutes
+        const cooldown = 1 * 60 * 1000; // 5 minutes
         return Date.now() - pet.lastTraining > cooldown;
     },
 
     getCooldownRemaining(pet) {
         if (!pet.lastTraining) return 0;
-        const cooldown = 5 * 60 * 1000;
+        const cooldown = 1 * 60 * 1000;
         const remaining = cooldown - (Date.now() - pet.lastTraining);
         return Math.max(0, Math.ceil(remaining / 1000));
     }

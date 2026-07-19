@@ -24,8 +24,9 @@
         <div id="petList"></div>
 
         <button onclick="UIManager.showScreen('explorationScreen')">🗺️ Explore</button>
-        <button onclick="UIManager.showScreen('shopScreen')">� Shop</button>
+        <button onclick="UIManager.showScreen('shopScreen')">🛒 Shop</button>
         <button onclick="UIManager.showScreen('inventoryScreen')">🎒 Inventory</button>
+        <button onclick="DataManager.resetAccount()" style="background-color: #ff6b6b; color: white;">🔄 Reset Account</button>
     </div>
 
     <!-- PET DETAIL SCREEN -->
@@ -116,6 +117,7 @@
 
         <div id="battleLog" class="battleLog"></div>
 
+        <button id="attackBtn" onclick="UIManager.playerAttack()">⚔️ Attack</button>
         <button id="catchBtn" onclick="UIManager.tryCatch()">🎱 Catch</button>
         <button onclick="UIManager.fleeBattle()">🏃 Flee</button>
     </div>

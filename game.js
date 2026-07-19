@@ -18,10 +18,18 @@ const DataManager = {
             PetManager.pets = data.pets || [];
             Economy.money = data.money || 100;
             Economy.inventory = data.inventory || { basicBall: 5, potion: 3 };
-            PetManager.selectedPet = PetManager.pets.find(p => p.id === data.selectedPet) || null;
+            // Handle both string and numeric IDs for backward compatibility
+            PetManager.selectedPet = PetManager.pets.find(p => String(p.id) === String(data.selectedPet)) || null;
             Game.hasStarter = data.hasStarter || false;
             Exploration.cooldowns = data.explorationCooldowns || {};
         }   
+    },
+
+    resetAccount() {
+        if (confirm("Are you sure you want to reset your account? This will delete all pets, money, and progress!")) {
+            localStorage.removeItem("petSimulator");
+            location.reload();
+        }
     }
 };
 
@@ -265,14 +273,14 @@ const PetManager = {
     },
 
     deletePet(id) {
-        this.pets = this.pets.filter(p => p.id !== id);
-        if (this.selectedPet?.id === id) {
+        this.pets = this.pets.filter(p => String(p.id) !== String(id));
+        if (String(this.selectedPet?.id) === String(id)) {
             this.selectedPet = this.pets[0] || null;
         }
     },
 
     selectPet(id) {
-        this.selectedPet = this.pets.find(p => p.id === id);
+        this.selectedPet = this.pets.find(p => String(p.id) === String(id));
     }
 };
 
@@ -358,10 +366,45 @@ const Exploration = {
             commonPets: ["flameCat", "zapBird", "scaleLizard"],
             rarePets: ["drakeWhelp", "cosmicFox"],
             encounterRate: 0.3
+        },
+        desert: {
+            name: "Desert",
+            emoji: "🏜️",
+            commonPets: ["emberFox", "sparkDog", "scaleLizard"],
+            rarePets: ["flameCat", "drakeWhelp"],
+            encounterRate: 0.35
+        },
+        ocean: {
+            name: "Ocean",
+            emoji: "🌊",
+            commonPets: ["waveWhale", "shockEel", "crystalSeal"],
+            rarePets: ["aquaTurtle", "frostPenguin"],
+            encounterRate: 0.4
+        },
+        volcano: {
+            name: "Volcano",
+            emoji: "🌋",
+            commonPets: ["flameCat", "emberFox", "sparkDog"],
+            rarePets: ["drakeWhelp", "scaleLizard"],
+            encounterRate: 0.25
+        },
+        swamp: {
+            name: "Swamp",
+            emoji: "🐊",
+            commonPets: ["mistFrog", "vineSnake", "mossBear"],
+            rarePets: ["waveWhale", "dreamOwl"],
+            encounterRate: 0.38
+        },
+        sky: {
+            name: "Sky",
+            emoji: "☁️",
+            commonPets: ["zapBird", "boltMouse", "dreamOwl"],
+            rarePets: ["cosmicFox", "shockEel"],
+            encounterRate: 0.32
         }
     },
     cooldowns: {},
-    cooldownTime: 5000, // 5 seconds
+    cooldownTime: 30000, // 30 seconds
 
     explore(zoneId) {
         if (this.cooldowns[zoneId] && Date.now() < this.cooldowns[zoneId]) {
@@ -399,8 +442,7 @@ const BattleSystem = {
     active: false,
     playerPet: null,
     enemyPet: null,
-    turnDelay: 2000,
-    turnInterval: null,
+    isPlayerTurn: true,
     battleLog: [],
 
     typeEffectiveness: {
@@ -420,10 +462,22 @@ const BattleSystem = {
         this.enemyPet = { ...enemyPet };
         this.battleLog = [];
         
+        // Determine who goes first by speed
+        const playerSpeed = this.playerPet.stats.speed;
+        const enemySpeed = this.enemyPet.stats.speed;
+        this.isPlayerTurn = playerSpeed >= enemySpeed;
+        
         this.addLog(`Battle started! ${this.getPetName(this.playerPet)} vs ${this.getPetName(this.enemyPet)}`);
+        if (!this.isPlayerTurn) {
+            this.addLog("Enemy attacks first!");
+        }
         
         UIManager.updateBattleScreen();
-        this.startTurnLoop();
+        
+        // If enemy goes first, execute their attack
+        if (!this.isPlayerTurn) {
+            setTimeout(() => this.enemyTurn(), 1000);
+        }
     },
 
     getPetName(pet) {
@@ -448,7 +502,9 @@ const BattleSystem = {
         // Use higher of attack or special
         const offensiveStat = Math.max(attack, special);
         
-        let damage = Math.floor((offensiveStat * 40) / defense);
+        // Prevent division by zero
+        const safeDefense = Math.max(1, defense);
+        let damage = Math.floor((offensiveStat * 40) / safeDefense);
         
         // Type effectiveness
         const typeMult = this.getTypeEffectiveness(attackerTemplate.type, defenderTemplate.type);
@@ -464,37 +520,41 @@ const BattleSystem = {
         // Random variance (0.85-1.0)
         damage = Math.floor(damage * (0.85 + Math.random() * 0.15));
         
+        // Reduce all damage by 75% for fairer battles
+        damage = Math.floor(damage * 0.25);
+        
         return { damage, isCrit, typeMult };
     },
 
-    executeTurn() {
-        if (!this.active) return;
-
-        // Determine turn order by speed
-        const playerSpeed = this.playerPet.stats.speed;
-        const enemySpeed = this.enemyPet.stats.speed;
+    playerTurn() {
+        if (!this.active || !this.isPlayerTurn) return;
         
-        const first = playerSpeed >= enemySpeed ? this.playerPet : this.enemyPet;
-        const second = first === this.playerPet ? this.enemyPet : this.playerPet;
-        const isFirstPlayer = first === this.playerPet;
-
-        // First attack
-        this.attack(first, second, isFirstPlayer);
+        this.attack(this.playerPet, this.enemyPet, true);
         
-        if (second.currentHP <= 0) {
-            this.endBattle(isFirstPlayer);
+        if (this.enemyPet.currentHP <= 0) {
+            this.endBattle(true);
             return;
         }
-
-        // Second attack
-        setTimeout(() => {
-            if (!this.active) return;
-            this.attack(second, first, !isFirstPlayer);
-            
-            if (first.currentHP <= 0) {
-                this.endBattle(!isFirstPlayer);
-            }
-        }, this.turnDelay / 2);
+        
+        this.isPlayerTurn = false;
+        UIManager.updateBattleScreen();
+        
+        // Enemy attacks after delay
+        setTimeout(() => this.enemyTurn(), 1000);
+    },
+    
+    enemyTurn() {
+        if (!this.active || this.isPlayerTurn) return;
+        
+        this.attack(this.enemyPet, this.playerPet, false);
+        
+        if (this.playerPet.currentHP <= 0) {
+            this.endBattle(false);
+            return;
+        }
+        
+        this.isPlayerTurn = true;
+        UIManager.updateBattleScreen();
     },
 
     attack(attacker, defender, isPlayerAttacker) {
@@ -518,15 +578,8 @@ const BattleSystem = {
         if (this.battleLog.length > 20) this.battleLog.pop();
     },
 
-    startTurnLoop() {
-        this.turnInterval = setInterval(() => {
-            this.executeTurn();
-        }, this.turnDelay);
-    },
-
     endBattle(playerWon) {
         this.active = false;
-        clearInterval(this.turnInterval);
         
         const xpReward = this.enemyPet.level * 25;
         const moneyReward = this.enemyPet.level * 15;
@@ -535,7 +588,7 @@ const BattleSystem = {
             this.addLog(`🎉 Victory! +${xpReward} XP, +${moneyReward} Gold`);
             
             // Update actual player pet
-            const actualPet = PetManager.pets.find(p => p.id === this.playerPet.id);
+            const actualPet = PetManager.pets.find(p => String(p.id) === String(this.playerPet.id));
             if (actualPet) {
                 const oldMaxHP = PetManager.calculateMaxHP(PetTypes[actualPet.typeId], actualPet.level);
                 const hpPercent = this.playerPet.currentHP / oldMaxHP;
@@ -549,7 +602,7 @@ const BattleSystem = {
             this.addLog(`💀 Defeat! Your pet needs healing...`);
             
             // Update actual player pet
-            const actualPet = PetManager.pets.find(p => p.id === this.playerPet.id);
+            const actualPet = PetManager.pets.find(p => String(p.id) === String(this.playerPet.id));
             if (actualPet) {
                 actualPet.currentHP = Math.floor(actualPet.currentHP / 2);
             }
@@ -643,16 +696,15 @@ const TrainingSystem = {
         
         let xp = 0;
         let text = "";
-        //this.speed += 0.08;
-        //this.speed += 0.05;
+        
         if (this.markerPos >= 47 && this.markerPos <= 53) {
-            xp = 1000000;
+            xp = 50;
             text = "🌟 PERFECT +50";
-            this.speed = 0.05;
+            this.speed += 0.08;
         } else if (this.markerPos >= 32 && this.markerPos <= 68) {
             xp = 20;
             text = "✅ GOOD +20";
-            this.speed = 0.05;
+            this.speed += 0.05;
         } else {
             xp = 0;
             this.missCount++;
@@ -667,7 +719,7 @@ const TrainingSystem = {
         if (this.missCount >= this.maxMisses) {
             this.completeTraining();
         } else {
-            setTimeout(() => this.startLoop(), 50);
+            setTimeout(() => this.startLoop(), 200);
         }
     },
 
@@ -719,13 +771,13 @@ const TrainingSystem = {
 
     canTrain(pet) {
         if (!pet.lastTraining) return true;
-        const cooldown = 1 * 60 * 1000; // 5 minutes
+        const cooldown = 5 * 60 * 1000; // 5 minutes
         return Date.now() - pet.lastTraining > cooldown;
     },
 
     getCooldownRemaining(pet) {
         if (!pet.lastTraining) return 0;
-        const cooldown = 1 * 60 * 1000;
+        const cooldown = 5 * 60 * 1000;
         const remaining = cooldown - (Date.now() - pet.lastTraining);
         return Math.max(0, Math.ceil(remaining / 1000));
     }
@@ -840,8 +892,8 @@ const UIManager = {
                 </div>
                 <div class="stat">XP ${pet.xp}/${xpNeeded}</div>
                 
-                <button onclick="UIManager.selectPet(${pet.id})">Select</button>
-                <button onclick="UIManager.sellPet(${pet.id})">Sell (${pet.level * 25}💰)</button>
+                <button onclick="UIManager.selectPet('${pet.id}')">Select</button>
+                <button onclick="UIManager.sellPet('${pet.id}')">Sell (${pet.level * 25}💰)</button>
             `;
             list.appendChild(card);
         });
@@ -854,7 +906,7 @@ const UIManager = {
     },
 
     sellPet(id) {
-        const pet = PetManager.pets.find(p => p.id === id);
+        const pet = PetManager.pets.find(p => String(p.id) === String(id));
         if (!pet) return;
         
         if (confirm(`Sell ${PetTypes[pet.typeId].name} for ${pet.level * 25} gold?`)) {
@@ -986,20 +1038,30 @@ const UIManager = {
             `<div class="battleLogEntry">${entry.text}</div>`
         ).join("");
         
-        // Update catch button
+        // Update buttons based on turn
+        const attackBtn = document.getElementById("attackBtn");
         const catchBtn = document.getElementById("catchBtn");
+        attackBtn.disabled = !BattleSystem.isPlayerTurn;
+        attackBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
         catchBtn.style.display = BattleSystem.active ? "inline-block" : "none";
     },
 
-    tryCatch() {
+    playerAttack() {
         if (!BattleSystem.active) return;
+        BattleSystem.playerTurn();
+    },
+
+    tryCatch() {
+        if (!BattleSystem.active || !BattleSystem.isPlayerTurn) {
+            alert("Can only catch during your turn!");
+            return;
+        }
         
         const result = BattleSystem.tryCatch(BattleSystem.enemyPet);
         alert(result.reason);
         
         if (result.success) {
             BattleSystem.active = false;
-            clearInterval(BattleSystem.turnInterval);
             this.showScreen("mainScreen");
             this.renderPets();
         }
@@ -1009,10 +1071,9 @@ const UIManager = {
         if (!BattleSystem.active) return;
         
         BattleSystem.active = false;
-        clearInterval(BattleSystem.turnInterval);
         
         // Update actual pet HP
-        const actualPet = PetManager.pets.find(p => p.id === BattleSystem.playerPet.id);
+        const actualPet = PetManager.pets.find(p => String(p.id) === String(BattleSystem.playerPet.id));
         if (actualPet) {
             actualPet.currentHP = BattleSystem.playerPet.currentHP;
         }

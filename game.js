@@ -199,16 +199,108 @@ const PetTypes = {
         baseStats: { hp: 55, attack: 60, defense: 50, speed: 45, special: 55 },
         ability: "Multiscale - Reduces damage at full HP",
         evolution: ["Drake Whelp", "Storm Drake", "Dragon Emperor"]
+    },
+
+    // Fire Type
+    cinderScorpion: {
+        name: "Cinder Scorpion",
+        emoji: "🦂",
+        type: "fire",
+        baseStats: { hp: 48, attack: 60, defense: 52, speed: 55, special: 50 },
+        ability: "Flame Body - May burn attackers on contact",
+        evolution: ["Spark Tail", "Cinder Scorpion", "Inferno Stinger"]
+    },
+
+    // Ice Type
+    frostBear: {
+        name: "Frost Bear",
+        emoji: "🐻‍❄️",
+        type: "ice",
+        baseStats: { hp: 65, attack: 58, defense: 55, speed: 35, special: 50 },
+        ability: "Slush Rush - Speed doubles in hail",
+        evolution: ["Ice Cub", "Frost Bear", "Tundra King"]
+    },
+
+    // Dragon Types
+    crystalWyrm: {
+        name: "Crystal Wyrm",
+        emoji: "🐉",
+        type: "dragon",
+        baseStats: { hp: 55, attack: 58, defense: 52, speed: 50, special: 62 },
+        ability: "Levitate - Immune to ground moves",
+        evolution: ["Shard Hatchling", "Crystal Wyrm", "Geode Leviathan"]
+    },
+    marshCroc: {
+        name: "Marsh Croc",
+        emoji: "🐊",
+        type: "dragon",
+        baseStats: { hp: 60, attack: 64, defense: 55, speed: 42, special: 48 },
+        ability: "Strong Jaw - Boosts bite moves",
+        evolution: ["Mud Wader", "Marsh Croc", "Bog Tyrant"]
+    },
+
+    // Dark Types (NEW)
+    shadowWolf: {
+        name: "Shadow Wolf",
+        emoji: "🐺",
+        type: "dark",
+        baseStats: { hp: 50, attack: 58, defense: 45, speed: 62, special: 50 },
+        ability: "Pack Hunter - Boosts attack when allies are present",
+        evolution: ["Shadow Pup", "Umbra Wolf", "Nightfall Alpha"]
+    },
+    duskBat: {
+        name: "Dusk Bat",
+        emoji: "🦇",
+        type: "dark",
+        baseStats: { hp: 45, attack: 45, defense: 42, speed: 72, special: 55 },
+        ability: "Vampiric - Heals from a fraction of damage dealt",
+        evolution: ["Dusk Bat", "Night Bat", "Eclipse Wing"]
+    },
+
+    // Fairy Types (NEW)
+    moonPixie: {
+        name: "Moon Pixie",
+        emoji: "🦄",
+        type: "fairy",
+        baseStats: { hp: 48, attack: 42, defense: 48, speed: 60, special: 68 },
+        ability: "Cute Charm - May infatuate attackers on contact",
+        evolution: ["Star Fawn", "Moon Pixie", "Astral Spirit"]
+    },
+    glimmerMoth: {
+        name: "Glimmer Moth",
+        emoji: "🦋",
+        type: "fairy",
+        baseStats: { hp: 42, attack: 40, defense: 45, speed: 72, special: 65 },
+        ability: "Shield Dust - Blocks secondary move effects",
+        evolution: ["Dust Wisp", "Glimmer Moth", "Prism Sovereign"]
+    },
+
+    // Normal Types (NEW)
+    cloudSheep: {
+        name: "Cloud Sheep",
+        emoji: "🐑",
+        type: "normal",
+        baseStats: { hp: 62, attack: 42, defense: 58, speed: 38, special: 50 },
+        ability: "Fluffy - Halves contact damage taken",
+        evolution: ["Wool Lamb", "Cloud Sheep", "Sky Shepherd"]
+    },
+    fieldDeer: {
+        name: "Field Deer",
+        emoji: "🦌",
+        type: "normal",
+        baseStats: { hp: 50, attack: 48, defense: 45, speed: 62, special: 50 },
+        ability: "Run Away - Guaranteed to flee wild battles",
+        evolution: ["Spotted Fawn", "Field Deer", "Forest Monarch"]
     }
 };
 
-const Starters = ["emberFox", "aquaTurtle", "leafBunny", "boltMouse", "mindCat"];
+const Starters = ["emberFox", "aquaTurtle", "leafBunny", "boltMouse", "mindCat", "shadowWolf", "moonPixie"];
 
 // ==================== PET MANAGER ====================
 const PetManager = {
     pets: [],
     selectedPet: null,
-    maxPartySize: 100,
+    maxPartySize: 6,
     petIdCounter: 0,
 
     createPet(typeId, level = 1) {
@@ -342,15 +434,15 @@ const Exploration = {
         forest: {
             name: "Forest",
             emoji: "🌲",
-            commonPets: ["leafBunny", "vineSnake", "mossBear"],
-            rarePets: ["mindCat", "dreamOwl"],
+            commonPets: ["leafBunny", "vineSnake", "mossBear", "glimmerMoth", "fieldDeer"],
+            rarePets: ["mindCat", "dreamOwl", "moonPixie"],
             encounterRate: 1
         },
         cave: {
             name: "Cave",
             emoji: "⛰️",
-            commonPets: ["scaleLizard", "sparkDog", "crystalSeal"],
-            rarePets: ["drakeWhelp", "frostPenguin"],
+            commonPets: ["scaleLizard", "sparkDog", "crystalSeal", "duskBat"],
+            rarePets: ["drakeWhelp", "frostPenguin", "shadowWolf", "frostBear", "crystalWyrm"],
             encounterRate: 1
         },
         lake: {
@@ -363,14 +455,14 @@ const Exploration = {
         mountain: {
             name: "Mountain",
             emoji: "🏔️",
-            commonPets: ["flameCat", "zapBird", "scaleLizard"],
-            rarePets: ["drakeWhelp", "cosmicFox"],
+            commonPets: ["flameCat", "zapBird", "scaleLizard", "frostBear", "cloudSheep"],
+            rarePets: ["drakeWhelp", "cosmicFox", "crystalWyrm"],
             encounterRate: 1
         },
         desert: {
             name: "Desert",
             emoji: "🏜️",
-            commonPets: ["emberFox", "sparkDog", "scaleLizard"],
+            commonPets: ["emberFox", "sparkDog", "scaleLizard", "cinderScorpion"],
             rarePets: ["flameCat", "drakeWhelp"],
             encounterRate: 1
         },
@@ -385,20 +477,20 @@ const Exploration = {
             name: "Volcano",
             emoji: "🌋",
             commonPets: ["flameCat", "emberFox", "sparkDog"],
-            rarePets: ["drakeWhelp", "scaleLizard"],
+            rarePets: ["drakeWhelp", "scaleLizard", "cinderScorpion"],
             encounterRate: 1
         },
         swamp: {
             name: "Swamp",
             emoji: "🐊",
-            commonPets: ["mistFrog", "vineSnake", "mossBear"],
-            rarePets: ["waveWhale", "dreamOwl"],
+            commonPets: ["mistFrog", "vineSnake", "mossBear", "glimmerMoth", "marshCroc", "shadowWolf"],
+            rarePets: ["waveWhale", "dreamOwl", "frostBear"],
             encounterRate: 1
         },
         sky: {
             name: "Sky",
             emoji: "☁️",
-            commonPets: ["zapBird", "boltMouse", "dreamOwl"],
+            commonPets: ["zapBird", "boltMouse", "dreamOwl", "cloudSheep"],
             rarePets: ["cosmicFox", "shockEel"],
             encounterRate: 0.9
         }
@@ -428,7 +520,7 @@ const Exploration = {
         function getWildPetLevel() {
             if (PetManager.selectedPet.level > 20) {
                 return Math.floor(Math.random() * 21) + 20;
-            } else if (PetManager.selectedPet.level < 20) {
+            } else {
                 return Math.floor(Math.random() * 18) + 2;
             }
         }
@@ -456,14 +548,16 @@ const BattleSystem = {
     battleLog: [],
 
     typeEffectiveness: {
-        fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5 },
-        water: { fire: 2, grass: 0.5, ground: 2, water: 0.5 },
-        grass: { water: 2, fire: 0.5, ground: 2, grass: 0.5 },
-        electric: { water: 2, grass: 0.5, flying: 2, electric: 0.5 },
-        ice: { grass: 2, fire: 0.5, dragon: 2, ice: 0.5 },
-        psychic: { psychic: 0.5, dark: 0.5 },
-        dragon: { dragon: 2 },
-        fairy: { dragon: 2, dark: 2, fire: 0.5 }
+        fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5, dragon: 0.5, fairy: 2, dark: 1, normal: 1 },
+        water: { fire: 2, grass: 0.5, ground: 2, water: 0.5, dragon: 0.5, normal: 1 },
+        grass: { water: 2, fire: 0.5, ground: 2, grass: 0.5, dragon: 0.5, dark: 1, normal: 1 },
+        electric: { water: 2, grass: 0.5, flying: 2, electric: 0.5, dragon: 0.5, normal: 1 },
+        ice: { grass: 2, fire: 0.5, dragon: 2, ice: 0.5, fairy: 2, dark: 1, normal: 1 },
+        psychic: { psychic: 0.5, dark: 0.5, fairy: 1, normal: 1 },
+        dragon: { dragon: 2, fairy: 0, ice: 0.5, normal: 1 },
+        dark: { psychic: 2, dark: 0.5, fairy: 0.5, ghost: 2, normal: 1 },
+        fairy: { dragon: 2, dark: 2, fire: 0.5, ice: 0.5, normal: 1 },
+        normal: { rock: 0.5, ghost: 0, steel: 0.5, dark: 1, fairy: 1 }
     },
 
     startBattle(playerPet, enemyPet) {
@@ -498,7 +592,7 @@ const BattleSystem = {
     getTypeEffectiveness(attackerType, defenderType) {
         const effectiveness = this.typeEffectiveness[attackerType];
         if (!effectiveness) return 1;
-        return effectiveness[defenderType] || 1;
+        return effectiveness[defenderType] ?? 1;
     },
 
     calculateDamage(attacker, defender) {
@@ -576,8 +670,9 @@ const BattleSystem = {
         
         let logText = `${attackerName} deals ${result.damage} damage to ${defenderName}`;
         if (result.isCrit) logText += " (CRITICAL!)";
-        if (result.typeMult > 1) logText += " (Super effective!)";
-        if (result.typeMult < 1) logText += " (Not very effective)";
+        if (result.typeMult === 0) logText = `${attackerName}'s attack had no effect on ${defenderName}!`;
+        else if (result.typeMult > 1) logText += " (Super effective!)";
+        else if (result.typeMult < 1) logText += " (Not very effective)";
         
         this.addLog(logText);
         UIManager.updateBattleScreen();

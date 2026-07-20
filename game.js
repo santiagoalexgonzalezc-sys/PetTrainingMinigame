@@ -199,6 +199,98 @@ const PetTypes = {
         baseStats: { hp: 55, attack: 60, defense: 50, speed: 45, special: 55 },
         ability: "Multiscale - Reduces damage at full HP",
         evolution: ["Drake Whelp", "Storm Drake", "Dragon Emperor"]
+    },
+
+    // Fire Type
+    cinderScorpion: {
+        name: "Cinder Scorpion",
+        emoji: "🦂",
+        type: "fire",
+        baseStats: { hp: 48, attack: 60, defense: 52, speed: 55, special: 50 },
+        ability: "Flame Body - May burn attackers on contact",
+        evolution: ["Spark Tail", "Cinder Scorpion", "Inferno Stinger"]
+    },
+
+    // Ice Type
+    frostBear: {
+        name: "Frost Bear",
+        emoji: "🐻‍❄️",
+        type: "ice",
+        baseStats: { hp: 65, attack: 58, defense: 55, speed: 35, special: 50 },
+        ability: "Slush Rush - Speed doubles in hail",
+        evolution: ["Ice Cub", "Frost Bear", "Tundra King"]
+    },
+
+    // Dragon Types
+    crystalWyrm: {
+        name: "Crystal Wyrm",
+        emoji: "🐉",
+        type: "dragon",
+        baseStats: { hp: 55, attack: 58, defense: 52, speed: 50, special: 62 },
+        ability: "Levitate - Immune to ground moves",
+        evolution: ["Shard Hatchling", "Crystal Wyrm", "Geode Leviathan"]
+    },
+    marshCroc: {
+        name: "Marsh Croc",
+        emoji: "🐊",
+        type: "dragon",
+        baseStats: { hp: 60, attack: 64, defense: 55, speed: 42, special: 48 },
+        ability: "Strong Jaw - Boosts bite moves",
+        evolution: ["Mud Wader", "Marsh Croc", "Bog Tyrant"]
+    },
+
+    // Dark Types (NEW)
+    shadowWolf: {
+        name: "Shadow Wolf",
+        emoji: "🐺",
+        type: "dark",
+        baseStats: { hp: 50, attack: 58, defense: 45, speed: 62, special: 50 },
+        ability: "Pack Hunter - Boosts attack when allies are present",
+        evolution: ["Shadow Pup", "Umbra Wolf", "Nightfall Alpha"]
+    },
+    duskBat: {
+        name: "Dusk Bat",
+        emoji: "🦇",
+        type: "dark",
+        baseStats: { hp: 45, attack: 45, defense: 42, speed: 72, special: 55 },
+        ability: "Vampiric - Heals from a fraction of damage dealt",
+        evolution: ["Dusk Bat", "Night Bat", "Eclipse Wing"]
+    },
+
+    // Fairy Types (NEW)
+    moonPixie: {
+        name: "Moon Pixie",
+        emoji: "🦄",
+        type: "fairy",
+        baseStats: { hp: 48, attack: 42, defense: 48, speed: 60, special: 68 },
+        ability: "Cute Charm - May infatuate attackers on contact",
+        evolution: ["Star Fawn", "Moon Pixie", "Astral Spirit"]
+    },
+    glimmerMoth: {
+        name: "Glimmer Moth",
+        emoji: "🦋",
+        type: "fairy",
+        baseStats: { hp: 42, attack: 40, defense: 45, speed: 72, special: 65 },
+        ability: "Shield Dust - Blocks secondary move effects",
+        evolution: ["Dust Wisp", "Glimmer Moth", "Prism Sovereign"]
+    },
+
+    // Normal Types (NEW)
+    cloudSheep: {
+        name: "Cloud Sheep",
+        emoji: "🐑",
+        type: "normal",
+        baseStats: { hp: 62, attack: 42, defense: 58, speed: 38, special: 50 },
+        ability: "Fluffy - Halves contact damage taken",
+        evolution: ["Wool Lamb", "Cloud Sheep", "Sky Shepherd"]
+    },
+    fieldDeer: {
+        name: "Field Deer",
+        emoji: "🦌",
+        type: "normal",
+        baseStats: { hp: 50, attack: 48, defense: 45, speed: 62, special: 50 },
+        ability: "Run Away - Guaranteed to flee wild battles",
+        evolution: ["Spotted Fawn", "Field Deer", "Forest Monarch"]
     }
 };
 

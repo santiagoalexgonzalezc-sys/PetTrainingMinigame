@@ -300,7 +300,7 @@ const Starters = ["emberFox", "aquaTurtle", "leafBunny", "boltMouse", "mindCat",
 const PetManager = {
     pets: [],
     selectedPet: null,
-    maxPartySize: 100,
+    maxPartySize: 6,
     petIdCounter: 0,
 
     createPet(typeId, level = 1) {
@@ -520,7 +520,7 @@ const Exploration = {
         function getWildPetLevel() {
             if (PetManager.selectedPet.level > 20) {
                 return Math.floor(Math.random() * 21) + 20;
-            } else if (PetManager.selectedPet.level < 20) {
+            } else {
                 return Math.floor(Math.random() * 18) + 2;
             }
         }
@@ -592,7 +592,7 @@ const BattleSystem = {
     getTypeEffectiveness(attackerType, defenderType) {
         const effectiveness = this.typeEffectiveness[attackerType];
         if (!effectiveness) return 1;
-        return effectiveness[defenderType] || 1;
+        return effectiveness[defenderType] ?? 1;
     },
 
     calculateDamage(attacker, defender) {
@@ -670,8 +670,9 @@ const BattleSystem = {
         
         let logText = `${attackerName} deals ${result.damage} damage to ${defenderName}`;
         if (result.isCrit) logText += " (CRITICAL!)";
-        if (result.typeMult > 1) logText += " (Super effective!)";
-        if (result.typeMult < 1) logText += " (Not very effective)";
+        if (result.typeMult === 0) logText = `${attackerName}'s attack had no effect on ${defenderName}!`;
+        else if (result.typeMult > 1) logText += " (Super effective!)";
+        else if (result.typeMult < 1) logText += " (Not very effective)";
         
         this.addLog(logText);
         UIManager.updateBattleScreen();

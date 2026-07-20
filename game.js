@@ -1148,13 +1148,15 @@ const UIManager = {
     },
 
     sellPet(id) {
-        const pet = PetManager.pets.find(p => String(p.id) === String(id));
+        const pet = PetManager.pets.find(p => String(p.id) === String(id)) ||
+                    PetManager.storage.find(p => String(p.id) === String(id));
         if (!pet) return;
         
         if (confirm(`Sell ${PetTypes[pet.typeId].name} for ${pet.level * 25} gold?`)) {
             Economy.sellPet(pet);
             DataManager.save();
             this.renderPets();
+            this.renderStorage();
             this.updateCurrency();
         }
     },

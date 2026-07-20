@@ -247,7 +247,7 @@ const PetTypes = {
         emoji: "🐺",
         type: "dark",
         baseStats: { hp: 50, attack: 58, defense: 45, speed: 62, special: 50 },
-        ability: "Pack Hunter - Boosts attack when allies are present",
+        ability: "Alpha Hunter - Boosts attack when facing an stronger foe",
         evolution: ["Shadow Pup", "Umbra Wolf", "Nightfall Alpha"]
     },
     duskBat: {
@@ -256,7 +256,7 @@ const PetTypes = {
         type: "dark",
         baseStats: { hp: 45, attack: 45, defense: 42, speed: 72, special: 55 },
         ability: "Vampiric - Heals from a fraction of damage dealt",
-        evolution: ["Dusk Bat", "Night Bat", "Eclipse Wing"]
+        evolution: ["Dusk Bat", "Night Bat", "Vampire Emperor"]
     },
 
     // Fairy Types (NEW)
@@ -339,8 +339,8 @@ const PetManager = {
 
     getEvolution(pet) {
         const template = PetTypes[pet.typeId];
-        if (pet.level >= 20) return template.evolution[2];
-        if (pet.level >= 10) return template.evolution[1];
+        if (pet.level >= 30) return template.evolution[2];
+        if (pet.level >= 15) return template.evolution[1];
         return template.evolution[0];
     },
 
@@ -548,11 +548,14 @@ const Exploration = {
         // Generate wild pet level (4-40)
 
         function getWildPetLevel() {
-            if (PetManager.selectedPet.level > 20) {
+            if (PetManager.selectPet.level < 20) {
+                return Math.floor(Math.random() * 17) + 3;
+            } else if (PetManager.selectedPet.level > 20) {
                 return Math.floor(Math.random() * 21) + 20;
             } else {
-                return Math.floor(Math.random() * 18) + 2;
+                return Math.floor(Math.random() * 17) + 3;
             }
+            
         }
 
         const level = getWildPetLevel();

@@ -863,7 +863,7 @@ const BattleSystem = {
             UIManager.showScreen("mainScreen");
             UIManager.renderPets();
             UIManager.updateCurrency();
-        }, 100);
+        }, 500);
     },
 
     tryCatch(wildPet) {

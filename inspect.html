@@ -18,10 +18,10 @@
 <h1>Pet Save Inspector</h1>
 
 <div class="section">
-  <h2>Most Powerful Pets (by Stats + Level)</h2>
+  <h2>1. All Pets — Level (High to Low)</h2>
   <div class="filter-bar">
     <label>Type Filter: </label>
-    <select id="powerTypeFilter" onchange="renderPowerful()">
+    <select id="levelDescFilter" onchange="renderLevelDesc()">
       <option value="all">All Types</option>
       <option value="fire">Fire</option>
       <option value="water">Water</option>
@@ -34,19 +34,19 @@
       <option value="fairy">Fairy</option>
       <option value="normal">Normal</option>
     </select>
-    <button onclick="renderPowerful()">Refresh</button>
+    <button onclick="renderLevelDesc()">Refresh</button>
   </div>
-  <table id="powerTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th></tr></thead>
+  <table id="levelDescTable">
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
 
 <div class="section">
-  <h2>Weakest Pets by Level (Weakest → Strongest)</h2>
+  <h2>2. All Pets — Power Score (High to Low)</h2>
   <div class="filter-bar">
     <label>Type Filter: </label>
-    <select id="weakLevelTypeFilter" onchange="renderWeakLevel()">
+    <select id="powerDescFilter" onchange="renderPowerDesc()">
       <option value="all">All Types</option>
       <option value="fire">Fire</option>
       <option value="water">Water</option>
@@ -59,19 +59,19 @@
       <option value="fairy">Fairy</option>
       <option value="normal">Normal</option>
     </select>
-    <button onclick="renderWeakLevel()">Refresh</button>
+    <button onclick="renderPowerDesc()">Refresh</button>
   </div>
-  <table id="weakLevelTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Location</th></tr></thead>
+  <table id="powerDescTable">
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
 
 <div class="section">
-  <h2>Weakest Pets by Stats (Weakest → Strongest)</h2>
+  <h2>3. All Pets — Level (Low to High)</h2>
   <div class="filter-bar">
     <label>Type Filter: </label>
-    <select id="weakStatsTypeFilter" onchange="renderWeakStats()">
+    <select id="levelAscFilter" onchange="renderLevelAsc()">
       <option value="all">All Types</option>
       <option value="fire">Fire</option>
       <option value="water">Water</option>
@@ -84,19 +84,19 @@
       <option value="fairy">Fairy</option>
       <option value="normal">Normal</option>
     </select>
-    <button onclick="renderWeakStats()">Refresh</button>
+    <button onclick="renderLevelAsc()">Refresh</button>
   </div>
-  <table id="weakStatsTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
+  <table id="levelAscTable">
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
 
 <div class="section">
-  <h2>All Pets (Party + Storage)</h2>
+  <h2>4. All Pets — Power Score (Low to High)</h2>
   <div class="filter-bar">
     <label>Type Filter: </label>
-    <select id="allTypeFilter" onchange="renderAll()">
+    <select id="powerAscFilter" onchange="renderPowerAsc()">
       <option value="all">All Types</option>
       <option value="fire">Fire</option>
       <option value="water">Water</option>
@@ -109,10 +109,10 @@
       <option value="fairy">Fairy</option>
       <option value="normal">Normal</option>
     </select>
-    <button onclick="renderAll()">Refresh</button>
+    <button onclick="renderPowerAsc()">Refresh</button>
   </div>
-  <table id="allTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Location</th></tr></thead>
+  <table id="powerAscTable">
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -191,7 +191,19 @@ function getTemplate(typeId) {
   return PET_TEMPLATES[typeId] || {name:typeId, emoji:"❓", type:"?"};
 }
 
-function petRow(pet, idx, loc) {
+function getAllPets() {
+  const data = getData();
+  let rows = [];
+  if (data && data.pets && data.pets.length) {
+    data.pets.forEach(p => rows.push({...p, _loc:"Party"}));
+  }
+  if (data && data.storage && data.storage.length) {
+    data.storage.forEach(p => rows.push({...p, _loc:"Storage"}));
+  }
+  return rows;
+}
+
+function petRow(pet, idx) {
   const t = getTemplate(pet.typeId);
   const evoName = getEvolutionName(pet);
   const maxHP = calculateMaxHP(pet);
@@ -205,129 +217,56 @@ function petRow(pet, idx, loc) {
     <td>${pet.stats.defense}</td>
     <td>${pet.stats.speed}</td>
     <td>${pet.stats.special}</td>
-    <td>${loc !== undefined ? loc : ""}</td>
+    <td>${powerScore(pet)}</td>
+    <td>${pet._loc}</td>
   </tr>`;
 }
 
-function renderPowerful() {
-  const data = getData();
-  const tbody = document.querySelector("#powerTable tbody");
-  if (!data || !data.pets || !data.pets.length) {
-    tbody.innerHTML = "<tr><td colspan='10'>No pets found.</td></tr>";
-    return;
-  }
-  const filter = document.getElementById("powerTypeFilter").value;
-  let list = data.pets.map(p => ({...p, _score: powerScore(p)}));
+function renderLevelDesc() {
+  const filter = document.getElementById("levelDescFilter").value;
+  let rows = getAllPets();
   if (filter !== "all") {
-    list = list.filter(p => getTemplate(p.typeId).type === filter);
+    rows = rows.filter(p => getTemplate(p.typeId).type === filter);
   }
-  list.sort((a,b) => b._score - a._score);
-  tbody.innerHTML = list.slice(0,50).map((p,i) => {
-    const t = getTemplate(p.typeId);
-    const evoName = getEvolutionName(p);
-    const maxHP = calculateMaxHP(p);
-    return `<tr>
-      <td>${i+1}</td>
-      <td>${t.emoji} ${evoName}</td>
-      <td>${TYPES[t.type]||t.type}</td>
-      <td>${p.level}</td>
-      <td>${maxHP}</td>
-      <td>${p.stats.attack}</td>
-      <td>${p.stats.defense}</td>
-      <td>${p.stats.speed}</td>
-      <td>${p.stats.special}</td>
-      <td>${p._score}</td>
-    </tr>`;
-  }).join("");
+  rows.sort((a,b) => b.level - a.level);
+  document.querySelector("#levelDescTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
 }
 
-function renderWeakLevel() {
-  const data = getData();
-  const tbody = document.querySelector("#weakLevelTable tbody");
-  if (!data) {
-    tbody.innerHTML = "<tr><td colspan='10'>No save data.</td></tr>";
-    return;
+function renderPowerDesc() {
+  const filter = document.getElementById("powerDescFilter").value;
+  let rows = getAllPets();
+  if (filter !== "all") {
+    rows = rows.filter(p => getTemplate(p.typeId).type === filter);
   }
-  const filter = document.getElementById("weakLevelTypeFilter").value;
-  let rows = [];
-  if (data.pets && data.pets.length) {
-    data.pets.forEach(p => rows.push({...p, _loc:"Party"}));
-  }
-  if (data.storage && data.storage.length) {
-    data.storage.forEach(p => rows.push({...p, _loc:"Storage"}));
-  }
+  rows.sort((a,b) => powerScore(b) - powerScore(a));
+  document.querySelector("#powerDescTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
+}
+
+function renderLevelAsc() {
+  const filter = document.getElementById("levelAscFilter").value;
+  let rows = getAllPets();
   if (filter !== "all") {
     rows = rows.filter(p => getTemplate(p.typeId).type === filter);
   }
   rows.sort((a,b) => a.level - b.level);
-  tbody.innerHTML = rows.map((p,i) => petRow(p, i+1, p._loc)).join("");
+  document.querySelector("#levelAscTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
 }
 
-function renderWeakStats() {
-  const data = getData();
-  const tbody = document.querySelector("#weakStatsTable tbody");
-  if (!data) {
-    tbody.innerHTML = "<tr><td colspan='11'>No save data.</td></tr>";
-    return;
-  }
-  const filter = document.getElementById("weakStatsTypeFilter").value;
-  let rows = [];
-  if (data.pets && data.pets.length) {
-    data.pets.forEach(p => rows.push({...p, _loc:"Party"}));
-  }
-  if (data.storage && data.storage.length) {
-    data.storage.forEach(p => rows.push({...p, _loc:"Storage"}));
-  }
+function renderPowerAsc() {
+  const filter = document.getElementById("powerAscFilter").value;
+  let rows = getAllPets();
   if (filter !== "all") {
     rows = rows.filter(p => getTemplate(p.typeId).type === filter);
   }
   rows.sort((a,b) => powerScore(a) - powerScore(b));
-  tbody.innerHTML = rows.map((p,i) => {
-    const t = getTemplate(p.typeId);
-    const evoName = getEvolutionName(p);
-    const maxHP = calculateMaxHP(p);
-    return `<tr>
-      <td>${i+1}</td>
-      <td>${t.emoji} ${evoName}</td>
-      <td>${TYPES[t.type]||t.type}</td>
-      <td>${p.level}</td>
-      <td>${maxHP}</td>
-      <td>${p.stats.attack}</td>
-      <td>${p.stats.defense}</td>
-      <td>${p.stats.speed}</td>
-      <td>${p.stats.special}</td>
-      <td>${powerScore(p)}</td>
-      <td>${p._loc}</td>
-    </tr>`;
-  }).join("");
-}
-
-function renderAll() {
-  const data = getData();
-  const tbody = document.querySelector("#allTable tbody");
-  if (!data) {
-    tbody.innerHTML = "<tr><td colspan='10'>No save data.</td></tr>";
-    return;
-  }
-  const filter = document.getElementById("allTypeFilter").value;
-  let rows = [];
-  if (data.pets && data.pets.length) {
-    data.pets.forEach(p => rows.push({...p, _loc:"Party"}));
-  }
-  if (data.storage && data.storage.length) {
-    data.storage.forEach(p => rows.push({...p, _loc:"Storage"}));
-  }
-  if (filter !== "all") {
-    rows = rows.filter(p => getTemplate(p.typeId).type === filter);
-  }
-  tbody.innerHTML = rows.map((p,i) => petRow(p, i+1, p._loc)).join("");
+  document.querySelector("#powerAscTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
 }
 
 document.getElementById("raw").textContent = JSON.stringify(getData(), null, 2);
-renderPowerful();
-renderWeakLevel();
-renderWeakStats();
-renderAll();
+renderLevelDesc();
+renderPowerDesc();
+renderLevelAsc();
+renderPowerAsc();
 </script>
 </body>
 </html>

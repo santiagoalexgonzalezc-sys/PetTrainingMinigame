@@ -208,7 +208,7 @@ const Starters = ["emberFox", "aquaTurtle", "leafBunny", "boltMouse", "mindCat"]
 const PetManager = {
     pets: [],
     selectedPet: null,
-    maxPartySize: 6,
+    maxPartySize: 100,
     petIdCounter: 0,
 
     createPet(typeId, level = 1) {
@@ -298,8 +298,8 @@ const Economy = {
 
     shopItems: {
         basicBall: { name: "Basic Ball", price: 50, type: "catch", power: 1 },
-        greatBall: { name: "Great Ball", price: 150, type: "catch", power: 1.5 },
-        ultraBall: { name: "Ultra Ball", price: 400, type: "catch", power: 2.5 },
+        greatBall: { name: "Great Ball", price: 150, type: "catch", power: 2 },
+        ultraBall: { name: "Ultra Ball", price: 400, type: "catch", power: 3 },
         potion: { name: "Potion", price: 30, type: "heal", power: 20 },
         superPotion: { name: "Super Potion", price: 80, type: "heal", power: 50 },
         hyperPotion: { name: "Hyper Potion", price: 200, type: "heal", power: 100 }
@@ -329,7 +329,7 @@ const Economy = {
     },
 
     sellPet(pet) {
-        const value = pet.level * 35;
+        const value = pet.level * 30;
         this.money += value;
         PetManager.deletePet(pet.id);
         return value;
@@ -344,67 +344,67 @@ const Exploration = {
             emoji: "🌲",
             commonPets: ["leafBunny", "vineSnake", "mossBear"],
             rarePets: ["mindCat", "dreamOwl"],
-            encounterRate: 0.4
+            encounterRate: 1
         },
         cave: {
             name: "Cave",
             emoji: "⛰️",
             commonPets: ["scaleLizard", "sparkDog", "crystalSeal"],
             rarePets: ["drakeWhelp", "frostPenguin"],
-            encounterRate: 0.35
+            encounterRate: 1
         },
         lake: {
             name: "Lake",
             emoji: "💧",
             commonPets: ["aquaTurtle", "mistFrog", "waveWhale"],
             rarePets: ["shockEel", "boltMouse"],
-            encounterRate: 0.45
+            encounterRate: 1
         },
         mountain: {
             name: "Mountain",
             emoji: "🏔️",
             commonPets: ["flameCat", "zapBird", "scaleLizard"],
             rarePets: ["drakeWhelp", "cosmicFox"],
-            encounterRate: 0.3
+            encounterRate: 1
         },
         desert: {
             name: "Desert",
             emoji: "🏜️",
             commonPets: ["emberFox", "sparkDog", "scaleLizard"],
             rarePets: ["flameCat", "drakeWhelp"],
-            encounterRate: 0.35
+            encounterRate: 1
         },
         ocean: {
             name: "Ocean",
             emoji: "🌊",
             commonPets: ["waveWhale", "shockEel", "crystalSeal"],
             rarePets: ["aquaTurtle", "frostPenguin"],
-            encounterRate: 0.4
+            encounterRate: 1
         },
         volcano: {
             name: "Volcano",
             emoji: "🌋",
             commonPets: ["flameCat", "emberFox", "sparkDog"],
             rarePets: ["drakeWhelp", "scaleLizard"],
-            encounterRate: 0.25
+            encounterRate: 1
         },
         swamp: {
             name: "Swamp",
             emoji: "🐊",
             commonPets: ["mistFrog", "vineSnake", "mossBear"],
             rarePets: ["waveWhale", "dreamOwl"],
-            encounterRate: 0.38
+            encounterRate: 1
         },
         sky: {
             name: "Sky",
             emoji: "☁️",
             commonPets: ["zapBird", "boltMouse", "dreamOwl"],
             rarePets: ["cosmicFox", "shockEel"],
-            encounterRate: 0.32
+            encounterRate: 0.9
         }
     },
     cooldowns: {},
-    cooldownTime: 30000, // 30 seconds
+    cooldownTime: 1000, // 1 second
 
     explore(zoneId) {
         if (this.cooldowns[zoneId] && Date.now() < this.cooldowns[zoneId]) {
@@ -419,12 +419,21 @@ const Exploration = {
         }
 
         // Determine pet rarity
-        const isRare = Math.random() < 0.15;
+        const isRare = Math.random() < 0.25;
         const petPool = isRare ? zone.rarePets : zone.commonPets;
         const petType = petPool[Math.floor(Math.random() * petPool.length)];
 
-        // Generate wild pet level (5-15)
-        const level = Math.floor(Math.random() * 11) + 5;
+        // Generate wild pet level (4-40)
+
+        function getWildPetLevel() {
+            if (PetManager.selectedPet.level > 20) {
+                return Math.floor(Math.random() * 21) + 20;
+            } else if (PetManager.selectedPet.level < 20) {
+                return Math.floor(Math.random() * 18) + 2;
+            }
+        }
+
+        const level = getWildPetLevel();
         const wildPet = PetManager.createPet(petType, level);
 
         return { pet: wildPet, isRare };
@@ -439,6 +448,7 @@ const Exploration = {
 
 // ==================== BATTLE SYSTEM ====================
 const BattleSystem = {
+    petsDefeated: 0,
     active: false,
     playerPet: null,
     enemyPet: null,
@@ -581,10 +591,12 @@ const BattleSystem = {
     endBattle(playerWon) {
         this.active = false;
         
-        const xpReward = this.enemyPet.level * 25;
-        const moneyReward = this.enemyPet.level * 15;
+        const xpReward = this.enemyPet.level * 20;
+        const moneyReward = this.enemyPet.level * 20;
         
         if (playerWon) {
+            this.petsDefeated =  this.petsDefeated + 1
+            console.log(this.petsDefeated)
             this.addLog(`🎉 Victory! +${xpReward} XP, +${moneyReward} Gold`);
             
             // Update actual player pet
@@ -732,22 +744,22 @@ const TrainingSystem = {
         // Apply stat boosts based on training type (no XP for stat training)
         switch (this.trainingType) {
             case "power":
-                const attackBoost = Math.floor(this.sessionXP / 20);
+                const attackBoost = Math.floor(this.sessionXP / 40);
                 pet.stats.attack += attackBoost;
                 message = `Power Training Complete!\nAttack +${attackBoost}`;
                 break;
             case "defense":
-                const defenseBoost = Math.floor(this.sessionXP / 20);
+                const defenseBoost = Math.floor(this.sessionXP / 40);
                 pet.stats.defense += defenseBoost;
                 message = `Defense Training Complete!\nDefense +${defenseBoost}`;
                 break;
             case "speed":
-                const speedBoost = Math.floor(this.sessionXP / 20);
+                const speedBoost = Math.floor(this.sessionXP / 40);
                 pet.stats.speed += speedBoost;
                 message = `Speed Training Complete!\nSpeed +${speedBoost}`;
                 break;
             case "special":
-                const specialBoost = Math.floor(this.sessionXP / 20);
+                const specialBoost = Math.floor(this.sessionXP / 40);
                 pet.stats.special += specialBoost;
                 message = `Special Training Complete!\nSpecial +${specialBoost}`;
                 break;
@@ -771,13 +783,13 @@ const TrainingSystem = {
 
     canTrain(pet) {
         if (!pet.lastTraining) return true;
-        const cooldown = 5 * 60 * 1000; // 5 minutes
+        const cooldown = 1 * 60 * 1000; // 1 minute
         return Date.now() - pet.lastTraining > cooldown;
     },
 
     getCooldownRemaining(pet) {
         if (!pet.lastTraining) return 0;
-        const cooldown = 5 * 60 * 1000;
+        const cooldown = 1 * 60 * 1000;
         const remaining = cooldown - (Date.now() - pet.lastTraining);
         return Math.max(0, Math.ceil(remaining / 1000));
     }

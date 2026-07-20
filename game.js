@@ -304,6 +304,7 @@ const PetManager = {
     storage: [],
     selectedPet: null,
     maxPartySize: 6,
+    maxTotalPets: 300,
     petIdCounter: 0,
 
     createPet(typeId, level = 1) {
@@ -395,6 +396,9 @@ const PetManager = {
             if (!swapPet) return false;
             this.pets = this.pets.filter(p => String(p.id) !== String(partyPetIdToSwap));
             this.storage.push(swapPet);
+        }
+        if (this.pets.length + this.storage.length >= this.maxTotalPets) {
+            return false;
         }
         this.storage = this.storage.filter(p => String(p.id) !== String(storageId));
         this.pets.push(pet);
@@ -880,10 +884,12 @@ const BattleSystem = {
             PetManager.pets.push(wildPet);
             DataManager.save();
             return { success: true, reason: "Caught!" };
-        } else if (success) {
+        } else if (success && PetManager.pets.length + PetManager.storage.length < PetManager.maxTotalPets) {
             PetManager.storage.push(wildPet);
             DataManager.save();
             return { success: true, reason: "Caught! Sent to Pet Storage 📦." };
+        } else if (success) {
+            return { success: false, reason: "Storage full! (Max 300 total pets)" };
         } else {
             return { success: false, reason: "It broke free!" };
         }

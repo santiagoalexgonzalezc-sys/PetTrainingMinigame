@@ -3,6 +3,7 @@ const DataManager = {
     save() {
         const data = {
             pets: PetManager.pets,
+            storage: PetManager.storage,
             money: Economy.money,
             inventory: Economy.inventory,
             selectedPet: PetManager.selectedPet?.id || null,
@@ -16,6 +17,7 @@ const DataManager = {
         const data = JSON.parse(localStorage.getItem("petSimulator"));
         if (data) {
             PetManager.pets = data.pets || [];
+            PetManager.storage = data.storage || [];
             Economy.money = data.money || 100;
             Economy.inventory = data.inventory || { basicBall: 5, potion: 3 };
             // Handle both string and numeric IDs for backward compatibility
@@ -299,6 +301,7 @@ const Starters = ["emberFox", "aquaTurtle", "leafBunny", "boltMouse", "mindCat",
 // ==================== PET MANAGER ====================
 const PetManager = {
     pets: [],
+    storage: [],
     selectedPet: null,
     maxPartySize: 6,
     petIdCounter: 0,
@@ -366,9 +369,36 @@ const PetManager = {
 
     deletePet(id) {
         this.pets = this.pets.filter(p => String(p.id) !== String(id));
+        this.storage = this.storage.filter(p => String(p.id) !== String(id));
         if (String(this.selectedPet?.id) === String(id)) {
             this.selectedPet = this.pets[0] || null;
         }
+    },
+
+    depositPet(id) {
+        const pet = this.pets.find(p => String(p.id) === String(id));
+        if (!pet) return false;
+        this.pets = this.pets.filter(p => String(p.id) !== String(id));
+        this.storage.push(pet);
+        if (String(this.selectedPet?.id) === String(id)) {
+            this.selectedPet = this.pets[0] || null;
+        }
+        return true;
+    },
+
+    withdrawPet(storageId, partyPetIdToSwap = null) {
+        const pet = this.storage.find(p => String(p.id) === String(storageId));
+        if (!pet) return false;
+        if (this.pets.length >= this.maxPartySize) {
+            if (!partyPetIdToSwap) return false;
+            const swapPet = this.pets.find(p => String(p.id) === String(partyPetIdToSwap));
+            if (!swapPet) return false;
+            this.pets = this.pets.filter(p => String(p.id) !== String(partyPetIdToSwap));
+            this.storage.push(swapPet);
+        }
+        this.storage = this.storage.filter(p => String(p.id) !== String(storageId));
+        this.pets.push(pet);
+        return true;
     },
 
     selectPet(id) {
@@ -744,7 +774,9 @@ const BattleSystem = {
             DataManager.save();
             return { success: true, reason: "Caught!" };
         } else if (success) {
-            return { success: false, reason: "Party is full!" };
+            PetManager.storage.push(wildPet);
+            DataManager.save();
+            return { success: true, reason: "Caught! Sent to Pet Storage 📦." };
         } else {
             return { success: false, reason: "It broke free!" };
         }
@@ -940,6 +972,9 @@ const UIManager = {
         }
         if (screenId === "inventoryScreen") {
             this.renderInventory();
+        }
+        if (screenId === "storageScreen") {
+            this.renderStorage();
         }
     },
 
@@ -1251,6 +1286,82 @@ const UIManager = {
             DataManager.save();
             this.renderInventory();
             this.updatePetScreen();
+        }
+    },
+
+    // Pet Storage Screen
+    renderStorage() {
+        const grid = document.getElementById("storageGrid");
+        grid.innerHTML = "";
+        document.getElementById("storageCount").innerText = PetManager.storage.length;
+
+        if (PetManager.storage.length === 0) {
+            grid.innerHTML = "<p>No pets in storage yet. Catch more to fill it up!</p>";
+            return;
+        }
+
+        PetManager.storage.forEach(pet => {
+            const template = PetTypes[pet.typeId];
+            const evolution = PetManager.getEvolution(pet);
+            const maxHP = PetManager.calculateMaxHP(template, pet.level);
+            const hpPercent = (pet.currentHP / maxHP) * 100;
+            const xpNeeded = PetManager.xpNeeded(pet.level);
+            const xpPercent = (pet.xp / xpNeeded) * 100;
+
+            const card = document.createElement("div");
+            card.className = "shopItem";
+            card.innerHTML = `
+                <h3>${template.emoji} ${evolution}</h3>
+                <span class="typeBadge type-${template.type}">${template.type.toUpperCase()}</span>
+                <div class="stat">Level ${pet.level}</div>
+                <div class="hpBar"><div class="hpFill" style="width: ${hpPercent}%"></div></div>
+                <div class="stat">HP ${pet.currentHP}/${maxHP}</div>
+                <div class="xpBar"><div class="xpFill" style="width: ${xpPercent}%"></div></div>
+                <div class="stat">XP ${pet.xp}/${xpNeeded}</div>
+                <button onclick="UIManager.withdrawPet('${pet.id}')">↩ Withdraw</button>
+                <button onclick="UIManager.sellPet('${pet.id}')">Sell (${pet.level * 25}💰)</button>
+            `;
+            grid.appendChild(card);
+        });
+    },
+
+    withdrawPet(id) {
+        if (PetManager.pets.length >= PetManager.maxPartySize) {
+            const names = PetManager.pets.map(p => {
+                const t = PetTypes[p.typeId];
+                return `${t.emoji} ${PetManager.getEvolution(p)} (Lv ${p.level})`;
+            });
+            const choice = prompt(
+                "Your party is full! Choose a pet to swap out (enter its number):\n" +
+                PetManager.pets.map((p, i) => `${i + 1}. ${names[i]}`).join("\n")
+            );
+            const idx = parseInt(choice, 10) - 1;
+            if (isNaN(idx) || idx < 0 || idx >= PetManager.pets.length) {
+                alert("Withdraw cancelled.");
+                return;
+            }
+            const swapId = PetManager.pets[idx].id;
+            PetManager.withdrawPet(id, swapId);
+        } else {
+            PetManager.withdrawPet(id);
+        }
+        DataManager.save();
+        this.renderStorage();
+        this.renderPets();
+    },
+
+    depositSelectedPet() {
+        const pet = PetManager.selectedPet;
+        if (!pet) return;
+        if (PetManager.pets.length <= 1) {
+            alert("You can't deposit your last party member!");
+            return;
+        }
+        if (confirm(`Deposit ${PetTypes[pet.typeId].name} to storage?`)) {
+            PetManager.depositPet(pet.id);
+            DataManager.save();
+            this.showScreen("mainScreen");
+            this.renderPets();
         }
     }
 };

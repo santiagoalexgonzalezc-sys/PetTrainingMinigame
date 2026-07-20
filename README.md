@@ -13,6 +13,14 @@ PetTrainingMinigame is a browser-based pet collection and training game inspired
 - **Training Minigame** — A timing-based skill challenge: stop the moving marker in the GOOD or PERFECT zone to earn XP and stat boosts.
 - **Exploration** — 9 different zones (Forest, Cave, Lake, Mountain, Desert, Ocean, Volcano, Swamp, Sky), each with common and rare pet encounters.
 - **Turn-Based Battle System** — Fight wild pets with type effectiveness (including immunities), critical hits, and speed-based turn order.
+- **Passive Abilities** — Some pets now have functional passive abilities that trigger in battle:
+  - **Blaze** (Ember Fox) — damage scales up as HP drops (up to +40% at low HP).
+  - **Overgrow** (Leaf Bunny) — same low-HP damage boost for Grass types.
+  - **Torrent** — low-HP damage boost for Water types.
+  - **Intimidate** (Flame Cat) — lowers the enemy's attack on switch-in.
+- **Stat Modifiers** — Battle stats can be raised/lowered in stages (±25% per stage), enabling abilities like Intimidate to have a lasting effect.
+- **Pet Switching** — Mid-battle, switch to another party member via the 🔄 Switch button and overlay.
+- **Level Display** — Wild enemy pets now show their level on the battle screen.
 - **Catching System** — Use Basic, Great, or Ultra Balls to catch wild pets.
 - **Pet Storage** — When your party of 6 is full, caught pets are automatically sent to Pet Storage. Swap pets between your party and storage anytime via the 📦 Pet Storage screen or the Deposit/Withdraw buttons on each pet's detail page.
 - **Shop & Inventory** — Spend gold on balls and potions to heal your pets.
@@ -22,10 +30,10 @@ PetTrainingMinigame is a browser-based pet collection and training game inspired
 ## Stacks Used
 
 - **HTML5** — Page structure and game screens.
-- **CSS3** — Styling, layout (Flexbox/Grid), animations, and theming.
+- **Tailwind CSS (via CDN)** — Utility-first styling for layout, theming, and responsive grids. Loaded through `https://cdn.tailwindcss.com`.
 - **JavaScript (Vanilla)** — All game logic (no frameworks or libraries).
 
-No build tools or dependencies required — just open the files in a browser.
+No build tools or dependencies required — just open the files in a browser. An internet connection is needed on first load to fetch the Tailwind CDN.
 
 ## How to Run the Project
 

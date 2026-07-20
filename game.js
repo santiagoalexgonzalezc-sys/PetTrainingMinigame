@@ -247,7 +247,7 @@ const PetTypes = {
         emoji: "🐺",
         type: "dark",
         baseStats: { hp: 50, attack: 58, defense: 45, speed: 62, special: 50 },
-        ability: "Pack Hunter - Boosts attack when allies are present",
+        ability: "Alpha Hunter - Boosts attack when facing an stronger foe",
         evolution: ["Shadow Pup", "Umbra Wolf", "Nightfall Alpha"]
     },
     duskBat: {
@@ -256,7 +256,7 @@ const PetTypes = {
         type: "dark",
         baseStats: { hp: 45, attack: 45, defense: 42, speed: 72, special: 55 },
         ability: "Vampiric - Heals from a fraction of damage dealt",
-        evolution: ["Dusk Bat", "Night Bat", "Eclipse Wing"]
+        evolution: ["Dusk Bat", "Night Bat", "Vampire Emperor"]
     },
 
     // Fairy Types (NEW)

@@ -900,10 +900,8 @@ const TrainingSystem = {
     missCount: 0,
     speed: 0.7,
     maxMisses: 3,
-    trainingType: "general", // general, power, defense, speed, special
 
-    startTraining(type = "general") {
-        this.trainingType = type;
+    startTraining() {
         this.sessionXP = 0;
         this.missCount = 0;
         this.speed = 0.7;
@@ -973,36 +971,9 @@ const TrainingSystem = {
         const pet = PetManager.selectedPet;
         if (!pet) return;
         
-        let message = "";
+        const message = `Training Complete!\nXP Earned: ${this.sessionXP}`;
         
-        // Apply stat boosts based on training type (no XP for stat training)
-        switch (this.trainingType) {
-            case "power":
-                const attackBoost = Math.floor(this.sessionXP / 40);
-                pet.stats.attack += attackBoost;
-                message = `Power Training Complete!\nAttack +${attackBoost}`;
-                break;
-            case "defense":
-                const defenseBoost = Math.floor(this.sessionXP / 40);
-                pet.stats.defense += defenseBoost;
-                message = `Defense Training Complete!\nDefense +${defenseBoost}`;
-                break;
-            case "speed":
-                const speedBoost = Math.floor(this.sessionXP / 40);
-                pet.stats.speed += speedBoost;
-                message = `Speed Training Complete!\nSpeed +${speedBoost}`;
-                break;
-            case "special":
-                const specialBoost = Math.floor(this.sessionXP / 40);
-                pet.stats.special += specialBoost;
-                message = `Special Training Complete!\nSpecial +${specialBoost}`;
-                break;
-            default:
-                // General training grants XP for leveling
-                PetManager.gainXP(pet, this.sessionXP);
-                message = `Training Complete!\nXP Earned: ${this.sessionXP}`;
-        }
-        
+        PetManager.gainXP(pet, this.sessionXP);
         pet.lastTraining = Date.now();
         
         DataManager.save();
@@ -1011,7 +982,7 @@ const TrainingSystem = {
             alert(message);
             UIManager.showScreen("petScreen");
             UIManager.updatePetScreen();
-            UIManager.renderPets(); // Refresh main screen to show updated stats/XP
+            UIManager.renderPets();
         }, 300);
     },
 
@@ -1218,8 +1189,8 @@ const UIManager = {
     },
 
     // Training Screen
-    openTraining(type = "general") {
-        TrainingSystem.startTraining(type);
+    openTraining() {
+        TrainingSystem.startTraining();
         this.showScreen("trainingScreen");
     },
 

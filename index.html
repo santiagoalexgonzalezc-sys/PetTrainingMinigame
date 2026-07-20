@@ -4,45 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🐾 Pet Simulator</title>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="currencyDisplay" id="currencyDisplay">💰 <span>100</span></div>
+<body class="m-0 font-sans bg-gradient-to-b from-gray-900 to-black text-white text-center min-h-screen">
+    <div class="fixed top-2.5 right-2.5 bg-black/50 px-5 py-2.5 rounded-full z-50" id="currencyDisplay">💰 <span class="text-yellow-400 font-bold">100</span></div>
 
     <!-- STARTER SELECTION -->
-    <div id="starterScreen" class="screen">
+    <div id="starterScreen" class="hidden p-5">
         <h1>🐾 Choose Your Starter!</h1>
         <p>Select your first companion to begin your journey</p>
-        <div id="starterGrid" class="starterGrid"></div>
+        <div id="starterGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 max-w-4xl mx-5 my-5"></div>
     </div>
 
     <!-- MAIN SCREEN -->
-    <div id="mainScreen" class="screen">
+    <div id="mainScreen" class="hidden p-5">
         <h1>🐾 Pet Simulator</h1>
         <p>Party: <span id="partyCount">0</span>/6</p>
 
         <div id="petList"></div>
 
-        <button onclick="UIManager.showScreen('explorationScreen')">🗺️ Explore</button>
-        <button onclick="UIManager.showScreen('storageScreen')">📦 Pet Storage</button>
-        <button onclick="UIManager.showScreen('shopScreen')">🛒 Shop</button>
-        <button onclick="UIManager.showScreen('inventoryScreen')">🎒 Inventory</button>
-        <button onclick="DataManager.resetAccount()" style="background-color: #ff6b6b; color: white;">🔄 Reset Account</button>
+        <button onclick="UIManager.showScreen('explorationScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🗺️ Explore</button>
+        <button onclick="UIManager.showScreen('storageScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">📦 Pet Storage</button>
+        <button onclick="UIManager.showScreen('shopScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🛒 Shop</button>
+        <button onclick="UIManager.showScreen('inventoryScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎒 Inventory</button>
+        <button onclick="DataManager.resetAccount()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🔄 Reset Account</button>
     </div>
 
     <!-- PET DETAIL SCREEN -->
-    <div id="petScreen" class="screen">
+    <div id="petScreen" class="hidden p-5">
         <h2 id="petTitle"></h2>
 
-        <div class="infoBox">
+        <div class="w-full max-w-md mx-auto bg-white/10 rounded-2xl p-4">
             <div id="petEvolution"></div>
             <br>
 
             <div id="petLevel"></div>
             <div id="petXP"></div>
 
-            <div class="xpBar">
-                <div id="petXPFill" class="xpFill"></div>
+            <div class="w-full h-4.5 bg-gray-800 rounded-full overflow-hidden">
+                <div id="petXPFill" class="h-full w-0 bg-gradient-to-r from-green-400 to-blue-400 transition-all duration-300"></div>
             </div>
 
             <br>
@@ -51,102 +51,111 @@
 
             <br>
 
-            <button id="trainBtn" onclick="UIManager.openTraining('general')">🎯 Train</button>
-            <button onclick="UIManager.openTraining('power')">💪 Power Train</button>
-            <button onclick="UIManager.openTraining('defense')">🛡️ Defense Train</button>
-            <button onclick="UIManager.openTraining('speed')">⚡ Speed Train</button>
-            <button onclick="UIManager.openTraining('special')">✨ Special Train</button>
-            <button id="depositBtn" onclick="UIManager.depositSelectedPet()">↪ Deposit to Storage</button>
+            <button id="trainBtn" onclick="UIManager.openTraining('general')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎯 Train</button>
+            <button onclick="UIManager.openTraining('power')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">💪 Power Train</button>
+            <button onclick="UIManager.openTraining('defense')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🛡️ Defense Train</button>
+            <button onclick="UIManager.openTraining('speed')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⚡ Speed Train</button>
+            <button onclick="UIManager.openTraining('special')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">✨ Special Train</button>
+            <button id="depositBtn" onclick="UIManager.depositSelectedPet()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">↪ Deposit to Storage</button>
             <br><br>
-            <button onclick="UIManager.showScreen('mainScreen')">⬅ Back</button>
+            <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
         </div>
     </div>
 
     <!-- TRAINING SCREEN -->
-    <div id="trainingScreen" class="screen">
+    <div id="trainingScreen" class="hidden p-5">
         <h2>🎯 Training</h2>
         <p>Hit GOOD or PERFECT!</p>
 
-        <div id="barContainer">
-            <div id="goodZone" class="zone"></div>
-            <div id="perfectZone" class="zone"></div>
-            <div id="marker"></div>
+        <div id="barContainer" class="w-full max-w-2xl mx-5 my-8 h-8.5 bg-gray-800 rounded-2xl relative overflow-hidden">
+            <div id="goodZone" class="absolute h-full left-32% w-36% bg-green-400/12"></div>
+            <div id="perfectZone" class="absolute h-full left-47% w-6% bg-yellow-400/40"></div>
+            <div id="marker" class="absolute w-2 h-full bg-white shadow-lg shadow-white"></div>
         </div>
 
-        <button id="stopBtn">STOP</button>
-        <button onclick="UIManager.showScreen('petScreen')">Back</button>
+        <button id="stopBtn" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">STOP</button>
+        <button onclick="UIManager.showScreen('petScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Back</button>
 
-        <div id="trainResult" class="bigResult"></div>
+        <div id="trainResult" class="text-xl mt-4 min-h-10"></div>
 
         <h3 id="sessionXP">Session XP: 0</h3>
         <h3 id="misses">Misses: 0 / 3</h3>
     </div>
 
     <!-- EXPLORATION SCREEN -->
-    <div id="explorationScreen" class="screen">
+    <div id="explorationScreen" class="hidden p-5">
         <h2>🗺️ Explore</h2>
         <p>Choose a zone to search for wild pets</p>
-        <div id="zoneGrid" class="zoneGrid"></div>
+        <div id="zoneGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-5 my-5"></div>
         <br>
-        <button onclick="UIManager.showScreen('mainScreen')">⬅ Back</button>
+        <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
     </div>
 
     <!-- BATTLE SCREEN -->
-    <div id="battleScreen" class="screen">
+    <div id="battleScreen" class="hidden p-5">
         <h2>⚔️ Battle!</h2>
 
-        <div class="battleArena">
-            <div class="battlePet">
+        <div class="flex justify-between items-center max-w-4xl mx-5 my-5 p-5 bg-white/5 rounded-2xl">
+            <div class="text-center flex-1">
                 <div id="playerPetName"></div>
-                <div id="playerPetSprite" class="battlePetSprite"></div>
-                <div class="hpBar">
-                    <div id="playerHPFill" class="hpFill"></div>
+                <div id="playerPetSprite" class="text-6xl my-2.5"></div>
+                <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
+                    <div id="playerHPFill" class="h-full w-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300"></div>
                 </div>
-                <div id="playerHPText" class="stat"></div>
+                <div id="playerHPText" class="opacity-90 text-sm"></div>
             </div>
 
-            <div class="battleVS">VS</div>
+            <div class="text-2xl text-red-400 font-bold">VS</div>
 
-            <div class="battlePet">
+            <div class="text-center flex-1">
                 <div id="enemyPetName"></div>
-                <div id="enemyPetSprite" class="battlePetSprite"></div>
-                <div class="hpBar">
-                    <div id="enemyHPFill" class="hpFill"></div>
+                <div id="enemyPetLevel" class="text-sm opacity-70"></div>
+                <div id="enemyPetSprite" class="text-6xl my-2.5"></div>
+                <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
+                    <div id="enemyHPFill" class="h-full w-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300"></div>
                 </div>
-                <div id="enemyHPText" class="stat"></div>
+                <div id="enemyHPText" class="opacity-90 text-sm"></div>
             </div>
         </div>
 
-        <div id="battleLog" class="battleLog"></div>
+        <div id="battleLog" class="max-w-2xl mx-5 my-5 h-50 overflow-y-auto bg-black/30 rounded-xl p-4 text-left"></div>
 
-        <button id="attackBtn" onclick="UIManager.playerAttack()">⚔️ Attack</button>
-        <button id="catchBtn" onclick="UIManager.tryCatch()">🎱 Catch</button>
-        <button onclick="UIManager.fleeBattle()">🏃 Flee</button>
+        <button id="attackBtn" onclick="UIManager.playerAttack()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⚔️ Attack</button>
+        <button id="switchBtn" onclick="UIManager.openSwitchOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🔄 Switch</button>
+        <button id="catchBtn" onclick="UIManager.tryCatch()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎱 Catch</button>
+        <button onclick="UIManager.fleeBattle()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🏃 Flee</button>
+    </div>
+
+    <!-- PET SWITCH OVERLAY -->
+    <div id="switchOverlay" class="hidden fixed inset-0 bg-black/80 z-50 p-5 overflow-y-auto">
+        <h2>🔄 Select a Pet to Switch In</h2>
+        <div id="switchGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-5 my-5"></div>
+        <button onclick="UIManager.closeSwitchOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
     </div>
 
     <!-- SHOP SCREEN -->
-    <div id="shopScreen" class="screen">
+    <div id="shopScreen" class="hidden p-5">
         <h2>🛒 Shop</h2>
-        <div id="shopGrid" class="shopGrid"></div>
+        <div id="shopGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-5 my-5"></div>
         <br>
-        <button onclick="UIManager.showScreen('mainScreen')">⬅ Back</button>
+        <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
     </div>
 
     <!-- INVENTORY SCREEN -->
-    <div id="inventoryScreen" class="screen">
+    <div id="inventoryScreen" class="hidden p-5">
         <h2>🎒 Inventory</h2>
-        <div id="inventoryGrid" class="inventoryGrid"></div>
+        <div id="inventoryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-w-3xl mx-5 my-5"></div>
         <br>
-        <button onclick="UIManager.showScreen('mainScreen')">⬅ Back</button>
+        <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
     </div>
 
     <!-- PET STORAGE SCREEN -->
-    <div id="storageScreen" class="screen">
+    <div id="storageScreen" class="hidden p-5">
         <h2>📦 Pet Storage</h2>
         <p>Stored pets: <span id="storageCount">0</span></p>
-        <div id="storageGrid" class="shopGrid"></div>
+        <div id="storageGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-5 my-5"></div>
         <br>
-        <button onclick="UIManager.showScreen('mainScreen')">⬅ Back</button>
+        <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
     </div>
 
     <script src="game.js"></script>

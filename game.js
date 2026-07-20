@@ -568,6 +568,76 @@ const Exploration = {
     }
 };
 
+// ==================== ABILITY SYSTEM ====================
+const AbilitySystem = {
+    getPassiveAbilityMultiplier(attacker) {
+        const template = PetTypes[attacker.typeId];
+        if (!template || !template.ability) return 1;
+        
+        const ability = template.ability;
+        const maxHP = PetManager.calculateMaxHP(template, attacker.level);
+        const hpPercent = (attacker.currentHP / maxHP) * 100;
+        
+        // Blaze - Fire type, HP-based damage boost
+        if (ability.includes("Blaze") && template.type === "fire") {
+            if (hpPercent >= 70) return 1.05;
+            if (hpPercent <= 20) return 1.40;
+            // Linear interpolation between 70% and 20%
+            const range = 70 - 20;
+            const currentRange = hpPercent - 20;
+            const progress = 1 - (currentRange / range);
+            const boostRange = 0.40 - 0.05;
+            return 1.05 + (progress * boostRange);
+        }
+        
+        // Overgrow - Grass type, HP-based damage boost
+        if (ability.includes("Overgrow") && template.type === "grass") {
+            if (hpPercent >= 70) return 1.05;
+            if (hpPercent <= 20) return 1.40;
+            const range = 70 - 20;
+            const currentRange = hpPercent - 20;
+            const progress = 1 - (currentRange / range);
+            const boostRange = 0.40 - 0.05;
+            return 1.05 + (progress * boostRange);
+        }
+        
+        // Torrent - Water type, HP-based damage boost
+        if (ability.includes("Torrent") && template.type === "water") {
+            if (hpPercent >= 70) return 1.05;
+            if (hpPercent <= 20) return 1.40;
+            const range = 70 - 20;
+            const currentRange = hpPercent - 20;
+            const progress = 1 - (currentRange / range);
+            const boostRange = 0.40 - 0.05;
+            return 1.05 + (progress * boostRange);
+        }
+        
+        return 1;
+    },
+    
+    triggerSwitchAbility(switchingPet, enemyPet, battleSystem) {
+        const template = PetTypes[switchingPet.typeId];
+        if (!template || !template.ability) return;
+        
+        const ability = template.ability;
+        
+        // Intimidate - Lowers enemy attack by 1 stage
+        if (ability.includes("Intimidate")) {
+            battleSystem.enemyStatMods.attack = Math.min(6, battleSystem.enemyStatMods.attack - 1);
+            battleSystem.addLog(`${template.name}'s Intimidate lowered enemy's attack!`);
+        }
+        
+        // Flash Fire - Immune to Fire, boosts Fire damage when hit by Fire
+        // (This would be triggered when hit by Fire, not on switch)
+        
+        // Water Absorb - Heals from Water moves
+        // (This would be triggered when hit by Water, not on switch)
+        
+        // Volt Absorb - Heals from Electric moves
+        // (This would be triggered when hit by Electric, not on switch)
+    }
+};
+
 // ==================== BATTLE SYSTEM ====================
 const BattleSystem = {
     petsDefeated: 0,
@@ -595,6 +665,8 @@ const BattleSystem = {
         this.playerPet = { ...playerPet };
         this.enemyPet = { ...enemyPet };
         this.battleLog = [];
+        this.playerStatMods = { attack: 0, defense: 0, speed: 0, special: 0 };
+        this.enemyStatMods = { attack: 0, defense: 0, speed: 0, special: 0 };
         
         // Determine who goes first by speed
         const playerSpeed = this.playerPet.stats.speed;
@@ -614,6 +686,27 @@ const BattleSystem = {
         }
     },
 
+    switchPet(newPet) {
+        // Save current pet HP
+        const actualCurrentPet = PetManager.pets.find(p => String(p.id) === String(this.playerPet.id));
+        if (actualCurrentPet) {
+            actualCurrentPet.currentHP = this.playerPet.currentHP;
+        }
+        
+        // Switch to new pet
+        this.playerPet = { ...newPet };
+        this.addLog(`${this.getPetName(this.playerPet)} was sent out!`);
+        
+        // Trigger switch abilities
+        AbilitySystem.triggerSwitchAbility(this.playerPet, this.enemyPet, this);
+        
+        UIManager.updateBattleScreen();
+        
+        // Enemy gets their turn after switch
+        this.isPlayerTurn = false;
+        setTimeout(() => this.enemyTurn(), 1000);
+    },
+
     getPetName(pet) {
         const template = PetTypes[pet.typeId];
         return template.evolution[0];
@@ -629,9 +722,16 @@ const BattleSystem = {
         const attackerTemplate = PetTypes[attacker.typeId];
         const defenderTemplate = PetTypes[defender.typeId];
         
-        const attack = attacker.stats.attack;
-        const defense = defender.stats.defense;
-        const special = attacker.stats.special;
+        // Apply stat modifiers
+        const attackerMods = attacker === this.playerPet ? this.playerStatMods : this.enemyStatMods;
+        const defenderMods = defender === this.playerPet ? this.playerStatMods : this.enemyStatMods;
+        
+        const attackMod = Math.pow(1.25, attackerMods.attack);
+        const defenseMod = Math.pow(1.25, defenderMods.defense);
+        
+        const attack = Math.floor(attacker.stats.attack * attackMod);
+        const defense = Math.floor(defender.stats.defense * defenseMod);
+        const special = Math.floor(attacker.stats.special * Math.pow(1.25, attackerMods.special));
         
         // Use higher of attack or special
         const offensiveStat = Math.max(attack, special);
@@ -653,6 +753,10 @@ const BattleSystem = {
         
         // Random variance (0.85-1.0)
         damage = Math.floor(damage * (0.85 + Math.random() * 0.15));
+        
+        // Apply passive ability multiplier
+        const abilityMultiplier = AbilitySystem.getPassiveAbilityMultiplier(attacker);
+        damage = Math.floor(damage * abilityMultiplier);
         
         // Reduce all damage by 75% for fairer battles
         damage = Math.floor(damage * 0.25);
@@ -960,8 +1064,8 @@ const UIManager = {
     },
 
     showScreen(screenId) {
-        document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-        document.getElementById(screenId).classList.add("active");
+        document.querySelectorAll("[id$=Screen]").forEach(s => s.classList.add("hidden"));
+        document.getElementById(screenId).classList.remove("hidden");
         
         // Render content when showing specific screens
         if (screenId === "shopScreen") {
@@ -990,16 +1094,32 @@ const UIManager = {
         Starters.forEach(typeId => {
             const template = PetTypes[typeId];
             const card = document.createElement("div");
-            card.className = "starterCard";
+            card.className = "bg-white/10 rounded-2xl p-5 cursor-pointer transition-all duration-200 border-2 border-transparent hover:bg-white/12 hover:-translate-y-1";
             card.innerHTML = `
-                <div style="font-size: 3rem">${template.emoji}</div>
+                <div class="text-5xl">${template.emoji}</div>
                 <h3>${template.name}</h3>
-                <span class="typeBadge type-${template.type}">${template.type.toUpperCase()}</span>
-                <p style="font-size: 0.85rem; margin-top: 10px">${template.ability}</p>
+                <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
+                <p class="text-xs mt-2.5">${template.ability}</p>
             `;
             card.onclick = () => Game.selectStarter(typeId);
             grid.appendChild(card);
         });
+    },
+
+    getTypeColorClass(type) {
+        const colors = {
+            fire: "bg-red-400",
+            water: "bg-blue-400",
+            grass: "bg-green-400",
+            electric: "bg-yellow-400 text-gray-900",
+            psychic: "bg-purple-400",
+            ice: "bg-sky-400",
+            dragon: "bg-violet-400",
+            dark: "bg-gray-600",
+            fairy: "bg-pink-400",
+            normal: "bg-gray-400 text-gray-900"
+        };
+        return colors[type] || "bg-gray-400 text-gray-900";
     },
 
     // Main Screen
@@ -1018,24 +1138,24 @@ const UIManager = {
             const xpPercent = (pet.xp / xpNeeded) * 100;
             
             const card = document.createElement("div");
-            card.className = "petCard";
+            card.className = "w-full max-w-md mx-auto bg-white/10 rounded-2xl p-3.5 my-2.5";
             card.innerHTML = `
                 <h3>${template.emoji} ${evolution}</h3>
-                <span class="typeBadge type-${template.type}">${template.type.toUpperCase()}</span>
-                <div class="stat">Level ${pet.level}</div>
+                <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
+                <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 
-                <div class="hpBar">
-                    <div class="hpFill" style="width: ${hpPercent}%"></div>
+                <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div>
                 </div>
-                <div class="stat">HP ${pet.currentHP}/${maxHP}</div>
+                <div class="opacity-90 text-sm">HP ${pet.currentHP}/${maxHP}</div>
                 
-                <div class="xpBar">
-                    <div class="xpFill" style="width: ${xpPercent}%"></div>
+                <div class="w-full h-4.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-green-400 to-blue-400 transition-all duration-300" style="width: ${xpPercent}%"></div>
                 </div>
-                <div class="stat">XP ${pet.xp}/${xpNeeded}</div>
+                <div class="opacity-90 text-sm">XP ${pet.xp}/${xpNeeded}</div>
                 
-                <button onclick="UIManager.selectPet('${pet.id}')">Select</button>
-                <button onclick="UIManager.sellPet('${pet.id}')">Sell (${pet.level * 25}💰)</button>
+                <button onclick="UIManager.selectPet('${pet.id}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Select</button>
+                <button onclick="UIManager.sellPet('${pet.id}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Sell (${pet.level * 25}💰)</button>
             `;
             list.appendChild(card);
         });
@@ -1076,15 +1196,15 @@ const UIManager = {
         document.getElementById("petXPFill").style.width = (pet.xp / xpNeeded) * 100 + "%";
         
         document.getElementById("petStats").innerHTML = `
-            <span class="typeBadge type-${template.type}">${template.type.toUpperCase()}</span>
+            <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
             <br><br>
-            <div class="stat">HP: ${pet.currentHP}/${maxHP}</div>
-            <div class="stat">Attack: ${pet.stats.attack}</div>
-            <div class="stat">Defense: ${pet.stats.defense}</div>
-            <div class="stat">Speed: ${pet.stats.speed}</div>
-            <div class="stat">Special: ${pet.stats.special}</div>
+            <div class="opacity-90 text-sm">HP: ${pet.currentHP}/${maxHP}</div>
+            <div class="opacity-90 text-sm">Attack: ${pet.stats.attack}</div>
+            <div class="opacity-90 text-sm">Defense: ${pet.stats.defense}</div>
+            <div class="opacity-90 text-sm">Speed: ${pet.stats.speed}</div>
+            <div class="opacity-90 text-sm">Special: ${pet.stats.special}</div>
             <br>
-            <div class="stat" style="font-size: 0.85rem">Ability: ${template.ability}</div>
+            <div class="opacity-90 text-xs">Ability: ${template.ability}</div>
         `;
         
         const canTrain = TrainingSystem.canTrain(pet);
@@ -1116,12 +1236,12 @@ const UIManager = {
         for (const [zoneId, zone] of Object.entries(Exploration.zones)) {
             const cooldown = Exploration.getCooldownRemaining(zoneId);
             const card = document.createElement("div");
-            card.className = `zoneCard ${cooldown > 0 ? "exploring" : ""}`;
+            card.className = `bg-white/10 rounded-2xl p-5 cursor-pointer transition-all duration-200 ${cooldown > 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-white/12 hover:-translate-y-1"}`;
             card.innerHTML = `
-                <div style="font-size: 2.5rem">${zone.emoji}</div>
+                <div class="text-5xl">${zone.emoji}</div>
                 <h3>${zone.name}</h3>
-                <p style="font-size: 0.85rem">Encounter Rate: ${(zone.encounterRate * 100).toFixed(0)}%</p>
-                ${cooldown > 0 ? `<p style="color: #ff6b6b">Cooldown: ${cooldown}s</p>` : ""}
+                <p class="text-xs">Encounter Rate: ${(zone.encounterRate * 100).toFixed(0)}%</p>
+                ${cooldown > 0 ? `<p class="text-red-400">Cooldown: ${cooldown}s</p>` : ""}
             `;
             
             if (cooldown === 0) {
@@ -1168,6 +1288,7 @@ const UIManager = {
         document.getElementById("enemyPetSprite").innerText = enemyTemplate.emoji;
         document.getElementById("playerPetName").innerText = PetManager.getEvolution(player);
         document.getElementById("enemyPetName").innerText = PetManager.getEvolution(enemy);
+        document.getElementById("enemyPetLevel").innerText = `Level ${enemy.level}`;
         
         document.getElementById("playerHPFill").style.width = (player.currentHP / playerMaxHP) * 100 + "%";
         document.getElementById("enemyHPFill").style.width = (enemy.currentHP / enemyMaxHP) * 100 + "%";
@@ -1177,20 +1298,66 @@ const UIManager = {
         // Update battle log
         const log = document.getElementById("battleLog");
         log.innerHTML = BattleSystem.battleLog.map(entry => 
-            `<div class="battleLogEntry">${entry.text}</div>`
+            `<div class="py-1 border-b border-white/10">${entry.text}</div>`
         ).join("");
         
         // Update buttons based on turn
         const attackBtn = document.getElementById("attackBtn");
+        const switchBtn = document.getElementById("switchBtn");
         const catchBtn = document.getElementById("catchBtn");
         attackBtn.disabled = !BattleSystem.isPlayerTurn;
         attackBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
+        switchBtn.disabled = !BattleSystem.isPlayerTurn;
+        switchBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
         catchBtn.style.display = BattleSystem.active ? "inline-block" : "none";
     },
 
     playerAttack() {
         if (!BattleSystem.active) return;
         BattleSystem.playerTurn();
+    },
+
+    openSwitchOverlay() {
+        if (!BattleSystem.active || !BattleSystem.isPlayerTurn) {
+            alert("Can only switch during your turn!");
+            return;
+        }
+        
+        const grid = document.getElementById("switchGrid");
+        grid.innerHTML = "";
+        
+        PetManager.pets.forEach(pet => {
+            if (String(pet.id) === String(BattleSystem.playerPet.id)) return; // Don't show current pet
+            if (pet.currentHP <= 0) return; // Don't show fainted pets
+            
+            const template = PetTypes[pet.typeId];
+            const evolution = PetManager.getEvolution(pet);
+            const maxHP = PetManager.calculateMaxHP(template, pet.level);
+            const hpPercent = (pet.currentHP / maxHP) * 100;
+            
+            const card = document.createElement("div");
+            card.className = "bg-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/20 transition-all";
+            card.innerHTML = `
+                <h3>${template.emoji} ${evolution}</h3>
+                <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
+                <div class="opacity-90 text-sm">Level ${pet.level}</div>
+                <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div>
+                </div>
+                <div class="opacity-90 text-sm">HP ${pet.currentHP}/${maxHP}</div>
+            `;
+            card.onclick = () => {
+                BattleSystem.switchPet(pet);
+                this.closeSwitchOverlay();
+            };
+            grid.appendChild(card);
+        });
+        
+        document.getElementById("switchOverlay").classList.remove("hidden");
+    },
+
+    closeSwitchOverlay() {
+        document.getElementById("switchOverlay").classList.add("hidden");
     },
 
     tryCatch() {
@@ -1231,13 +1398,13 @@ const UIManager = {
         
         for (const [itemId, item] of Object.entries(Economy.shopItems)) {
             const card = document.createElement("div");
-            card.className = "shopItem";
+            card.className = "bg-white/10 rounded-xl p-4 text-center";
             card.innerHTML = `
                 <h3>${item.name}</h3>
-                <p style="font-size: 0.85rem">${item.type === "catch" ? "Catch Item" : "Healing Item"}</p>
-                <div class="shopItemPrice">${item.price} 💰</div>
+                <p class="text-xs">${item.type === "catch" ? "Catch Item" : "Healing Item"}</p>
+                <div class="text-yellow-400 font-bold my-2.5">${item.price} 💰</div>
                 <div>Owned: ${Economy.inventory[itemId] || 0}</div>
-                <button onclick="UIManager.buyItem('${itemId}')">Buy</button>
+                <button onclick="UIManager.buyItem('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Buy</button>
             `;
             grid.appendChild(card);
         }
@@ -1265,11 +1432,11 @@ const UIManager = {
             if (!item) continue; // Skip invalid items
             
             const card = document.createElement("div");
-            card.className = "inventoryItem";
+            card.className = "bg-white/10 rounded-xl p-4 text-center relative";
             card.innerHTML = `
-                <div class="itemCount">${count}</div>
+                <div class="absolute top-1 right-1 bg-red-400 rounded-full w-6 h-6 text-xs leading-6">${count}</div>
                 <h4>${item.name}</h4>
-                ${item.type === "heal" ? `<button onclick="UIManager.useItem('${itemId}')">Use</button>` : ""}
+                ${item.type === "heal" ? `<button onclick="UIManager.useItem('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Use</button>` : ""}
             `;
             grid.appendChild(card);
         }
@@ -1309,17 +1476,17 @@ const UIManager = {
             const xpPercent = (pet.xp / xpNeeded) * 100;
 
             const card = document.createElement("div");
-            card.className = "shopItem";
+            card.className = "bg-white/10 rounded-xl p-4 text-center";
             card.innerHTML = `
                 <h3>${template.emoji} ${evolution}</h3>
-                <span class="typeBadge type-${template.type}">${template.type.toUpperCase()}</span>
-                <div class="stat">Level ${pet.level}</div>
-                <div class="hpBar"><div class="hpFill" style="width: ${hpPercent}%"></div></div>
-                <div class="stat">HP ${pet.currentHP}/${maxHP}</div>
-                <div class="xpBar"><div class="xpFill" style="width: ${xpPercent}%"></div></div>
-                <div class="stat">XP ${pet.xp}/${xpNeeded}</div>
-                <button onclick="UIManager.withdrawPet('${pet.id}')">↩ Withdraw</button>
-                <button onclick="UIManager.sellPet('${pet.id}')">Sell (${pet.level * 25}💰)</button>
+                <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
+                <div class="opacity-90 text-sm">Level ${pet.level}</div>
+                <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div></div>
+                <div class="opacity-90 text-sm">HP ${pet.currentHP}/${maxHP}</div>
+                <div class="w-full h-4.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-green-400 to-blue-400 transition-all duration-300" style="width: ${xpPercent}%"></div></div>
+                <div class="opacity-90 text-sm">XP ${pet.xp}/${xpNeeded}</div>
+                <button onclick="UIManager.withdrawPet('${pet.id}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">↩ Withdraw</button>
+                <button onclick="UIManager.sellPet('${pet.id}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Sell (${pet.level * 25}💰)</button>
             `;
             grid.appendChild(card);
         });

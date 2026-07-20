@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pet Save Inspector</title>
+<style>
+  body { font-family: monospace; background: #111; color: #eee; padding: 20px; }
+  h2 { margin-top: 30px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+  select, button { padding: 6px 10px; margin: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; cursor: pointer; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #222; }
+  th { background: #1a1a1a; position: sticky; top: 0; }
+  tr:hover { background: #1a1a1a; }
+  .section { margin-bottom: 40px; }
+  .filter-bar { margin: 10px 0; }
+</style>
+</head>
+<body>
+<h1>Pet Save Inspector</h1>
+
+<div class="section">
+  <h2>Most Powerful Pets (by Stats + Level)</h2>
+  <div class="filter-bar">
+    <label>Type Filter: </label>
+    <select id="powerTypeFilter" onchange="renderPowerful()">
+      <option value="all">All Types</option>
+      <option value="fire">Fire</option>
+      <option value="water">Water</option>
+      <option value="grass">Grass</option>
+      <option value="electric">Electric</option>
+      <option value="psychic">Psychic</option>
+      <option value="ice">Ice</option>
+      <option value="dragon">Dragon</option>
+      <option value="dark">Dark</option>
+      <option value="fairy">Fairy</option>
+      <option value="normal">Normal</option>
+    </select>
+    <button onclick="renderPowerful()">Refresh</button>
+  </div>
+  <table id="powerTable">
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Weakest Pets by Level (Weakest → Strongest)</h2>
+  <div class="filter-bar">
+    <label>Type Filter: </label>
+    <select id="weakLevelTypeFilter" onchange="renderWeakLevel()">
+      <option value="all">All Types</option>
+      <option value="fire">Fire</option>
+      <option value="water">Water</option>
+      <option value="grass">Grass</option>
+      <option value="electric">Electric</option>
+      <option value="psychic">Psychic</option>
+      <option value="ice">Ice</option>
+      <option value="dragon">Dragon</option>
+      <option value="dark">Dark</option>
+      <option value="fairy">Fairy</option>
+      <option value="normal">Normal</option>
+    </select>
+    <button onclick="renderWeakLevel()">Refresh</button>
+  </div>
+  <table id="weakLevelTable">
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Location</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Weakest Pets by Stats (Weakest → Strongest)</h2>
+  <div class="filter-bar">
+    <label>Type Filter: </label>
+    <select id="weakStatsTypeFilter" onchange="renderWeakStats()">
+      <option value="all">All Types</option>
+      <option value="fire">Fire</option>
+      <option value="water">Water</option>
+      <option value="grass">Grass</option>
+      <option value="electric">Electric</option>
+      <option value="psychic">Psychic</option>
+      <option value="ice">Ice</option>
+      <option value="dragon">Dragon</option>
+      <option value="dark">Dark</option>
+      <option value="fairy">Fairy</option>
+      <option value="normal">Normal</option>
+    </select>
+    <button onclick="renderWeakStats()">Refresh</button>
+  </div>
+  <table id="weakStatsTable">
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>All Pets (Party + Storage)</h2>
+  <div class="filter-bar">
+    <label>Type Filter: </label>
+    <select id="allTypeFilter" onchange="renderAll()">
+      <option value="all">All Types</option>
+      <option value="fire">Fire</option>
+      <option value="water">Water</option>
+      <option value="grass">Grass</option>
+      <option value="electric">Electric</option>
+      <option value="psychic">Psychic</option>
+      <option value="ice">Ice</option>
+      <option value="dragon">Dragon</option>
+      <option value="dark">Dark</option>
+      <option value="fairy">Fairy</option>
+      <option value="normal">Normal</option>
+    </select>
+    <button onclick="renderAll()">Refresh</button>
+  </div>
+  <table id="allTable">
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Location</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="section">
+  <h2>Raw Save Data</h2>
+  <pre id="raw" style="background:#000; padding:10px; max-height:300px; overflow:auto;"></pre>
+</div>
+
+<script>
+const TYPES = {
+  fire:"Fire", water:"Water", grass:"Grass", electric:"Electric", psychic:"Psychic",
+  ice:"Ice", dragon:"Dragon", dark:"Dark", fairy:"Fairy", normal:"Normal"
+};
+
+const PET_TEMPLATES = {
+  emberFox:{name:"Ember Fox",emoji:"🦊",type:"fire",baseStats:{hp:45},evolution:["Ember Fox","Inferno Fox","Phoenix Lord"]},
+  flameCat:{name:"Flame Cat",emoji:"🐱",type:"fire",baseStats:{hp:48},evolution:["Flame Cat","Blaze Cat","Magma Tiger"]},
+  sparkDog:{name:"Spark Dog",emoji:"🐶",type:"fire",baseStats:{hp:50},evolution:["Spark Dog","Fire Hound","Inferno Wolf"]},
+  cinderScorpion:{name:"Cinder Scorpion",emoji:"🦂",type:"fire",baseStats:{hp:48},evolution:["Spark Tail","Cinder Scorpion","Inferno Stinger"]},
+  aquaTurtle:{name:"Aqua Turtle",emoji:"🐢",type:"water",baseStats:{hp:55},evolution:["Aqua Turtle","Hydro Turtle","Ocean Guardian"]},
+  mistFrog:{name:"Mist Frog",emoji:"🐸",type:"water",baseStats:{hp:50},evolution:["Mist Frog","Storm Frog","Tidal King"]},
+  waveWhale:{name:"Wave Whale",emoji:"🐋",type:"water",baseStats:{hp:60},evolution:["Wave Whale","Tsunami Whale","Leviathan"]},
+  leafBunny:{name:"Leaf Bunny",emoji:"🐰",type:"grass",baseStats:{hp:45},evolution:["Leaf Bunny","Forest Bunny","Nature Spirit"]},
+  vineSnake:{name:"Vine Snake",emoji:"🐍",type:"grass",baseStats:{hp:48},evolution:["Vine Snake","Thorn Snake","Jungle Serpent"]},
+  mossBear:{name:"Moss Bear",emoji:"🐻",type:"grass",baseStats:{hp:60},evolution:["Moss Bear","Forest Bear","Earth Guardian"]},
+  boltMouse:{name:"Bolt Mouse",emoji:"🐭",type:"electric",baseStats:{hp:40},evolution:["Bolt Mouse","Volt Mouse","Thunder Lord"]},
+  shockEel:{name:"Shock Eel",emoji:"🐟",type:"electric",baseStats:{hp:50},evolution:["Shock Eel","Storm Eel","Lightning Serpent"]},
+  zapBird:{name:"Zap Bird",emoji:"🐦",type:"electric",baseStats:{hp:45},evolution:["Zap Bird","Storm Bird","Thunder Hawk"]},
+  mindCat:{name:"Mind Cat",emoji:"😺",type:"psychic",baseStats:{hp:45},evolution:["Mind Cat","Psi Cat","Telepath Master"]},
+  dreamOwl:{name:"Dream Owl",emoji:"🦉",type:"psychic",baseStats:{hp:50},evolution:["Dream Owl","Night Owl","Vision Sage"]},
+  cosmicFox:{name:"Cosmic Fox",emoji:"🦊",type:"psychic",baseStats:{hp:48},evolution:["Cosmic Fox","Star Fox","Galaxy Lord"]},
+  frostPenguin:{name:"Frost Penguin",emoji:"🐧",type:"ice",baseStats:{hp:52},evolution:["Frost Penguin","Glacier Penguin","Ice Emperor"]},
+  crystalSeal:{name:"Crystal Seal",emoji:"🦭",type:"ice",baseStats:{hp:55},evolution:["Crystal Seal","Diamond Seal","Frost Guardian"]},
+  frostBear:{name:"Frost Bear",emoji:"🐻‍❄️",type:"ice",baseStats:{hp:65},evolution:["Ice Cub","Frost Bear","Tundra King"]},
+  scaleLizard:{name:"Scale Lizard",emoji:"🦎",type:"dragon",baseStats:{hp:50},evolution:["Scale Lizard","Dragon Lizard","Wyvern King"]},
+  drakeWhelp:{name:"Drake Whelp",emoji:"🐉",type:"dragon",baseStats:{hp:55},evolution:["Drake Whelp","Storm Drake","Dragon Emperor"]},
+  crystalWyrm:{name:"Crystal Wyrm",emoji:"🐉",type:"dragon",baseStats:{hp:55},evolution:["Shard Hatchling","Crystal Wyrm","Geode Leviathan"]},
+  marshCroc:{name:"Marsh Croc",emoji:"🐊",type:"dragon",baseStats:{hp:60},evolution:["Mud Wader","Marsh Croc","Bog Tyrant"]},
+  shadowWolf:{name:"Shadow Wolf",emoji:"🐺",type:"dark",baseStats:{hp:50},evolution:["Shadow Pup","Umbra Wolf","Nightfall Alpha"]},
+  duskBat:{name:"Dusk Bat",emoji:"🦇",type:"dark",baseStats:{hp:45},evolution:["Dusk Bat","Night Bat","Vampire Emperor"]},
+  moonPixie:{name:"Moon Pixie",emoji:"🦄",type:"fairy",baseStats:{hp:48},evolution:["Star Fawn","Moon Pixie","Astral Spirit"]},
+  glimmerMoth:{name:"Glimmer Moth",emoji:"🦋",type:"fairy",baseStats:{hp:42},evolution:["Dust Wisp","Glimmer Moth","Prism Sovereign"]},
+  cloudSheep:{name:"Cloud Sheep",emoji:"🐑",type:"normal",baseStats:{hp:62},evolution:["Wool Lamb","Cloud Sheep","Sky Shepherd"]},
+  fieldDeer:{name:"Field Deer",emoji:"🦌",type:"normal",baseStats:{hp:50},evolution:["Spotted Fawn","Field Deer","Forest Monarch"]}
+};
+
+function getData() {
+  const raw = localStorage.getItem("petSimulator");
+  return raw ? JSON.parse(raw) : null;
+}
+
+function getEvolutionName(pet) {
+  const tpl = PET_TEMPLATES[pet.typeId];
+  if (!tpl) return pet.typeId;
+  const evo = tpl.evolution;
+  if (pet.level >= 30) return evo[2];
+  if (pet.level >= 15) return evo[1];
+  return evo[0];
+}
+
+function calculateMaxHP(pet) {
+  const tpl = PET_TEMPLATES[pet.typeId];
+  if (!tpl || !tpl.baseStats) return pet.currentHP || 0;
+  const baseHP = tpl.baseStats.hp || 0;
+  return Math.floor((baseHP * 2 * pet.level) / 100) + pet.level + 10;
+}
+
+function powerScore(pet) {
+  const s = pet.stats || {};
+  const maxHP = calculateMaxHP(pet);
+  return maxHP + (s.attack||0) + (s.defense||0) + (s.speed||0) + (s.special||0) + (pet.level||0) * 5;
+}
+
+function getTemplate(typeId) {
+  return PET_TEMPLATES[typeId] || {name:typeId, emoji:"❓", type:"?"};
+}
+
+function petRow(pet, idx, loc) {
+  const t = getTemplate(pet.typeId);
+  const evoName = getEvolutionName(pet);
+  const maxHP = calculateMaxHP(pet);
+  return `<tr>
+    <td>${idx}</td>
+    <td>${t.emoji} ${evoName}</td>
+    <td>${TYPES[t.type]||t.type}</td>
+    <td>${pet.level}</td>
+    <td>${maxHP}</td>
+    <td>${pet.stats.attack}</td>
+    <td>${pet.stats.defense}</td>
+    <td>${pet.stats.speed}</td>
+    <td>${pet.stats.special}</td>
+    <td>${loc !== undefined ? loc : ""}</td>
+  </tr>`;
+}
+
+function renderPowerful() {
+  const data = getData();
+  const tbody = document.querySelector("#powerTable tbody");
+  if (!data || !data.pets || !data.pets.length) {
+    tbody.innerHTML = "<tr><td colspan='10'>No pets found.</td></tr>";
+    return;
+  }
+  const filter = document.getElementById("powerTypeFilter").value;
+  let list = data.pets.map(p => ({...p, _score: powerScore(p)}));
+  if (filter !== "all") {
+    list = list.filter(p => getTemplate(p.typeId).type === filter);
+  }
+  list.sort((a,b) => b._score - a._score);
+  tbody.innerHTML = list.slice(0,50).map((p,i) => {
+    const t = getTemplate(p.typeId);
+    const evoName = getEvolutionName(p);
+    const maxHP = calculateMaxHP(p);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${t.emoji} ${evoName}</td>
+      <td>${TYPES[t.type]||t.type}</td>
+      <td>${p.level}</td>
+      <td>${maxHP}</td>
+      <td>${p.stats.attack}</td>
+      <td>${p.stats.defense}</td>
+      <td>${p.stats.speed}</td>
+      <td>${p.stats.special}</td>
+      <td>${p._score}</td>
+    </tr>`;
+  }).join("");
+}
+
+function renderWeakLevel() {
+  const data = getData();
+  const tbody = document.querySelector("#weakLevelTable tbody");
+  if (!data) {
+    tbody.innerHTML = "<tr><td colspan='10'>No save data.</td></tr>";
+    return;
+  }
+  const filter = document.getElementById("weakLevelTypeFilter").value;
+  let rows = [];
+  if (data.pets && data.pets.length) {
+    data.pets.forEach(p => rows.push({...p, _loc:"Party"}));
+  }
+  if (data.storage && data.storage.length) {
+    data.storage.forEach(p => rows.push({...p, _loc:"Storage"}));
+  }
+  if (filter !== "all") {
+    rows = rows.filter(p => getTemplate(p.typeId).type === filter);
+  }
+  rows.sort((a,b) => a.level - b.level);
+  tbody.innerHTML = rows.map((p,i) => petRow(p, i+1, p._loc)).join("");
+}
+
+function renderWeakStats() {
+  const data = getData();
+  const tbody = document.querySelector("#weakStatsTable tbody");
+  if (!data) {
+    tbody.innerHTML = "<tr><td colspan='11'>No save data.</td></tr>";
+    return;
+  }
+  const filter = document.getElementById("weakStatsTypeFilter").value;
+  let rows = [];
+  if (data.pets && data.pets.length) {
+    data.pets.forEach(p => rows.push({...p, _loc:"Party"}));
+  }
+  if (data.storage && data.storage.length) {
+    data.storage.forEach(p => rows.push({...p, _loc:"Storage"}));
+  }
+  if (filter !== "all") {
+    rows = rows.filter(p => getTemplate(p.typeId).type === filter);
+  }
+  rows.sort((a,b) => powerScore(a) - powerScore(b));
+  tbody.innerHTML = rows.map((p,i) => {
+    const t = getTemplate(p.typeId);
+    const evoName = getEvolutionName(p);
+    const maxHP = calculateMaxHP(p);
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${t.emoji} ${evoName}</td>
+      <td>${TYPES[t.type]||t.type}</td>
+      <td>${p.level}</td>
+      <td>${maxHP}</td>
+      <td>${p.stats.attack}</td>
+      <td>${p.stats.defense}</td>
+      <td>${p.stats.speed}</td>
+      <td>${p.stats.special}</td>
+      <td>${powerScore(p)}</td>
+      <td>${p._loc}</td>
+    </tr>`;
+  }).join("");
+}
+
+function renderAll() {
+  const data = getData();
+  const tbody = document.querySelector("#allTable tbody");
+  if (!data) {
+    tbody.innerHTML = "<tr><td colspan='10'>No save data.</td></tr>";
+    return;
+  }
+  const filter = document.getElementById("allTypeFilter").value;
+  let rows = [];
+  if (data.pets && data.pets.length) {
+    data.pets.forEach(p => rows.push({...p, _loc:"Party"}));
+  }
+  if (data.storage && data.storage.length) {
+    data.storage.forEach(p => rows.push({...p, _loc:"Storage"}));
+  }
+  if (filter !== "all") {
+    rows = rows.filter(p => getTemplate(p.typeId).type === filter);
+  }
+  tbody.innerHTML = rows.map((p,i) => petRow(p, i+1, p._loc)).join("");
+}
+
+document.getElementById("raw").textContent = JSON.stringify(getData(), null, 2);
+renderPowerful();
+renderWeakLevel();
+renderWeakStats();
+renderAll();
+</script>
+</body>
+</html>

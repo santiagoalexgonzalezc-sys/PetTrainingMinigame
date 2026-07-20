@@ -858,6 +858,12 @@ const BattleSystem = {
         
         DataManager.save();
         UIManager.updateBattleScreen();
+        
+        setTimeout(() => {
+            UIManager.showScreen("mainScreen");
+            UIManager.renderPets();
+            UIManager.updateCurrency();
+        }, 100);
     },
 
     tryCatch(wildPet) {

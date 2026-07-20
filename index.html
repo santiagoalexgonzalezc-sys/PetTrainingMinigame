@@ -24,6 +24,7 @@
         <div id="petList"></div>
 
         <button onclick="UIManager.showScreen('explorationScreen')">🗺️ Explore</button>
+        <button onclick="UIManager.showScreen('storageScreen')">📦 Pet Storage</button>
         <button onclick="UIManager.showScreen('shopScreen')">🛒 Shop</button>
         <button onclick="UIManager.showScreen('inventoryScreen')">🎒 Inventory</button>
         <button onclick="DataManager.resetAccount()" style="background-color: #ff6b6b; color: white;">🔄 Reset Account</button>
@@ -55,6 +56,7 @@
             <button onclick="UIManager.openTraining('defense')">🛡️ Defense Train</button>
             <button onclick="UIManager.openTraining('speed')">⚡ Speed Train</button>
             <button onclick="UIManager.openTraining('special')">✨ Special Train</button>
+            <button id="depositBtn" onclick="UIManager.depositSelectedPet()">↪ Deposit to Storage</button>
             <br><br>
             <button onclick="UIManager.showScreen('mainScreen')">⬅ Back</button>
         </div>
@@ -134,6 +136,15 @@
     <div id="inventoryScreen" class="screen">
         <h2>🎒 Inventory</h2>
         <div id="inventoryGrid" class="inventoryGrid"></div>
+        <br>
+        <button onclick="UIManager.showScreen('mainScreen')">⬅ Back</button>
+    </div>
+
+    <!-- PET STORAGE SCREEN -->
+    <div id="storageScreen" class="screen">
+        <h2>📦 Pet Storage</h2>
+        <p>Stored pets: <span id="storageCount">0</span></p>
+        <div id="storageGrid" class="shopGrid"></div>
         <br>
         <button onclick="UIManager.showScreen('mainScreen')">⬅ Back</button>
     </div>

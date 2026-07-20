@@ -8,12 +8,13 @@ PetTrainingMinigame is a browser-based pet collection and training game inspired
 
 ### Main Features
 
-- **Starter Selection** — Pick your first companion from 5 available starters.
-- **20 Pet Types** across 8 elemental types: Fire, Water, Grass, Electric, Psychic, Ice, Dragon, and more.
+- **Starter Selection** — Pick your first companion from 7 available starters (including Dark and Fairy types).
+- **30 Pet Types** across 10 elemental types: Fire, Water, Grass, Electric, Psychic, Ice, Dragon, Dark, Fairy, and Normal.
 - **Training Minigame** — A timing-based skill challenge: stop the moving marker in the GOOD or PERFECT zone to earn XP and stat boosts.
 - **Exploration** — 9 different zones (Forest, Cave, Lake, Mountain, Desert, Ocean, Volcano, Swamp, Sky), each with common and rare pet encounters.
-- **Turn-Based Battle System** — Fight wild pets with type effectiveness, critical hits, and speed-based turn order.
+- **Turn-Based Battle System** — Fight wild pets with type effectiveness (including immunities), critical hits, and speed-based turn order.
 - **Catching System** — Use Basic, Great, or Ultra Balls to catch wild pets.
+- **Pet Storage** — When your party of 6 is full, caught pets are automatically sent to Pet Storage. Swap pets between your party and storage anytime via the 📦 Pet Storage screen or the Deposit/Withdraw buttons on each pet's detail page.
 - **Shop & Inventory** — Spend gold on balls and potions to heal your pets.
 - **Progression** — Pets gain XP, level up, evolve (3 stages), and grow their stats.
 - **Auto-Save** — Progress is stored locally in the browser via `localStorage`, so you never lose your team.

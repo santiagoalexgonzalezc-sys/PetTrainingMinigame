@@ -526,18 +526,19 @@ const Exploration = {
             emoji: "☁️",
             commonPets: ["zapBird", "boltMouse", "dreamOwl", "cloudSheep"],
             rarePets: ["cosmicFox", "shockEel"],
-            encounterRate: 0.9
+            encounterRate: 1
         }
     },
     cooldowns: {},
     cooldownTime: 1000, // 1 second
 
     explore(zoneId) {
-        if (this.cooldowns[zoneId] && Date.now() < this.cooldowns[zoneId]) {
+        const now = Date.now();
+        if (this.cooldowns[zoneId] && now < this.cooldowns[zoneId]) {
             return null;
         }
 
-        this.cooldowns[zoneId] = Date.now() + this.cooldownTime;
+        this.cooldowns[zoneId] = now + this.cooldownTime;
         const zone = this.zones[zoneId];
 
         if (Math.random() > zone.encounterRate) {
@@ -550,19 +551,26 @@ const Exploration = {
         const petType = petPool[Math.floor(Math.random() * petPool.length)];
 
         // Generate wild pet level (4-40)
-
-        if (PetManager.selectedPet.level < 20) {
-            return Math.floor(Math.random() * 17) + 3;       // 3–19
-        } else if (PetManager.selectedPet.level <= 40) {
-            return Math.floor(Math.random() * 21) + 20;      // 20–40
-        } else if (PetManager.selectedPet.level > 40) {
-            return Math.floor(Math.random() * 11) + 40;      // 40–50
-        } else {
-            return Math.floor(Math.random() * 17) + 3;       // fallback
+        function getWildPetLevel() {
+            if (PetManager.selectedPet.level < 20) {
+                return Math.floor(Math.random() * 17) + 3;
+            } else if (PetManager.selectedPet.level <= 40) {
+                return Math.floor(Math.random() * 21) + 20;
+            } else if (PetManager.selectedPet.level > 40) {
+                return Math.floor(Math.random() * 11) + 40;
+            } else {
+                return Math.floor(Math.random() * 17) + 3;
+            }
+            
         }
 
         const level = getWildPetLevel();
         const wildPet = PetManager.createPet(petType, level);
+
+        if (!wildPet || !wildPet.stats) {
+            console.error("Failed to create valid wild pet:", petType, level, wildPet);
+            return null;
+        }
 
         return { pet: wildPet, isRare };
     },
@@ -667,6 +675,11 @@ const BattleSystem = {
     },
 
     startBattle(playerPet, enemyPet) {
+        if (!playerPet || !enemyPet || !playerPet.stats || !enemyPet.stats) {
+            console.error("Invalid battle state - missing pet or stats:", playerPet, enemyPet);
+            return;
+        }
+        
         this.active = true;
         this.playerPet = { ...playerPet };
         this.enemyPet = { ...enemyPet };
@@ -1217,6 +1230,7 @@ const UIManager = {
 
     // Exploration Screen
     renderExploration() {
+        Exploration.cooldowns = {};
         const grid = document.getElementById("zoneGrid");
         grid.innerHTML = "";
         
@@ -1248,8 +1262,7 @@ const UIManager = {
         const result = Exploration.explore(zoneId);
         this.renderExploration();
         
-        if (result) {
-            // Start battle with wild pet
+        if (result && result.pet && result.pet.stats) {
             BattleSystem.enemyPet = result.pet;
             BattleSystem.playerPet = { ...PetManager.selectedPet };
             BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);

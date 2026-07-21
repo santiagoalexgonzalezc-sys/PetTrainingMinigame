@@ -551,15 +551,14 @@ const Exploration = {
 
         // Generate wild pet level (4-40)
 
-        function getWildPetLevel() {
-            if (PetManager.selectPet.level < 20) {
-                return Math.floor(Math.random() * 17) + 3;
-            } else if (PetManager.selectedPet.level > 20) {
-                return Math.floor(Math.random() * 21) + 20;
-            } else {
-                return Math.floor(Math.random() * 17) + 3;
-            }
-            
+        if (PetManager.selectedPet.level < 20) {
+            return Math.floor(Math.random() * 17) + 3;       // 3–19
+        } else if (PetManager.selectedPet.level <= 40) {
+            return Math.floor(Math.random() * 21) + 20;      // 20–40
+        } else if (PetManager.selectedPet.level > 40) {
+            return Math.floor(Math.random() * 11) + 40;      // 40–50
+        } else {
+            return Math.floor(Math.random() * 17) + 3;       // fallback
         }
 
         const level = getWildPetLevel();

@@ -45,7 +45,7 @@
     <button onclick="renderLevelDesc()">Refresh</button>
   </div>
   <table id="levelDescTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Prestige</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -78,7 +78,7 @@
     <button onclick="renderPowerDesc()">Refresh</button>
   </div>
   <table id="powerDescTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Prestige</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -111,7 +111,7 @@
     <button onclick="renderLevelAsc()">Refresh</button>
   </div>
   <table id="levelAscTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Prestige</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -144,7 +144,7 @@
     <button onclick="renderPowerAsc()">Refresh</button>
   </div>
   <table id="powerAscTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Prestige</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -269,6 +269,7 @@ function petRow(pet, idx) {
     <td>${t.emoji} ${evoName}</td>
     <td>${TYPES[t.type]||t.type}</td>
     <td>${pet.level}</td>
+    <td>${pet.prestigeLevel||0}</td>
     <td>${maxHP}</td>
     <td>${pet.stats.attack}</td>
     <td>${pet.stats.defense}</td>

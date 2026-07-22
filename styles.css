@@ -302,3 +302,12 @@ button:disabled:hover { transform: none; }
     color: #ffd700;
     font-weight: bold;
 }
+
+/* Prestige Overlay */
+#prestigeOverlay {
+    background: rgba(0, 0, 0, 0.92);
+}
+
+#prestigeInfo {
+    border: 1px solid rgba(168, 85, 247, 0.4);
+}

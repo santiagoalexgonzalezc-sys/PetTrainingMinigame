@@ -527,7 +527,7 @@ const PetManager = {
         if (String(pet1.id) === String(pet2.id)) return { valid: false, reason: "Cannot fuse a pet with itself!" };
         if (pet1.typeId !== pet2.typeId) return { valid: false, reason: "Pets must be the same race!" };
         if (pet1.prestigeLevel !== pet2.prestigeLevel) return { valid: false, reason: "Prestige levels must match!" };
-        if (pet1.prestigeLevel >= 99) return { valid: false, reason: "Max prestige level reached!" };
+        if (pet1.prestigeLevel >= 100) return { valid: false, reason: "Max prestige level reached!" };
         if (pet1.level < 15) return { valid: false, reason: "Both pets must be at least level 15!" };
         if (pet2.level < 15) return { valid: false, reason: "Both pets must be at least level 15!" };
         if (pet1.currentHP <= 0) return { valid: false, reason: "Primary pet must have HP above 0!" };
@@ -553,20 +553,14 @@ const PetManager = {
         }
         
         const template = PetTypes[pet1.typeId];
-        const currentEffectiveHP = PetManager.calculateMaxHP(template, pet1.level, pet1);
-        const baseAttack = Math.floor((template.baseStats.attack * 2 * pet1.level) / 100) + 5;
-        const baseDefense = Math.floor((template.baseStats.defense * 2 * pet1.level) / 100) + 5;
-        const baseSpeed = Math.floor((template.baseStats.speed * 2 * pet1.level) / 100) + 5;
-        const baseSpecial = Math.floor((template.baseStats.special * 2 * pet1.level) / 100) + 5;
-        
-        pet1.bonusStats = {
-            hp: (pet1.bonusStats?.hp || 0) + Math.floor(currentEffectiveHP * 0.10),
-            attack: (pet1.bonusStats?.attack || 0) + Math.floor(baseAttack * 0.10),
-            defense: (pet1.bonusStats?.defense || 0) + Math.floor(baseDefense * 0.10),
-            speed: (pet1.bonusStats?.speed || 0) + Math.floor(baseSpeed * 0.10),
-            special: (pet1.bonusStats?.special || 0) + Math.floor(baseSpecial * 0.10)
-        };
         pet1.prestigeLevel++;
+        pet1.bonusStats = {
+            hp: pet1.prestigeLevel * 5,
+            attack: pet1.prestigeLevel * 5,
+            defense: pet1.prestigeLevel * 5,
+            speed: pet1.prestigeLevel * 5,
+            special: pet1.prestigeLevel * 5
+        };
         
         pet1.stats = PetManager.calculateStats(template, pet1.level, pet1);
         const newMaxHP = PetManager.calculateMaxHP(template, pet1.level, pet1);
@@ -754,18 +748,16 @@ const Exploration = {
         const petPool = isRare ? zone.rarePets : zone.commonPets;
         const petType = petPool[Math.floor(Math.random() * petPool.length)];
 
-        // Generate wild pet level (4-40, 20-40, or 40-50)
+        // Generate wild pet level
         function getWildPetLevel() {
-            if (PetManager.selectedPet.level < 20) {
-                return Math.floor(Math.random() * 17) + 3;
-            } else if (PetManager.selectedPet.level <= 40) {
-                return Math.floor(Math.random() * 21) + 20;
-            } else if (PetManager.selectedPet.level > 40) {
-                return Math.floor(Math.random() * 11) + 40;
-            } else {
+            const playerLevel = PetManager.selectedPet.level;
+            if (playerLevel < 20) {
                 return Math.floor(Math.random() * 17) + 3;
             }
-            
+            const bracket = Math.floor(playerLevel / 20) * 20;
+            const minLevel = bracket;
+            const maxLevel = Math.min(bracket + 19, 1000);
+            return Math.floor(Math.random() * (maxLevel - minLevel + 1)) + minLevel;
         }
 
         const level = getWildPetLevel();

@@ -338,7 +338,7 @@ function calculateMaxHP(pet) {
   const bonus = (pet.bonusStats?.hp || 0);
   const shinyBonus = (pet.shinyBonus?.hp || 0);
   const tierBonus = pet.tierBonus || 0;
-  return base + bonus + shinyBonus + Math.floor(base * tierBonus / 100);
+  return base + bonus + shinyBonus + tierBonus;
 }
 
 function getEffectiveStats(pet) {
@@ -349,10 +349,10 @@ function getEffectiveStats(pet) {
   const baseSpecial = Math.floor(((PET_TEMPLATES[pet.typeId]?.baseStats?.special || 0) * 2 * pet.level) / 100) + 5;
   const tierBonus = pet.tierBonus || 0;
   return {
-    attack: (s.attack || 0) + (pet.bonusStats?.attack || 0) + (pet.shinyBonus?.attack || 0) + Math.floor(baseAttack * tierBonus / 100),
-    defense: (s.defense || 0) + (pet.bonusStats?.defense || 0) + (pet.shinyBonus?.defense || 0) + Math.floor(baseDefense * tierBonus / 100),
-    speed: (s.speed || 0) + (pet.bonusStats?.speed || 0) + (pet.shinyBonus?.speed || 0) + Math.floor(baseSpeed * tierBonus / 100),
-    special: (s.special || 0) + (pet.bonusStats?.special || 0) + (pet.shinyBonus?.special || 0) + Math.floor(baseSpecial * tierBonus / 100)
+    attack: (s.attack || 0) + (pet.bonusStats?.attack || 0) + (pet.shinyBonus?.attack || 0) + tierBonus,
+    defense: (s.defense || 0) + (pet.bonusStats?.defense || 0) + (pet.shinyBonus?.defense || 0) + tierBonus,
+    speed: (s.speed || 0) + (pet.bonusStats?.speed || 0) + (pet.shinyBonus?.speed || 0) + tierBonus,
+    special: (s.special || 0) + (pet.bonusStats?.special || 0) + (pet.shinyBonus?.special || 0) + tierBonus
   };
 }
 

@@ -949,6 +949,7 @@ const BattleSystem = {
             UIManager.showScreen("mainScreen");
             UIManager.renderPets();
             UIManager.updateCurrency();
+            UIManager.updateTeamPower();
         }, 500);
     },
 
@@ -1106,6 +1107,7 @@ const Game = {
         DataManager.load();
         UIManager.init();
         UIManager.updateCurrency();
+        UIManager.updateTeamPower();
         
         if (!this.hasStarter) {
             UIManager.renderStarterSelection();
@@ -1113,6 +1115,7 @@ const Game = {
         } else {
             UIManager.showScreen("mainScreen");
             UIManager.renderPets();
+            UIManager.updateTeamPower();
         }
     },
 
@@ -1125,6 +1128,24 @@ const Game = {
         
         UIManager.showScreen("mainScreen");
         UIManager.renderPets();
+        UIManager.updateTeamPower();
+    }
+};
+
+// ==================== TEAM POWER ====================
+const TeamPowerSystem = {
+    calculatePetPower(pet) {
+        const template = PetTypes[pet.typeId];
+        if (!template || !pet.stats) return 0;
+        const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
+        return maxHP + pet.stats.attack + pet.stats.defense + pet.stats.speed + pet.stats.special + (pet.level * 5);
+    },
+
+    getTotalPower() {
+        let total = 0;
+        PetManager.pets.forEach(pet => total += this.calculatePetPower(pet));
+        PetManager.storage.forEach(pet => total += this.calculatePetPower(pet));
+        return total;
     }
 };
 
@@ -1156,6 +1177,11 @@ const UIManager = {
 
     updateCurrency() {
         document.getElementById("currencyDisplay").innerHTML = `💰 <span>${Economy.money}</span>`;
+    },
+
+    updateTeamPower() {
+        const total = TeamPowerSystem.getTotalPower();
+        document.getElementById("teamPowerDisplay").innerHTML = `⚔️ <span>${total}</span>`;
     },
 
     // Starter Screen
@@ -1241,6 +1267,7 @@ const UIManager = {
             `;
             list.appendChild(card);
         });
+        this.updateTeamPower();
     },
 
     selectPet(id) {
@@ -1260,6 +1287,7 @@ const UIManager = {
             this.renderPets();
             this.renderStorage();
             this.updateCurrency();
+            this.updateTeamPower();
         }
     },
 
@@ -1304,6 +1332,8 @@ const UIManager = {
         const trainBtn = document.getElementById("trainBtn");
         trainBtn.disabled = !canTrain;
         trainBtn.innerText = canTrain ? "🎯 Train" : `⏳ ${cooldown}s`;
+        
+        this.updateTeamPower();
     },
 
     // Training Screen
@@ -1469,6 +1499,7 @@ const UIManager = {
             BattleSystem.active = false;
             this.showScreen("mainScreen");
             this.renderPets();
+            this.updateTeamPower();
         }
     },
 
@@ -1485,6 +1516,7 @@ const UIManager = {
         
         DataManager.save();
         this.showScreen("mainScreen");
+        this.updateTeamPower();
     },
 
     // Shop Screen
@@ -1511,6 +1543,7 @@ const UIManager = {
             DataManager.save();
             this.renderShop();
             this.updateCurrency();
+            this.updateTeamPower();
         } else {
             alert("Not enough money!");
         }
@@ -1590,6 +1623,7 @@ const UIManager = {
             `;
             grid.appendChild(card);
         });
+        this.updateTeamPower();
     },
 
     withdrawPet(id) {
@@ -1615,6 +1649,7 @@ const UIManager = {
         DataManager.save();
         this.renderStorage();
         this.renderPets();
+        this.updateTeamPower();
     },
 
     depositSelectedPet() {
@@ -1629,6 +1664,7 @@ const UIManager = {
             DataManager.save();
             this.showScreen("mainScreen");
             this.renderPets();
+            this.updateTeamPower();
         }
     },
 
@@ -1788,6 +1824,7 @@ const UIManager = {
             this.closePrestigeOverlay();
             this.showScreen("mainScreen");
             this.renderPets();
+            this.updateTeamPower();
         } else {
             alert(result.reason);
         }

@@ -210,7 +210,8 @@ function calculateMaxHP(pet) {
   const tpl = PET_TEMPLATES[pet.typeId];
   if (!tpl || !tpl.baseStats) return pet.currentHP || 0;
   const baseHP = tpl.baseStats.hp || 0;
-  return Math.floor((baseHP * 2 * pet.level) / 100) + pet.level + 10;
+  const bonus = (pet.bonusStats?.hp || 0);
+  return Math.floor((baseHP * 2 * pet.level) / 100) + pet.level + 10 + bonus;
 }
 
 function powerScore(pet) {

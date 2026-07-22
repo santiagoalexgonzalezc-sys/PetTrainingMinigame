@@ -7,8 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="m-0 font-sans bg-gradient-to-b from-gray-900 to-black text-white text-center min-h-screen">
-    <div class="fixed top-2.5 right-2.5 bg-black/50 px-5 py-2.5 rounded-full z-50" id="currencyDisplay">💰 <span class="text-yellow-400 font-bold">100</span></div>
-    <div class="fixed top-12.5 right-2.5 bg-black/50 px-5 py-2.5 rounded-full z-50" id="teamPowerDisplay">⚔️ <span class="text-red-400 font-bold">0</span></div>
+    <div class="fixed top-2.5 right-2.5 bg-black/50 px-5 py-2.5 rounded-full z-50 flex flex-col items-end gap-1" id="topRightStats">
+        <div id="currencyDisplay">💰 <span class="text-yellow-400 font-bold">100</span></div>
+        <div id="teamPowerDisplay">⚔️ <span class="text-red-400 font-bold">0</span></div>
+        <div id="partyPowerDisplay">🛡️ <span class="text-blue-400 font-bold">0</span></div>
+    </div>
 
     <!-- STARTER SELECTION -->
     <div id="starterScreen" class="hidden p-5">

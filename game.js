@@ -1146,6 +1146,12 @@ const TeamPowerSystem = {
         PetManager.pets.forEach(pet => total += this.calculatePetPower(pet));
         PetManager.storage.forEach(pet => total += this.calculatePetPower(pet));
         return total;
+    },
+
+    getPartyPower() {
+        let total = 0;
+        PetManager.pets.forEach(pet => total += this.calculatePetPower(pet));
+        return total;
     }
 };
 
@@ -1181,7 +1187,9 @@ const UIManager = {
 
     updateTeamPower() {
         const total = TeamPowerSystem.getTotalPower();
-        document.getElementById("teamPowerDisplay").innerHTML = `⚔️ <span>${total}</span>`;
+        const party = TeamPowerSystem.getPartyPower();
+        document.getElementById("teamPowerDisplay").innerHTML = `⚔️ Total: <span>${total}</span>`;
+        document.getElementById("partyPowerDisplay").innerHTML = `🛡️ Party: <span>${party}</span>`;
     },
 
     // Starter Screen

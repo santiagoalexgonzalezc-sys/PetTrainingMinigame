@@ -17,6 +17,48 @@
 <body>
 <h1>Pet Save Inspector</h1>
 
+<div class="section" style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap;">
+  <div style="background:#1a1a1a;padding:15px 25px;border-radius:12px;text-align:center;">
+    <div style="color:#aaa;font-size:12px;">TOTAL POWER</div>
+    <div id="totalPower" style="color:#ff4444;font-size:24px;font-weight:bold;">0</div>
+    <div style="color:#666;font-size:11px;">All Pets</div>
+  </div>
+  <div style="background:#1a1a1a;padding:15px 25px;border-radius:12px;text-align:center;">
+    <div style="color:#aaa;font-size:12px;">PARTY POWER</div>
+    <div id="partyPower" style="color:#44aaff;font-size:24px;font-weight:bold;">0</div>
+    <div style="color:#666;font-size:11px;">Active Team</div>
+  </div>
+  <div style="background:#1a1a1a;padding:15px 25px;border-radius:12px;text-align:center;">
+    <div style="color:#aaa;font-size:12px;">STORAGE POWER</div>
+    <div id="storagePower" style="color:#ffaa00;font-size:24px;font-weight:bold;">0</div>
+    <div style="color:#666;font-size:11px;">Stored Pets</div>
+  </div>
+</div>
+
+<script>
+function updatePowerSummaries() {
+  const data = getData();
+  let total = 0, party = 0, storage = 0;
+  let partyCount = 0, storageCount = 0;
+  
+  if (data) {
+    if (data.pets && data.pets.length) {
+      partyCount = data.pets.length;
+      data.pets.forEach(p => party += powerScore(p));
+    }
+    if (data.storage && data.storage.length) {
+      storageCount = data.storage.length;
+      data.storage.forEach(p => storage += powerScore(p));
+    }
+  }
+  total = party + storage;
+  
+  document.getElementById("totalPower").textContent = total.toLocaleString();
+  document.getElementById("partyPower").textContent = party.toLocaleString();
+  document.getElementById("storagePower").textContent = storage.toLocaleString();
+}
+</script>
+
 <div class="section">
   <h2>1. All Pets — Level (High to Low)</h2>
   <div class="filter-bar">
@@ -223,10 +265,20 @@ function calculateMaxHP(pet) {
   return Math.floor((baseHP * 2 * pet.level) / 100) + pet.level + 10 + bonus;
 }
 
-function powerScore(pet) {
+function getEffectiveStats(pet) {
   const s = pet.stats || {};
+  return {
+    attack: (s.attack || 0) + (pet.bonusStats?.attack || 0),
+    defense: (s.defense || 0) + (pet.bonusStats?.defense || 0),
+    speed: (s.speed || 0) + (pet.bonusStats?.speed || 0),
+    special: (s.special || 0) + (pet.bonusStats?.special || 0)
+  };
+}
+
+function powerScore(pet) {
+  const s = getEffectiveStats(pet);
   const maxHP = calculateMaxHP(pet);
-  return maxHP + (s.attack||0) + (s.defense||0) + (s.speed||0) + (s.special||0) + (pet.level||0) * 5;
+  return maxHP + s.attack + s.defense + s.speed + s.special + (pet.level || 0) * 5;
 }
 
 function getTemplate(typeId) {
@@ -274,6 +326,7 @@ function petRow(pet, idx) {
   const t = getTemplate(pet.typeId);
   const evoName = getEvolutionName(pet);
   const maxHP = calculateMaxHP(pet);
+  const eff = getEffectiveStats(pet);
   return `<tr>
     <td>${idx}</td>
     <td>${t.emoji} ${evoName}</td>
@@ -281,10 +334,10 @@ function petRow(pet, idx) {
     <td>${pet.level}</td>
     <td>${pet.prestigeLevel||0}</td>
     <td>${maxHP}</td>
-    <td>${pet.stats.attack}</td>
-    <td>${pet.stats.defense}</td>
-    <td>${pet.stats.speed}</td>
-    <td>${pet.stats.special}</td>
+    <td>${eff.attack}</td>
+    <td>${eff.defense}</td>
+    <td>${eff.speed}</td>
+    <td>${eff.special}</td>
     <td>${powerScore(pet)}</td>
     <td>${pet._loc}</td>
   </tr>`;
@@ -299,6 +352,7 @@ function renderLevelDesc() {
   }
   applySort(rows, "levelDesc", statFilter);
   document.querySelector("#levelDescTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
+  updatePowerSummaries();
 }
 
 function renderPowerDesc() {
@@ -310,6 +364,7 @@ function renderPowerDesc() {
   }
   applySort(rows, "powerDesc", statFilter);
   document.querySelector("#powerDescTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
+  updatePowerSummaries();
 }
 
 function renderLevelAsc() {
@@ -321,6 +376,7 @@ function renderLevelAsc() {
   }
   applySort(rows, "levelAsc", statFilter);
   document.querySelector("#levelAscTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
+  updatePowerSummaries();
 }
 
 function renderPowerAsc() {
@@ -332,6 +388,7 @@ function renderPowerAsc() {
   }
   applySort(rows, "powerAsc", statFilter);
   document.querySelector("#powerAscTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
+  updatePowerSummaries();
 }
 
 function renderPrestigePairs() {
@@ -399,6 +456,7 @@ function renderPrestigePairs() {
 }
 
 document.getElementById("raw").textContent = JSON.stringify(getData(), null, 2);
+updatePowerSummaries();
 renderLevelDesc();
 renderPowerDesc();
 renderLevelAsc();

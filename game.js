@@ -601,12 +601,12 @@ const Economy = {
         lifeBangle: { name: "Life Bangle", price: 3000, type: "equipment", power: 10, stats: { hp: 10 } }
     },
 
-    buyItem(itemId) {
+    buyItem(itemId, quantity = 1) {
         const item = this.shopItems[itemId];
-        if (!item || this.money < item.price) return false;
+        if (!item || this.money < item.price * quantity) return false;
 
-        this.money -= item.price;
-        this.inventory[itemId] = (this.inventory[itemId] || 0) + 1;
+        this.money -= item.price * quantity;
+        this.inventory[itemId] = (this.inventory[itemId] || 0) + quantity;
         return true;
     },
 
@@ -1939,20 +1939,48 @@ const UIManager = {
                 <p class="text-xs">${typeLabels[item.type] || item.type}</p>
                 <div class="text-yellow-400 font-bold my-2.5">${item.price} 💰</div>
                 <div>Owned: ${Economy.inventory[itemId] || 0}</div>
+                <input type="number" id="qty-${itemId}" value="1" min="1" class="w-16 text-center rounded px-1 py-1 mb-2 text-black">
                 <button onclick="UIManager.buyItem('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Buy</button>
+                <button onclick="UIManager.buyItemMax('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Buy Max</button>
             `;
             grid.appendChild(card);
         }
     },
 
     buyItem(itemId) {
-        if (Economy.buyItem(itemId)) {
+        const qtyInput = document.getElementById(`qty-${itemId}`);
+        const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+        if (qty <= 0) return;
+        
+        if (Economy.buyItem(itemId, qty)) {
             DataManager.save();
             this.renderShop();
             this.updateCurrency();
             this.updateTeamPower();
         } else {
             alert("Not enough money!");
+        }
+    },
+
+    buyItemMax(itemId) {
+        const item = Economy.shopItems[itemId];
+        if (!item) return;
+        
+        const maxAffordable = Math.floor(Economy.money / item.price);
+        if (maxAffordable <= 0) {
+            alert("Not enough money!");
+            return;
+        }
+        
+        if (confirm(`Buy max ${maxAffordable} ${item.name} for ${maxAffordable * item.price} gold?`)) {
+            if (Economy.buyItem(itemId, maxAffordable)) {
+                DataManager.save();
+                this.renderShop();
+                this.updateCurrency();
+                this.updateTeamPower();
+            } else {
+                alert("Not enough money!");
+            }
         }
     },
 

@@ -21,7 +21,7 @@
   <h2>1. All Pets — Level (High to Low)</h2>
   <div class="filter-bar">
     <label>Type Filter: </label>
-    <select id="levelDescFilter" onchange="renderLevelDesc()">
+    <select id="levelDescTypeFilter" onchange="renderLevelDesc()">
       <option value="all">All Types</option>
       <option value="fire">Fire</option>
       <option value="water">Water</option>
@@ -34,10 +34,18 @@
       <option value="fairy">Fairy</option>
       <option value="normal">Normal</option>
     </select>
+    <label>Sort by Stat: </label>
+    <select id="levelDescStatFilter" onchange="renderLevelDesc()">
+      <option value="none">Default (Level)</option>
+      <option value="attack">Attack (High → Low)</option>
+      <option value="defense">Defense (High → Low)</option>
+      <option value="speed">Speed (High → Low)</option>
+      <option value="special">Special (High → Low)</option>
+    </select>
     <button onclick="renderLevelDesc()">Refresh</button>
   </div>
   <table id="levelDescTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Prestige</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -46,7 +54,7 @@
   <h2>2. All Pets — Power Score (High to Low)</h2>
   <div class="filter-bar">
     <label>Type Filter: </label>
-    <select id="powerDescFilter" onchange="renderPowerDesc()">
+    <select id="powerDescTypeFilter" onchange="renderPowerDesc()">
       <option value="all">All Types</option>
       <option value="fire">Fire</option>
       <option value="water">Water</option>
@@ -59,10 +67,18 @@
       <option value="fairy">Fairy</option>
       <option value="normal">Normal</option>
     </select>
+    <label>Sort by Stat: </label>
+    <select id="powerDescStatFilter" onchange="renderPowerDesc()">
+      <option value="none">Default (Power Score)</option>
+      <option value="attack">Attack (High → Low)</option>
+      <option value="defense">Defense (High → Low)</option>
+      <option value="speed">Speed (High → Low)</option>
+      <option value="special">Special (High → Low)</option>
+    </select>
     <button onclick="renderPowerDesc()">Refresh</button>
   </div>
   <table id="powerDescTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Prestige</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -71,7 +87,7 @@
   <h2>3. All Pets — Level (Low to High)</h2>
   <div class="filter-bar">
     <label>Type Filter: </label>
-    <select id="levelAscFilter" onchange="renderLevelAsc()">
+    <select id="levelAscTypeFilter" onchange="renderLevelAsc()">
       <option value="all">All Types</option>
       <option value="fire">Fire</option>
       <option value="water">Water</option>
@@ -84,10 +100,18 @@
       <option value="fairy">Fairy</option>
       <option value="normal">Normal</option>
     </select>
+    <label>Sort by Stat: </label>
+    <select id="levelAscStatFilter" onchange="renderLevelAsc()">
+      <option value="none">Default (Level)</option>
+      <option value="attack">Attack (High → Low)</option>
+      <option value="defense">Defense (High → Low)</option>
+      <option value="speed">Speed (High → Low)</option>
+      <option value="special">Special (High → Low)</option>
+    </select>
     <button onclick="renderLevelAsc()">Refresh</button>
   </div>
   <table id="levelAscTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Prestige</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -96,7 +120,7 @@
   <h2>4. All Pets — Power Score (Low to High)</h2>
   <div class="filter-bar">
     <label>Type Filter: </label>
-    <select id="powerAscFilter" onchange="renderPowerAsc()">
+    <select id="powerAscTypeFilter" onchange="renderPowerAsc()">
       <option value="all">All Types</option>
       <option value="fire">Fire</option>
       <option value="water">Water</option>
@@ -109,10 +133,18 @@
       <option value="fairy">Fairy</option>
       <option value="normal">Normal</option>
     </select>
+    <label>Sort by Stat: </label>
+    <select id="powerAscStatFilter" onchange="renderPowerAsc()">
+      <option value="none">Default (Power Score)</option>
+      <option value="attack">Attack (High → Low)</option>
+      <option value="defense">Defense (High → Low)</option>
+      <option value="speed">Speed (High → Low)</option>
+      <option value="special">Special (High → Low)</option>
+    </select>
     <button onclick="renderPowerAsc()">Refresh</button>
   </div>
   <table id="powerAscTable">
-    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
+    <thead><tr><th>#</th><th>Pet</th><th>Type</th><th>Level</th><th>Prestige</th><th>Max HP</th><th>ATK</th><th>DEF</th><th>SPD</th><th>SPC</th><th>Power Score</th><th>Location</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
@@ -178,7 +210,8 @@ function calculateMaxHP(pet) {
   const tpl = PET_TEMPLATES[pet.typeId];
   if (!tpl || !tpl.baseStats) return pet.currentHP || 0;
   const baseHP = tpl.baseStats.hp || 0;
-  return Math.floor((baseHP * 2 * pet.level) / 100) + pet.level + 10;
+  const bonus = (pet.bonusStats?.hp || 0);
+  return Math.floor((baseHP * 2 * pet.level) / 100) + pet.level + 10 + bonus;
 }
 
 function powerScore(pet) {
@@ -203,6 +236,31 @@ function getAllPets() {
   return rows;
 }
 
+function getStatValue(pet, stat) {
+  const s = pet.stats || {};
+  if (stat === "attack") return s.attack || 0;
+  if (stat === "defense") return s.defense || 0;
+  if (stat === "speed") return s.speed || 0;
+  if (stat === "special") return s.special || 0;
+  return 0;
+}
+
+function applySort(rows, sortType, statFilter) {
+  if (sortType === "levelDesc") {
+    rows.sort((a,b) => b.level - a.level);
+  } else if (sortType === "levelAsc") {
+    rows.sort((a,b) => a.level - b.level);
+  } else if (sortType === "powerDesc") {
+    rows.sort((a,b) => powerScore(b) - powerScore(a));
+  } else if (sortType === "powerAsc") {
+    rows.sort((a,b) => powerScore(a) - powerScore(b));
+  }
+  
+  if (statFilter !== "none") {
+    rows.sort((a,b) => getStatValue(b, statFilter) - getStatValue(a, statFilter));
+  }
+}
+
 function petRow(pet, idx) {
   const t = getTemplate(pet.typeId);
   const evoName = getEvolutionName(pet);
@@ -212,6 +270,7 @@ function petRow(pet, idx) {
     <td>${t.emoji} ${evoName}</td>
     <td>${TYPES[t.type]||t.type}</td>
     <td>${pet.level}</td>
+    <td>${pet.prestigeLevel||0}</td>
     <td>${maxHP}</td>
     <td>${pet.stats.attack}</td>
     <td>${pet.stats.defense}</td>
@@ -223,42 +282,46 @@ function petRow(pet, idx) {
 }
 
 function renderLevelDesc() {
-  const filter = document.getElementById("levelDescFilter").value;
+  const typeFilter = document.getElementById("levelDescTypeFilter").value;
+  const statFilter = document.getElementById("levelDescStatFilter").value;
   let rows = getAllPets();
-  if (filter !== "all") {
-    rows = rows.filter(p => getTemplate(p.typeId).type === filter);
+  if (typeFilter !== "all") {
+    rows = rows.filter(p => getTemplate(p.typeId).type === typeFilter);
   }
-  rows.sort((a,b) => b.level - a.level);
+  applySort(rows, "levelDesc", statFilter);
   document.querySelector("#levelDescTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
 }
 
 function renderPowerDesc() {
-  const filter = document.getElementById("powerDescFilter").value;
+  const typeFilter = document.getElementById("powerDescTypeFilter").value;
+  const statFilter = document.getElementById("powerDescStatFilter").value;
   let rows = getAllPets();
-  if (filter !== "all") {
-    rows = rows.filter(p => getTemplate(p.typeId).type === filter);
+  if (typeFilter !== "all") {
+    rows = rows.filter(p => getTemplate(p.typeId).type === typeFilter);
   }
-  rows.sort((a,b) => powerScore(b) - powerScore(a));
+  applySort(rows, "powerDesc", statFilter);
   document.querySelector("#powerDescTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
 }
 
 function renderLevelAsc() {
-  const filter = document.getElementById("levelAscFilter").value;
+  const typeFilter = document.getElementById("levelAscTypeFilter").value;
+  const statFilter = document.getElementById("levelAscStatFilter").value;
   let rows = getAllPets();
-  if (filter !== "all") {
-    rows = rows.filter(p => getTemplate(p.typeId).type === filter);
+  if (typeFilter !== "all") {
+    rows = rows.filter(p => getTemplate(p.typeId).type === typeFilter);
   }
-  rows.sort((a,b) => a.level - b.level);
+  applySort(rows, "levelAsc", statFilter);
   document.querySelector("#levelAscTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
 }
 
 function renderPowerAsc() {
-  const filter = document.getElementById("powerAscFilter").value;
+  const typeFilter = document.getElementById("powerAscTypeFilter").value;
+  const statFilter = document.getElementById("powerAscStatFilter").value;
   let rows = getAllPets();
-  if (filter !== "all") {
-    rows = rows.filter(p => getTemplate(p.typeId).type === filter);
+  if (typeFilter !== "all") {
+    rows = rows.filter(p => getTemplate(p.typeId).type === typeFilter);
   }
-  rows.sort((a,b) => powerScore(a) - powerScore(b));
+  applySort(rows, "powerAsc", statFilter);
   document.querySelector("#powerAscTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
 }
 

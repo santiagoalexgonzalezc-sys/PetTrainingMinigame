@@ -20,7 +20,14 @@ const DataManager = {
             PetManager.storage = data.storage || [];
             Economy.money = data.money || 100;
             Economy.inventory = data.inventory || { basicBall: 5, potion: 3 };
-            // Handle both string and numeric IDs for backward compatibility
+            PetManager.pets.forEach(p => {
+                if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
+                if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+            });
+            PetManager.storage.forEach(p => {
+                if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
+                if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+            });
             PetManager.selectedPet = PetManager.pets.find(p => String(p.id) === String(data.selectedPet)) || null;
             Game.hasStarter = data.hasStarter || false;
             Exploration.cooldowns = data.explorationCooldowns || {};
@@ -317,23 +324,28 @@ const PetManager = {
             typeId: typeId,
             level: level,
             xp: 0,
-            currentHP: this.calculateMaxHP(template, level),
-            stats: this.calculateStats(template, level),
-            lastTraining: null
+            currentHP: this.calculateMaxHP(template, level, null),
+            stats: this.calculateStats(template, level, null),
+            lastTraining: null,
+            prestigeLevel: 0,
+            bonusStats: { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 }
         };
 
         return pet;
     },
 
-    calculateMaxHP(template, level) {
-        return Math.floor((template.baseStats.hp * 2 * level) / 100) + level + 10;
+    calculateMaxHP(template, level, pet) {
+        const base = Math.floor((template.baseStats.hp * 2 * level) / 100) + level + 10;
+        const bonus = pet?.bonusStats?.hp || 0;
+        return base + bonus;
     },
 
-    calculateStats(template, level) {
+    calculateStats(template, level, pet) {
         const stats = {};
         for (const stat in template.baseStats) {
             if (stat === "hp") continue;
-            stats[stat] = Math.floor((template.baseStats[stat] * 2 * level) / 100) + 5;
+            const base = Math.floor((template.baseStats[stat] * 2 * level) / 100) + 5;
+            stats[stat] = base + (pet?.bonusStats?.[stat] || 0);
         }
         return stats;
     },
@@ -356,13 +368,21 @@ const PetManager = {
     gainXP(pet, amount) {
         pet.xp += amount;
         let leveledUp = false;
+        const startLevel = pet.level;
+        const startMaxHP = this.calculateMaxHP(PetTypes[pet.typeId], startLevel, pet);
 
         while (pet.xp >= this.xpNeeded(pet.level)) {
             pet.xp -= this.xpNeeded(pet.level);
             pet.level++;
-            pet.currentHP = this.calculateMaxHP(PetTypes[pet.typeId], pet.level);
-            pet.stats = this.calculateStats(PetTypes[pet.typeId], pet.level);
+            pet.stats = this.calculateStats(PetTypes[pet.typeId], pet.level, pet);
             leveledUp = true;
+        }
+
+        if (leveledUp) {
+            const newMaxHP = this.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
+            let newHP = Math.floor((pet.currentHP / startMaxHP) * newMaxHP);
+            newHP = Math.min(newHP, newMaxHP);
+            pet.currentHP = newHP;
         }
 
         return leveledUp;
@@ -407,6 +427,68 @@ const PetManager = {
 
     selectPet(id) {
         this.selectedPet = this.pets.find(p => String(p.id) === String(id));
+    },
+
+    canPrestige(pet1Id, pet2Id) {
+        const pet1 = this.pets.find(p => String(p.id) === String(pet1Id)) || 
+                     this.storage.find(p => String(p.id) === String(pet1Id));
+        const pet2 = this.pets.find(p => String(p.id) === String(pet2Id)) || 
+                     this.storage.find(p => String(p.id) === String(pet2Id));
+        
+        if (!pet1 || !pet2) return { valid: false, reason: "Pet not found!" };
+        if (String(pet1.id) === String(pet2.id)) return { valid: false, reason: "Cannot fuse a pet with itself!" };
+        if (pet1.typeId !== pet2.typeId) return { valid: false, reason: "Pets must be the same race!" };
+        if (pet1.prestigeLevel !== pet2.prestigeLevel) return { valid: false, reason: "Prestige levels must match!" };
+        if (pet1.prestigeLevel >= 99) return { valid: false, reason: "Max prestige level reached!" };
+        if (pet1.level < 15) return { valid: false, reason: "Both pets must be at least level 15!" };
+        if (pet2.level < 15) return { valid: false, reason: "Both pets must be at least level 15!" };
+        if (pet1.currentHP <= 0) return { valid: false, reason: "Primary pet must have HP above 0!" };
+        
+        return { valid: true };
+    },
+
+    prestigeFuse(pet1Id, pet2Id) {
+        const validation = this.canPrestige(pet1Id, pet2Id);
+        if (!validation.valid) return { success: false, reason: validation.reason };
+        
+        const pet1 = this.pets.find(p => String(p.id) === String(pet1Id)) || 
+                     this.storage.find(p => String(p.id) === String(pet1Id));
+        const pet2 = this.pets.find(p => String(p.id) === String(pet2Id)) || 
+                     this.storage.find(p => String(p.id) === String(pet2Id));
+        
+        if (!pet1 || !pet2) return { success: false, reason: "Pet not found!" };
+        
+        const template = PetTypes[pet1.typeId];
+        
+        const currentEffective = {
+            hp: PetManager.calculateMaxHP(template, pet1.level, pet1),
+            attack: pet1.stats.attack + (pet1.bonusStats?.attack || 0),
+            defense: pet1.stats.defense + (pet1.bonusStats?.defense || 0),
+            speed: pet1.stats.speed + (pet1.bonusStats?.speed || 0),
+            special: pet1.stats.special + (pet1.bonusStats?.special || 0)
+        };
+        
+        const newBonus = {};
+        for (const stat in currentEffective) {
+            newBonus[stat] = (pet1.bonusStats?.[stat] || 0) + Math.floor(currentEffective[stat] * 0.10);
+        }
+        
+        const newPrestigeLevel = pet1.prestigeLevel + 1;
+        pet1.prestigeLevel = newPrestigeLevel;
+        pet1.bonusStats = newBonus;
+        
+        pet1.stats = PetManager.calculateStats(template, pet1.level, pet1);
+        const newMaxHP = PetManager.calculateMaxHP(template, pet1.level, pet1);
+        pet1.currentHP = Math.min(pet1.currentHP, newMaxHP);
+        
+        this.pets = this.pets.filter(p => String(p.id) !== String(pet2.id));
+        this.storage = this.storage.filter(p => String(p.id) !== String(pet2.id));
+        
+        if (String(this.selectedPet?.id) === String(pet2.id)) {
+            this.selectedPet = this.pets[0] || null;
+        }
+        
+        return { success: true, pet: pet1, bonusStats: newBonus };
     }
 };
 
@@ -447,7 +529,7 @@ const Economy = {
         this.inventory[itemId]--;
 
         if (item.type === "heal") {
-            const maxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level);
+            const maxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
             pet.currentHP = Math.min(maxHP, pet.currentHP + item.power);
         }
 
@@ -526,18 +608,19 @@ const Exploration = {
             emoji: "☁️",
             commonPets: ["zapBird", "boltMouse", "dreamOwl", "cloudSheep"],
             rarePets: ["cosmicFox", "shockEel"],
-            encounterRate: 0.9
+            encounterRate: 1
         }
     },
     cooldowns: {},
     cooldownTime: 1000, // 1 second
 
     explore(zoneId) {
-        if (this.cooldowns[zoneId] && Date.now() < this.cooldowns[zoneId]) {
+        const now = Date.now();
+        if (this.cooldowns[zoneId] && now < this.cooldowns[zoneId]) {
             return null;
         }
 
-        this.cooldowns[zoneId] = Date.now() + this.cooldownTime;
+        this.cooldowns[zoneId] = now + this.cooldownTime;
         const zone = this.zones[zoneId];
 
         if (Math.random() > zone.encounterRate) {
@@ -550,19 +633,26 @@ const Exploration = {
         const petType = petPool[Math.floor(Math.random() * petPool.length)];
 
         // Generate wild pet level (4-40)
-
-        if (PetManager.selectedPet.level < 20) {
-            return Math.floor(Math.random() * 17) + 3;       // 3–19
-        } else if (PetManager.selectedPet.level <= 40) {
-            return Math.floor(Math.random() * 21) + 20;      // 20–40
-        } else if (PetManager.selectedPet.level > 40) {
-            return Math.floor(Math.random() * 11) + 40;      // 40–50
-        } else {
-            return Math.floor(Math.random() * 17) + 3;       // fallback
+        function getWildPetLevel() {
+            if (PetManager.selectedPet.level < 20) {
+                return Math.floor(Math.random() * 17) + 3;
+            } else if (PetManager.selectedPet.level <= 40) {
+                return Math.floor(Math.random() * 21) + 20;
+            } else if (PetManager.selectedPet.level > 40) {
+                return Math.floor(Math.random() * 11) + 40;
+            } else {
+                return Math.floor(Math.random() * 17) + 3;
+            }
+            
         }
 
         const level = getWildPetLevel();
         const wildPet = PetManager.createPet(petType, level);
+
+        if (!wildPet || !wildPet.stats) {
+            console.error("Failed to create valid wild pet:", petType, level, wildPet);
+            return null;
+        }
 
         return { pet: wildPet, isRare };
     },
@@ -581,7 +671,7 @@ const AbilitySystem = {
         if (!template || !template.ability) return 1;
         
         const ability = template.ability;
-        const maxHP = PetManager.calculateMaxHP(template, attacker.level);
+        const maxHP = PetManager.calculateMaxHP(template, attacker.level, attacker);
         const hpPercent = (attacker.currentHP / maxHP) * 100;
         
         // Blaze - Fire type, HP-based damage boost
@@ -667,6 +757,11 @@ const BattleSystem = {
     },
 
     startBattle(playerPet, enemyPet) {
+        if (!playerPet || !enemyPet || !playerPet.stats || !enemyPet.stats) {
+            console.error("Invalid battle state - missing pet or stats:", playerPet, enemyPet);
+            return;
+        }
+        
         this.active = true;
         this.playerPet = { ...playerPet };
         this.enemyPet = { ...enemyPet };
@@ -837,10 +932,10 @@ const BattleSystem = {
             // Update actual player pet
             const actualPet = PetManager.pets.find(p => String(p.id) === String(this.playerPet.id));
             if (actualPet) {
-                const oldMaxHP = PetManager.calculateMaxHP(PetTypes[actualPet.typeId], actualPet.level);
+                const oldMaxHP = PetManager.calculateMaxHP(PetTypes[actualPet.typeId], actualPet.level, actualPet);
                 const hpPercent = this.playerPet.currentHP / oldMaxHP;
                 PetManager.gainXP(actualPet, xpReward);
-                const newMaxHP = PetManager.calculateMaxHP(PetTypes[actualPet.typeId], actualPet.level);
+                const newMaxHP = PetManager.calculateMaxHP(PetTypes[actualPet.typeId], actualPet.level, actualPet);
                 actualPet.currentHP = Math.floor(newMaxHP * hpPercent);
             }
             
@@ -866,7 +961,7 @@ const BattleSystem = {
     },
 
     tryCatch(wildPet) {
-        const catchRate = (1 - (wildPet.currentHP / PetManager.calculateMaxHP(PetTypes[wildPet.typeId], wildPet.level))) * 0.5 + 0.1;
+        const catchRate = (1 - (wildPet.currentHP / PetManager.calculateMaxHP(PetTypes[wildPet.typeId], wildPet.level, wildPet))) * 0.5 + 0.1;
         
         // Check for catch items
         let ballPower = 1;
@@ -1107,6 +1202,12 @@ const UIManager = {
         return colors[type] || "bg-gray-400 text-gray-900";
     },
 
+    toRoman(num) {
+        const roman = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X",
+            "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX"];
+        return roman[num] || `[${num}]`;
+    },
+
     // Main Screen
     renderPets() {
         const list = document.getElementById("petList");
@@ -1117,16 +1218,20 @@ const UIManager = {
         PetManager.pets.forEach(pet => {
             const template = PetTypes[pet.typeId];
             const evolution = PetManager.getEvolution(pet);
-            const maxHP = PetManager.calculateMaxHP(template, pet.level);
+            const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
             const hpPercent = (pet.currentHP / maxHP) * 100;
             const xpNeeded = PetManager.xpNeeded(pet.level);
             const xpPercent = (pet.xp / xpNeeded) * 100;
             
+            const prestigeSuffix = pet.prestigeLevel > 0 ? (pet.prestigeLevel >= 10 ? ` [P${pet.prestigeLevel}]` : ` ${this.toRoman(pet.prestigeLevel)}`) : "";
+            const prestigeBorder = pet.prestigeLevel > 0 ? (pet.prestigeLevel === 1 ? "border-2 border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]" : "border-2 border-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.7)]") : "";
+            
             const card = document.createElement("div");
-            card.className = "w-full max-w-md mx-auto bg-white/10 rounded-2xl p-3.5 my-2.5";
+            card.className = `w-full max-w-md mx-auto bg-white/10 rounded-2xl p-3.5 my-2.5 ${prestigeBorder}`;
             card.innerHTML = `
-                <h3>${template.emoji} ${evolution}</h3>
+                <h3>${template.emoji} ${evolution}${prestigeSuffix}</h3>
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
+                ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
@@ -1173,11 +1278,11 @@ const UIManager = {
         
         const template = PetTypes[pet.typeId];
         const evolution = PetManager.getEvolution(pet);
-        const maxHP = PetManager.calculateMaxHP(template, pet.level);
+        const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
         const xpNeeded = PetManager.xpNeeded(pet.level);
         
         document.getElementById("petTitle").innerText = template.name;
-        document.getElementById("petEvolution").innerText = `${template.emoji} ${evolution}`;
+        document.getElementById("petEvolution").innerText = `${template.emoji} ${evolution}${pet.prestigeLevel > 0 ? ` ${this.toRoman(pet.prestigeLevel)}` : ""}`;
         document.getElementById("petLevel").innerText = `Level ${pet.level}`;
         document.getElementById("petXP").innerText = `XP ${pet.xp}/${xpNeeded}`;
         document.getElementById("petXPFill").style.width = (pet.xp / xpNeeded) * 100 + "%";
@@ -1185,6 +1290,7 @@ const UIManager = {
         document.getElementById("petStats").innerHTML = `
             <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
             <br><br>
+            ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 font-bold">⭐ Prestige ${pet.prestigeLevel}</div><div class="text-purple-300 text-xs">+${pet.bonusStats.hp} HP | +${pet.bonusStats.attack} ATK | +${pet.bonusStats.defense} DEF | +${pet.bonusStats.speed} SPD | +${pet.bonusStats.special} SPC</div><br>` : ""}
             <div class="opacity-90 text-sm">HP: ${pet.currentHP}/${maxHP}</div>
             <div class="opacity-90 text-sm">Attack: ${pet.stats.attack}</div>
             <div class="opacity-90 text-sm">Defense: ${pet.stats.defense}</div>
@@ -1193,6 +1299,13 @@ const UIManager = {
             <br>
             <div class="opacity-90 text-xs">Ability: ${template.ability}</div>
         `;
+        
+        const hasSameRaceAlive = PetManager.pets.some(p => String(p.id) !== String(pet.id) && p.typeId === pet.typeId && p.currentHP > 0) ||
+                                 PetManager.storage.some(p => p.typeId === pet.typeId && p.currentHP > 0);
+        const prestigeBtn = document.getElementById("prestigeBtn");
+        if (prestigeBtn) {
+            prestigeBtn.style.display = (pet.level >= 15 && hasSameRaceAlive) ? "inline-block" : "none";
+        }
         
         const canTrain = TrainingSystem.canTrain(pet);
         const cooldown = TrainingSystem.getCooldownRemaining(pet);
@@ -1217,6 +1330,7 @@ const UIManager = {
 
     // Exploration Screen
     renderExploration() {
+        Exploration.cooldowns = {};
         const grid = document.getElementById("zoneGrid");
         grid.innerHTML = "";
         
@@ -1248,8 +1362,7 @@ const UIManager = {
         const result = Exploration.explore(zoneId);
         this.renderExploration();
         
-        if (result) {
-            // Start battle with wild pet
+        if (result && result.pet && result.pet.stats) {
             BattleSystem.enemyPet = result.pet;
             BattleSystem.playerPet = { ...PetManager.selectedPet };
             BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
@@ -1268,8 +1381,8 @@ const UIManager = {
         
         const playerTemplate = PetTypes[player.typeId];
         const enemyTemplate = PetTypes[enemy.typeId];
-        const playerMaxHP = PetManager.calculateMaxHP(playerTemplate, player.level);
-        const enemyMaxHP = PetManager.calculateMaxHP(enemyTemplate, enemy.level);
+        const playerMaxHP = PetManager.calculateMaxHP(playerTemplate, player.level, player);
+        const enemyMaxHP = PetManager.calculateMaxHP(enemyTemplate, enemy.level, enemy);
         
         document.getElementById("playerPetSprite").innerText = playerTemplate.emoji;
         document.getElementById("enemyPetSprite").innerText = enemyTemplate.emoji;
@@ -1319,15 +1432,19 @@ const UIManager = {
             
             const template = PetTypes[pet.typeId];
             const evolution = PetManager.getEvolution(pet);
-            const maxHP = PetManager.calculateMaxHP(template, pet.level);
+            const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
             const hpPercent = (pet.currentHP / maxHP) * 100;
             
+            const prestigeSuffix = pet.prestigeLevel > 0 ? (pet.prestigeLevel >= 10 ? ` [P${pet.prestigeLevel}]` : ` ${this.toRoman(pet.prestigeLevel)}`) : "";
+            const prestigeBorder = pet.prestigeLevel > 0 ? (pet.prestigeLevel === 1 ? "border-2 border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]" : "border-2 border-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.7)]") : "";
+            
             const card = document.createElement("div");
-            card.className = "bg-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/20 transition-all";
+            card.className = `bg-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/20 transition-all ${prestigeBorder}`;
             card.innerHTML = `
-                <h3>${template.emoji} ${evolution}</h3>
+                <h3>${template.emoji} ${evolution}${prestigeSuffix}</h3>
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
+                ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
                     <div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div>
                 </div>
@@ -1457,16 +1574,20 @@ const UIManager = {
         PetManager.storage.forEach(pet => {
             const template = PetTypes[pet.typeId];
             const evolution = PetManager.getEvolution(pet);
-            const maxHP = PetManager.calculateMaxHP(template, pet.level);
+            const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
             const hpPercent = (pet.currentHP / maxHP) * 100;
             const xpNeeded = PetManager.xpNeeded(pet.level);
             const xpPercent = (pet.xp / xpNeeded) * 100;
-
+            
+            const prestigeSuffix = pet.prestigeLevel > 0 ? (pet.prestigeLevel >= 10 ? ` [P${pet.prestigeLevel}]` : ` ${this.toRoman(pet.prestigeLevel)}`) : "";
+            const prestigeBorder = pet.prestigeLevel > 0 ? (pet.prestigeLevel === 1 ? "border-2 border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]" : "border-2 border-yellow-300 shadow-[0_0_15px_rgba(250,204,21,0.7)]") : "";
+            
             const card = document.createElement("div");
-            card.className = "bg-white/10 rounded-xl p-4 text-center";
+            card.className = `bg-white/10 rounded-xl p-4 text-center ${prestigeBorder}`;
             card.innerHTML = `
-                <h3>${template.emoji} ${evolution}</h3>
+                <h3>${template.emoji} ${evolution}${prestigeSuffix}</h3>
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
+                ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div></div>
                 <div class="opacity-90 text-sm">HP ${pet.currentHP}/${maxHP}</div>
@@ -1517,6 +1638,175 @@ const UIManager = {
             this.showScreen("mainScreen");
             this.renderPets();
         }
+    },
+
+    // Prestige Fusion
+    openPrestige() {
+        this.prestigePetId = null;
+        this.prestigeStep = 1;
+        document.getElementById("prestigeGrid").innerHTML = "";
+        document.getElementById("prestigeInfo").classList.add("hidden");
+        document.getElementById("prestigeButtons").classList.add("hidden");
+        document.getElementById("prestigeStep").innerText = "Step 1: Select the pet to prestige";
+        const fuseBtn = document.querySelector('#prestigeButtons button');
+        if (fuseBtn) fuseBtn.disabled = false;
+        document.getElementById("prestigeOverlay").classList.remove("hidden");
+        this.renderPrestigeStep1();
+    },
+
+    openPrestigeForSelectedPet() {
+        const pet = PetManager.selectedPet;
+        if (!pet) {
+            alert("Select a pet first!");
+            return;
+        }
+        this.openPrestige();
+        this.selectPrestigePet(pet.id);
+    },
+
+    openPrestigeForPet(petId) {
+        this.openPrestige();
+        this.selectPrestigePet(petId);
+    },
+
+    renderPrestigeStep1() {
+        const grid = document.getElementById("prestigeGrid");
+        grid.innerHTML = "";
+        
+        PetManager.pets.forEach(pet => {
+            if (pet.level < 15 || pet.currentHP <= 0) return;
+            
+            const template = PetTypes[pet.typeId];
+            const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
+            const hpPercent = (pet.currentHP / maxHP) * 100;
+            
+            const card = document.createElement("div");
+            card.className = "bg-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/20 transition-all";
+            card.innerHTML = `
+                <h3>${template.emoji} ${PetManager.getEvolution(pet)}</h3>
+                <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
+                <div class="opacity-90 text-sm">Level ${pet.level}</div>
+                ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 font-bold">Prestige ${pet.prestigeLevel}</div>` : ""}
+                <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div>
+                </div>
+                <div class="opacity-90 text-sm">HP ${pet.currentHP}/${maxHP}</div>
+            `;
+            card.onclick = () => this.selectPrestigePet(pet.id);
+            grid.appendChild(card);
+        });
+    },
+
+    selectPrestigePet(petId) {
+        this.prestigePetId = petId;
+        this.prestigeStep = 2;
+        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
+                    PetManager.storage.find(p => String(p.id) === String(petId));
+        if (!pet) return;
+        
+        const template = PetTypes[pet.typeId];
+        document.getElementById("prestigeStep").innerText = "Step 2: Select the material pet to consume (same race, same prestige level)";
+        document.getElementById("prestigeInfo").innerHTML = `
+            <h3>${template.emoji} ${PetManager.getEvolution(pet)}${pet.prestigeLevel > 0 ? ` ${this.toRoman(pet.prestigeLevel)}` : ""}</h3>
+            <p>Level ${pet.level} | ${template.type.toUpperCase()}</p>
+            ${pet.prestigeLevel > 0 ? `<p class="text-purple-300">Prestige ${pet.prestigeLevel}</p>` : "<p>No prestige yet</p>"}
+        `;
+        document.getElementById("prestigeInfo").classList.remove("hidden");
+        document.getElementById("prestigeButtons").classList.remove("hidden");
+        this.renderPrestigeStep2();
+    },
+
+    renderPrestigeStep2() {
+        const grid = document.getElementById("prestigeGrid");
+        grid.innerHTML = "";
+        
+        const pet1 = PetManager.pets.find(p => String(p.id) === String(this.prestigePetId)) || 
+                     PetManager.storage.find(p => String(p.id) === String(this.prestigePetId));
+        if (!pet1) return;
+        
+        const candidateIds = new Set();
+        PetManager.pets.forEach(p => candidateIds.add(p.id));
+        PetManager.storage.forEach(p => candidateIds.add(p.id));
+        candidateIds.delete(this.prestigePetId);
+        
+        const template1 = PetTypes[pet1.typeId];
+        const maxHP1 = PetManager.calculateMaxHP(template1, pet1.level, pet1);
+        const hpPercent1 = (pet1.currentHP / maxHP1) * 100;
+        
+        Array.from(candidateIds).forEach(id => {
+            const pet2 = PetManager.pets.find(p => String(p.id) === String(id)) || 
+                         PetManager.storage.find(p => String(p.id) === String(id));
+            if (!pet2 || pet2.typeId !== pet1.typeId) return;
+            if (pet2.prestigeLevel !== pet1.prestigeLevel) return;
+            if (pet2.level < 15) return;
+            if (pet2.currentHP <= 0) return;
+            
+            const template2 = PetTypes[pet2.typeId];
+            const maxHP2 = PetManager.calculateMaxHP(template2, pet2.level, pet2);
+            const hpPercent2 = (pet2.currentHP / maxHP2) * 100;
+            
+            const card = document.createElement("div");
+            card.className = "bg-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/20 transition-all";
+            card.innerHTML = `
+                <h3>${template2.emoji} ${PetManager.getEvolution(pet2)} ${pet2.prestigeLevel > 0 ? this.toRoman(pet2.prestigeLevel) : ""}</h3>
+                <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template2.type)}">${template2.type.toUpperCase()}</span>
+                <div class="opacity-90 text-sm">Level ${pet2.level}</div>
+                <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent2}%"></div>
+                </div>
+                <div class="opacity-90 text-sm">HP ${pet2.currentHP}/${maxHP2}</div>
+                <p class="text-xs text-red-300 mt-2">Will be consumed</p>
+            `;
+            card.onclick = () => this.selectMaterialPet(pet2.id);
+            grid.appendChild(card);
+        });
+    },
+
+    selectMaterialPet(petId) {
+        this.prestigeMaterialId = petId;
+        document.getElementById("prestigeStep").innerText = "Ready to fuse!";
+        document.getElementById("prestigeInfo").classList.add("hidden");
+        document.getElementById("prestigeGrid").innerHTML = "";
+    },
+
+    confirmPrestige() {
+        if (!this.prestigePetId || !this.prestigeMaterialId) {
+            alert("Please select both pets!");
+            return;
+        }
+        
+        const validation = PetManager.canPrestige(this.prestigePetId, this.prestigeMaterialId);
+        if (!validation.valid) {
+            alert(validation.reason);
+            return;
+        }
+        
+        const fuseBtn = document.querySelector('#prestigeButtons button');
+        if (fuseBtn) fuseBtn.disabled = true;
+        
+        const result = PetManager.prestigeFuse(this.prestigePetId, this.prestigeMaterialId);
+        
+        if (fuseBtn) fuseBtn.disabled = false;
+        
+        if (result.success) {
+            const pet = result.pet;
+            const template = PetTypes[pet.typeId];
+            const bonus = result.bonusStats;
+            alert(`✨ Prestige ${pet.prestigeLevel} achieved! ${template.name} gained:\n+${bonus.hp} HP | +${bonus.attack} ATK | +${bonus.defense} DEF | +${bonus.speed} SPD | +${bonus.special} SPC`);
+            DataManager.save();
+            this.closePrestigeOverlay();
+            this.showScreen("mainScreen");
+            this.renderPets();
+        } else {
+            alert(result.reason);
+        }
+    },
+
+    closePrestigeOverlay() {
+        document.getElementById("prestigeOverlay").classList.add("hidden");
+        this.prestigePetId = null;
+        this.prestigeMaterialId = null;
+        this.prestigeStep = 1;
     }
 };
 

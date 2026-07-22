@@ -27,6 +27,7 @@
         <button onclick="UIManager.showScreen('storageScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">📦 Pet Storage</button>
         <button onclick="UIManager.showScreen('shopScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🛒 Shop</button>
         <button onclick="UIManager.showScreen('inventoryScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎒 Inventory</button>
+        <button onclick="UIManager.openPrestige()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-purple-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">✨ Prestige Fusion</button>
         <button onclick="DataManager.resetAccount()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🔄 Reset Account</button>
     </div>
 
@@ -53,6 +54,7 @@
 
             <button id="trainBtn" onclick="UIManager.openTraining()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎯 Train</button>
             <button id="depositBtn" onclick="UIManager.depositSelectedPet()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">↪ Deposit to Storage</button>
+            <button onclick="UIManager.openPrestigeForSelectedPet()" id="prestigeBtn" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-purple-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">✨ Prestige</button>
             <br><br>
             <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
         </div>
@@ -120,6 +122,20 @@
         <button id="switchBtn" onclick="UIManager.openSwitchOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🔄 Switch</button>
         <button id="catchBtn" onclick="UIManager.tryCatch()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎱 Catch</button>
         <button onclick="UIManager.fleeBattle()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🏃 Flee</button>
+    </div>
+
+    <!-- PRESTIGE FUSION OVERLAY -->
+    <div id="prestigeOverlay" class="hidden fixed inset-0 bg-black/90 z-50 p-5 overflow-y-auto">
+        <div class="max-w-4xl mx-auto my-5">
+            <h2>✨ Prestige Fusion</h2>
+            <p id="prestigeStep" class="text-left max-w-md mx-auto mb-4">Step 1: Select the pet to prestige</p>
+            <div id="prestigeInfo" class="max-w-md mx-auto mb-4 p-4 bg-white/10 rounded-xl hidden"></div>
+            <div id="prestigeGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-5 my-5"></div>
+            <div id="prestigeButtons" class="max-w-md mx-auto my-4 hidden">
+                <button onclick="UIManager.confirmPrestige()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-purple-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">✨ Fuse</button>
+                <button onclick="UIManager.closePrestigeOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <!-- PET SWITCH OVERLAY -->

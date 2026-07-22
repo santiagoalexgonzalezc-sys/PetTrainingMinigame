@@ -459,23 +459,15 @@ const PetManager = {
         if (!pet1 || !pet2) return { success: false, reason: "Pet not found!" };
         
         const template = PetTypes[pet1.typeId];
-        
-        const currentEffective = {
-            hp: PetManager.calculateMaxHP(template, pet1.level, pet1),
-            attack: pet1.stats.attack + (pet1.bonusStats?.attack || 0),
-            defense: pet1.stats.defense + (pet1.bonusStats?.defense || 0),
-            speed: pet1.stats.speed + (pet1.bonusStats?.speed || 0),
-            special: pet1.stats.special + (pet1.bonusStats?.special || 0)
-        };
-        
-        const newBonus = {};
-        for (const stat in currentEffective) {
-            newBonus[stat] = (pet1.bonusStats?.[stat] || 0) + Math.floor(currentEffective[stat] * 0.10);
-        }
-        
         const newPrestigeLevel = pet1.prestigeLevel + 1;
         pet1.prestigeLevel = newPrestigeLevel;
-        pet1.bonusStats = newBonus;
+        pet1.bonusStats = {
+            hp: 5 * newPrestigeLevel,
+            attack: 5 * newPrestigeLevel,
+            defense: 5 * newPrestigeLevel,
+            speed: 5 * newPrestigeLevel,
+            special: 5 * newPrestigeLevel
+        };
         
         pet1.stats = PetManager.calculateStats(template, pet1.level, pet1);
         const newMaxHP = PetManager.calculateMaxHP(template, pet1.level, pet1);
@@ -488,7 +480,7 @@ const PetManager = {
             this.selectedPet = this.pets[0] || null;
         }
         
-        return { success: true, pet: pet1, bonusStats: newBonus };
+        return { success: true, pet: pet1 };
     }
 };
 

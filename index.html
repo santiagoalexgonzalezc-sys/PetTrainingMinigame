@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🐾 Pet Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes shiny-sparkle {
+            0%, 100% { box-shadow: 0 0 10px rgba(250, 204, 21, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(250, 204, 21, 0.8), 0 0 30px rgba(250, 204, 21, 0.4); }
+        }
+        .shiny-card { animation: shiny-sparkle 2s infinite; }
+        @keyframes tier-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(250, 204, 21, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(250, 204, 21, 0.8), 0 0 30px rgba(250, 204, 21, 0.4); }
+        }
+        .tier-s { animation: tier-glow 2s infinite; }
+    </style>
 </head>
 <body class="m-0 font-sans bg-gradient-to-b from-gray-900 to-black text-white text-center min-h-screen">
     <div class="fixed top-2.5 right-2.5 bg-black/50 px-5 py-2.5 rounded-full z-50 flex flex-col items-end gap-1" id="topRightStats">
@@ -59,6 +71,12 @@
             <button id="trainBtn" onclick="UIManager.openTraining()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎯 Train</button>
             <button id="depositBtn" onclick="UIManager.depositSelectedPet()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">↪ Deposit to Storage</button>
             <button onclick="UIManager.openPrestigeForSelectedPet()" id="prestigeBtn" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-purple-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">✨ Prestige</button>
+            <button id="upgradeTierBtn" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬆ Upgrade Tier</button>
+            <button id="equipBtn" onclick="UIManager.openEquipOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎒 Equip</button>
+            <br><br>
+            <button id="useXPOrb" onclick="UIManager.useItemForPet('xpOrb')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-yellow-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🚀 Use XP Orb (+500 XP)</button>
+            <button id="usePrecision" onclick="UIManager.useItemForPet('precisionGuide')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-yellow-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎯 Precision Guide (Guaranteed Perfect)</button>
+            <button id="useFocusIncense" onclick="UIManager.useItemForPet('focusIncense')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-yellow-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🔥 Focus Incense (5 Misses)</button>
             <br><br>
             <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
         </div>
@@ -100,6 +118,7 @@
         <div class="flex justify-between items-center max-w-4xl mx-5 my-5 p-5 bg-white/5 rounded-2xl">
             <div class="text-center flex-1">
                 <div id="playerPetName"></div>
+                <div id="playerTier" class="text-xs opacity-80"></div>
                 <div id="playerPetSprite" class="text-6xl my-2.5"></div>
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
                     <div id="playerHPFill" class="h-full w-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300"></div>
@@ -111,6 +130,7 @@
 
             <div class="text-center flex-1">
                 <div id="enemyPetName"></div>
+                <div id="enemyTier" class="text-xs opacity-80"></div>
                 <div id="enemyPetLevel" class="text-sm opacity-70"></div>
                 <div id="enemyPetSprite" class="text-6xl my-2.5"></div>
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
@@ -139,6 +159,16 @@
                 <button onclick="UIManager.confirmPrestige()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-purple-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">✨ Fuse</button>
                 <button onclick="UIManager.closePrestigeOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
             </div>
+        </div>
+    </div>
+
+    <!-- EQUIP OVERLAY -->
+    <div id="equipOverlay" class="hidden fixed inset-0 bg-black/90 z-50 p-5 overflow-y-auto">
+        <div class="max-w-4xl mx-auto my-5">
+            <h2>🎒 Equip Accessory</h2>
+            <p id="equipPetInfo" class="text-left max-w-md mx-auto mb-4"></p>
+            <div id="equipGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-5 my-5"></div>
+            <button onclick="UIManager.closeEquipOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
         </div>
     </div>
 

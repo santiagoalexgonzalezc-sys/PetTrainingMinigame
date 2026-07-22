@@ -150,6 +150,15 @@
 </div>
 
 <div class="section">
+  <h2>5. Prestige Fusion Pairs</h2>
+  <p>Shows pairs of pets that can be fused for prestige (same type, same prestige level, both Lv15+, both alive). The primary pet gains +5 to all stats per prestige level.</p>
+  <table id="prestigeTable">
+    <thead><tr><th>#</th><th>Primary Pet</th><th>Location</th><th>Material Pet</th><th>Location</th><th>Type</th><th>Prestige</th><th>New Prestige</th><th>Bonus After Fuse</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="section">
   <h2>Raw Save Data</h2>
   <pre id="raw" style="background:#000; padding:10px; max-height:300px; overflow:auto;"></pre>
 </div>
@@ -325,11 +334,76 @@ function renderPowerAsc() {
   document.querySelector("#powerAscTable tbody").innerHTML = rows.map((p,i) => petRow(p, i+1)).join("");
 }
 
+function renderPrestigePairs() {
+  const data = getData();
+  const tbody = document.querySelector("#prestigeTable tbody");
+  if (!data) {
+    tbody.innerHTML = "<tr><td colspan='9'>No save data.</td></tr>";
+    return;
+  }
+
+  const all = [];
+  if (data.pets && data.pets.length) {
+    data.pets.forEach(p => all.push({...p, _loc:"Party"}));
+  }
+  if (data.storage && data.storage.length) {
+    data.storage.forEach(p => all.push({...p, _loc:"Storage"}));
+  }
+
+  const groups = {};
+  all.forEach(pet => {
+    const prestige = pet.prestigeLevel || 0;
+    if (prestige >= 99) return;
+    if (pet.level < 15) return;
+    if (pet.currentHP <= 0) return;
+    const key = pet.typeId + "_" + prestige;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(pet);
+  });
+
+  const pairs = [];
+  Object.values(groups).forEach(group => {
+    for (let i = 0; i < group.length; i++) {
+      for (let j = i + 1; j < group.length; j++) {
+        const a = group[i];
+        const b = group[j];
+        if (String(a.id) === String(b.id)) continue;
+        pairs.push({ primary: a, material: b });
+      }
+    }
+  });
+
+  if (pairs.length === 0) {
+    tbody.innerHTML = "<tr><td colspan='9'>No valid prestige pairs found.</td></tr>";
+    return;
+  }
+
+  tbody.innerHTML = pairs.map((pair, i) => {
+    const t1 = getTemplate(pair.primary.typeId);
+    const t2 = getTemplate(pair.material.typeId);
+    const prestige = pair.primary.prestigeLevel || 0;
+    const newPrestige = prestige + 1;
+    const bonus = newPrestige * 5;
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${t1.emoji} ${getEvolutionName(pair.primary)}</td>
+      <td>${pair.primary._loc}</td>
+      <td>${t2.emoji} ${getEvolutionName(pair.material)}</td>
+      <td>${pair.material._loc}</td>
+      <td>${TYPES[t1.type]||t1.type}</td>
+      <td>${prestige}</td>
+      <td>${newPrestige}</td>
+      <td>+${bonus} all stats</td>
+    </tr>`;
+  }).join("");
+}
+
 document.getElementById("raw").textContent = JSON.stringify(getData(), null, 2);
 renderLevelDesc();
 renderPowerDesc();
 renderLevelAsc();
 renderPowerAsc();
+renderPrestigePairs();
 </script>
 </body>
 </html>

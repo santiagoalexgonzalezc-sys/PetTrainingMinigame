@@ -459,23 +459,15 @@ const PetManager = {
         if (!pet1 || !pet2) return { success: false, reason: "Pet not found!" };
         
         const template = PetTypes[pet1.typeId];
-        
-        const currentEffective = {
-            hp: PetManager.calculateMaxHP(template, pet1.level, pet1),
-            attack: pet1.stats.attack + (pet1.bonusStats?.attack || 0),
-            defense: pet1.stats.defense + (pet1.bonusStats?.defense || 0),
-            speed: pet1.stats.speed + (pet1.bonusStats?.speed || 0),
-            special: pet1.stats.special + (pet1.bonusStats?.special || 0)
-        };
-        
-        const newBonus = {};
-        for (const stat in currentEffective) {
-            newBonus[stat] = (pet1.bonusStats?.[stat] || 0) + Math.floor(currentEffective[stat] * 0.10);
-        }
-        
         const newPrestigeLevel = pet1.prestigeLevel + 1;
         pet1.prestigeLevel = newPrestigeLevel;
-        pet1.bonusStats = newBonus;
+        pet1.bonusStats = {
+            hp: 5 * newPrestigeLevel,
+            attack: 5 * newPrestigeLevel,
+            defense: 5 * newPrestigeLevel,
+            speed: 5 * newPrestigeLevel,
+            special: 5 * newPrestigeLevel
+        };
         
         pet1.stats = PetManager.calculateStats(template, pet1.level, pet1);
         const newMaxHP = PetManager.calculateMaxHP(template, pet1.level, pet1);
@@ -488,7 +480,7 @@ const PetManager = {
             this.selectedPet = this.pets[0] || null;
         }
         
-        return { success: true, pet: pet1, bonusStats: newBonus };
+        return { success: true, pet: pet1 };
     }
 };
 
@@ -537,7 +529,7 @@ const Economy = {
     },
 
     sellPet(pet) {
-        const value = pet.level * 30;
+        const value = pet.level * 25 + (pet.prestigeLevel || 0) * 1000;
         this.money += value;
         PetManager.deletePet(pet.id);
         return value;
@@ -957,6 +949,7 @@ const BattleSystem = {
             UIManager.showScreen("mainScreen");
             UIManager.renderPets();
             UIManager.updateCurrency();
+            UIManager.updateTeamPower();
         }, 500);
     },
 
@@ -1114,6 +1107,7 @@ const Game = {
         DataManager.load();
         UIManager.init();
         UIManager.updateCurrency();
+        UIManager.updateTeamPower();
         
         if (!this.hasStarter) {
             UIManager.renderStarterSelection();
@@ -1121,6 +1115,7 @@ const Game = {
         } else {
             UIManager.showScreen("mainScreen");
             UIManager.renderPets();
+            UIManager.updateTeamPower();
         }
     },
 
@@ -1133,6 +1128,30 @@ const Game = {
         
         UIManager.showScreen("mainScreen");
         UIManager.renderPets();
+        UIManager.updateTeamPower();
+    }
+};
+
+// ==================== TEAM POWER ====================
+const TeamPowerSystem = {
+    calculatePetPower(pet) {
+        const template = PetTypes[pet.typeId];
+        if (!template || !pet.stats) return 0;
+        const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
+        return maxHP + pet.stats.attack + pet.stats.defense + pet.stats.speed + pet.stats.special + (pet.level * 5);
+    },
+
+    getTotalPower() {
+        let total = 0;
+        PetManager.pets.forEach(pet => total += this.calculatePetPower(pet));
+        PetManager.storage.forEach(pet => total += this.calculatePetPower(pet));
+        return total;
+    },
+
+    getPartyPower() {
+        let total = 0;
+        PetManager.pets.forEach(pet => total += this.calculatePetPower(pet));
+        return total;
     }
 };
 
@@ -1164,6 +1183,13 @@ const UIManager = {
 
     updateCurrency() {
         document.getElementById("currencyDisplay").innerHTML = `💰 <span>${Economy.money}</span>`;
+    },
+
+    updateTeamPower() {
+        const total = TeamPowerSystem.getTotalPower();
+        const party = TeamPowerSystem.getPartyPower();
+        document.getElementById("teamPowerDisplay").innerHTML = `⚔️ Total: <span>${total}</span>`;
+        document.getElementById("partyPowerDisplay").innerHTML = `🛡️ Party: <span>${party}</span>`;
     },
 
     // Starter Screen
@@ -1245,10 +1271,11 @@ const UIManager = {
                 <div class="opacity-90 text-sm">XP ${pet.xp}/${xpNeeded}</div>
                 
                 <button onclick="UIManager.selectPet('${pet.id}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Select</button>
-                <button onclick="UIManager.sellPet('${pet.id}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Sell (${pet.level * 25}💰)</button>
+                <button onclick="UIManager.sellPet('${pet.id}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Sell (${pet.level * 25 + (pet.prestigeLevel || 0) * 1000}💰)</button>
             `;
             list.appendChild(card);
         });
+        this.updateTeamPower();
     },
 
     selectPet(id) {
@@ -1262,12 +1289,13 @@ const UIManager = {
                     PetManager.storage.find(p => String(p.id) === String(id));
         if (!pet) return;
         
-        if (confirm(`Sell ${PetTypes[pet.typeId].name} for ${pet.level * 25} gold?`)) {
+        if (confirm(`Sell ${PetTypes[pet.typeId].name} for ${pet.level * 25 + (pet.prestigeLevel || 0) * 1000} gold?`)) {
             Economy.sellPet(pet);
             DataManager.save();
             this.renderPets();
             this.renderStorage();
             this.updateCurrency();
+            this.updateTeamPower();
         }
     },
 
@@ -1312,6 +1340,8 @@ const UIManager = {
         const trainBtn = document.getElementById("trainBtn");
         trainBtn.disabled = !canTrain;
         trainBtn.innerText = canTrain ? "🎯 Train" : `⏳ ${cooldown}s`;
+        
+        this.updateTeamPower();
     },
 
     // Training Screen
@@ -1477,6 +1507,7 @@ const UIManager = {
             BattleSystem.active = false;
             this.showScreen("mainScreen");
             this.renderPets();
+            this.updateTeamPower();
         }
     },
 
@@ -1493,6 +1524,7 @@ const UIManager = {
         
         DataManager.save();
         this.showScreen("mainScreen");
+        this.updateTeamPower();
     },
 
     // Shop Screen
@@ -1519,6 +1551,7 @@ const UIManager = {
             DataManager.save();
             this.renderShop();
             this.updateCurrency();
+            this.updateTeamPower();
         } else {
             alert("Not enough money!");
         }
@@ -1594,10 +1627,11 @@ const UIManager = {
                 <div class="w-full h-4.5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-green-400 to-blue-400 transition-all duration-300" style="width: ${xpPercent}%"></div></div>
                 <div class="opacity-90 text-sm">XP ${pet.xp}/${xpNeeded}</div>
                 <button onclick="UIManager.withdrawPet('${pet.id}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">↩ Withdraw</button>
-                <button onclick="UIManager.sellPet('${pet.id}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Sell (${pet.level * 25}💰)</button>
+                <button onclick="UIManager.sellPet('${pet.id}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Sell (${pet.level * 25 + (pet.prestigeLevel || 0) * 1000}💰)</button>
             `;
             grid.appendChild(card);
         });
+        this.updateTeamPower();
     },
 
     withdrawPet(id) {
@@ -1623,6 +1657,7 @@ const UIManager = {
         DataManager.save();
         this.renderStorage();
         this.renderPets();
+        this.updateTeamPower();
     },
 
     depositSelectedPet() {
@@ -1637,6 +1672,7 @@ const UIManager = {
             DataManager.save();
             this.showScreen("mainScreen");
             this.renderPets();
+            this.updateTeamPower();
         }
     },
 
@@ -1791,12 +1827,12 @@ const UIManager = {
         if (result.success) {
             const pet = result.pet;
             const template = PetTypes[pet.typeId];
-            const bonus = result.bonusStats;
-            alert(`✨ Prestige ${pet.prestigeLevel} achieved! ${template.name} gained:\n+${bonus.hp} HP | +${bonus.attack} ATK | +${bonus.defense} DEF | +${bonus.speed} SPD | +${bonus.special} SPC`);
+            alert(`✨ Prestige ${pet.prestigeLevel} achieved! ${template.name} gained:\n+${pet.bonusStats.hp} HP | +${pet.bonusStats.attack} ATK | +${pet.bonusStats.defense} DEF | +${pet.bonusStats.speed} SPD | +${pet.bonusStats.special} SPC`);
             DataManager.save();
             this.closePrestigeOverlay();
             this.showScreen("mainScreen");
             this.renderPets();
+            this.updateTeamPower();
         } else {
             alert(result.reason);
         }

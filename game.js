@@ -19,7 +19,7 @@ const DataManager = {
             PetManager.pets = data.pets || [];
             PetManager.storage = data.storage || [];
             Economy.money = data.money || 100;
-            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, precisionGuide: 0, focusIncense: 0, collarOfPower: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0 };
+            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0 };
             PetManager.pets.forEach(p => {
                 if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
@@ -403,9 +403,16 @@ const PetManager = {
     calculateTierBonus(tier) {
         const rank = tier.charAt(0);
         const sub = parseInt(tier.slice(1));
-        const rankValues = { D: 0, C: 10, B: 20, A: 30, S: 40 };
-        const base = rankValues[rank] || 0;
-        return base + ((sub - 1) * 2);
+        const bonuses = {
+            D: [2, 4, 6, 8, 10],
+            C: [14, 18, 22, 26, 30],
+            B: [38, 46, 54, 62, 70],
+            A: [85, 100, 115, 130, 145],
+            S: [170, 195, 220, 245, 270]
+        };
+        const rankBonuses = bonuses[rank];
+        if (!rankBonuses || sub < 1 || sub > rankBonuses.length) return 0;
+        return rankBonuses[sub - 1];
     },
 
     calculateMaxHP(template, level, pet) {
@@ -414,7 +421,7 @@ const PetManager = {
         const shinyBonus = pet?.shinyBonus?.hp || 0;
         const tierBonus = pet?.tierBonus || 0;
         const equipStats = EquipmentSystem.getStats(pet) || { hp: 0 };
-        return base + bonus + shinyBonus + Math.floor(base * tierBonus / 100) + (equipStats.hp || 0);
+        return base + bonus + shinyBonus + tierBonus + (equipStats.hp || 0);
     },
 
     calculateStats(template, level, pet) {
@@ -426,7 +433,7 @@ const PetManager = {
             const shinyBonus = pet?.shinyBonus?.[stat] || 0;
             const tierBonus = pet?.tierBonus || 0;
             const equipStats = EquipmentSystem.getStats(pet) || {};
-            stats[stat] = base + bonus + shinyBonus + Math.floor(base * tierBonus / 100) + (equipStats[stat] || 0);
+            stats[stat] = base + bonus + shinyBonus + tierBonus + (equipStats[stat] || 0);
         }
         return stats;
     },
@@ -452,7 +459,7 @@ const PetManager = {
         const startLevel = pet.level;
         const startMaxHP = this.calculateMaxHP(PetTypes[pet.typeId], startLevel, pet);
 
-        while (pet.xp >= this.xpNeeded(pet.level)) {
+        while (pet.xp >= this.xpNeeded(pet.level) && pet.level < 1000) {
             pet.xp -= this.xpNeeded(pet.level);
             pet.level++;
             pet.stats = this.calculateStats(PetTypes[pet.typeId], pet.level, pet);
@@ -590,11 +597,11 @@ const Economy = {
         xpOrb: 0,
         precisionGuide: 0,
         focusIncense: 0,
-        collarOfPower: 0,
         bandOfSwiftness: 0,
         toughCollar: 0,
         focusBand: 0,
-        lifeBangle: 0
+        lifeBangle: 0,
+        attackSunglasses: 0
     },
 
     shopItems: {
@@ -608,11 +615,11 @@ const Economy = {
         xpOrb: { name: "XP Orb", price: 200, type: "xp", power: 500 },
         precisionGuide: { name: "Precision Guide", price: 100, type: "training", power: 1 },
         focusIncense: { name: "Focus Incense", price: 150, type: "training", power: 5 },
-        collarOfPower: { name: "Collar of Power", price: 5000, type: "equipment", power: 10, stats: { hp: 10, attack: 10, defense: 10, speed: 10, special: 10 } },
         bandOfSwiftness: { name: "Band of Swiftness", price: 4000, type: "equipment", power: 10, stats: { speed: 10 } },
         toughCollar: { name: "Tough Collar", price: 4000, type: "equipment", power: 10, stats: { defense: 10 } },
         focusBand: { name: "Focus Band", price: 4000, type: "equipment", power: 10, stats: { special: 10 } },
-        lifeBangle: { name: "Life Bangle", price: 4000, type: "equipment", power: 10, stats: { hp: 10 } }
+        lifeBangle: { name: "Life Bangle", price: 4000, type: "equipment", power: 10, stats: { hp: 10 } },
+        attackSunglasses: { name: "Attack Sunglasses", price: 4000, type: "equipment", power: 10, stats: { attack: 10 } }
     },
 
     buyItem(itemId, quantity = 1) {
@@ -925,7 +932,7 @@ const EquipmentSystem = {
         const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
                     PetManager.storage.find(p => String(p.id) === String(petId));
         if (!pet) return { valid: false, reason: "Pet not found!" };
-        if (!Array.isArray(pet.equipment) || pet.equipment.length >= 6) return { valid: false, reason: "Max 6 equipment slots!" };
+        if (!Array.isArray(pet.equipment) || pet.equipment.length >= 5) return { valid: false, reason: "Max 5 equipment slots!" };
         return { valid: true };
     },
     
@@ -1602,7 +1609,7 @@ const UIManager = {
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
                 ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[itemId]?.name || ""}</div>`).join("") : ""}
-                <div class="opacity-90 text-sm">Tier: ${pet.tier} (+${pet.tierBonus}%)</div>
+                <div class="opacity-90 text-sm">Tier: ${pet.tier} (+${pet.tierBonus} all stats)</div>
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
@@ -1702,7 +1709,7 @@ const UIManager = {
         
         const equipBtn = document.getElementById("equipBtn");
         if (equipBtn) {
-            const hasEquipmentInInventory = Economy.inventory.collarOfPower > 0 || Economy.inventory.bandOfSwiftness > 0 || Economy.inventory.toughCollar > 0 || Economy.inventory.focusBand > 0 || Economy.inventory.lifeBangle > 0;
+            const hasEquipmentInInventory = Economy.inventory.bandOfSwiftness > 0 || Economy.inventory.toughCollar > 0 || Economy.inventory.focusBand > 0 || Economy.inventory.lifeBangle > 0 || Economy.inventory.attackSunglasses > 0;
             const hasFreeSlot = !Array.isArray(pet.equipment) || pet.equipment.length < 6;
             equipBtn.style.display = (hasFreeSlot && hasEquipmentInInventory) ? "inline-block" : "none";
         }
@@ -2179,7 +2186,7 @@ const UIManager = {
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
                 ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[itemId]?.name || ""}</div>`).join("") : ""}
-                <div class="opacity-90 text-sm">Tier: ${pet.tier} (+${pet.tierBonus}%)</div>
+                <div class="opacity-90 text-sm">Tier: ${pet.tier} (+${pet.tierBonus} all stats)</div>
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div></div>
                 <div class="opacity-90 text-sm">HP ${pet.currentHP}/${maxHP}</div>

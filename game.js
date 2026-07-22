@@ -1783,8 +1783,7 @@ const UIManager = {
         if (result.success) {
             const pet = result.pet;
             const template = PetTypes[pet.typeId];
-            const bonus = result.bonusStats;
-            alert(`✨ Prestige ${pet.prestigeLevel} achieved! ${template.name} gained:\n+${bonus.hp} HP | +${bonus.attack} ATK | +${bonus.defense} DEF | +${bonus.speed} SPD | +${bonus.special} SPC`);
+            alert(`✨ Prestige ${pet.prestigeLevel} achieved! ${template.name} gained:\n+${pet.bonusStats.hp} HP | +${pet.bonusStats.attack} ATK | +${pet.bonusStats.defense} DEF | +${pet.bonusStats.speed} SPD | +${pet.bonusStats.special} SPC`);
             DataManager.save();
             this.closePrestigeOverlay();
             this.showScreen("mainScreen");

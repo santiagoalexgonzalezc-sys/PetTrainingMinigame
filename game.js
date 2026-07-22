@@ -19,12 +19,13 @@ const DataManager = {
             PetManager.pets = data.pets || [];
             PetManager.storage = data.storage || [];
             Economy.money = data.money || 100;
-            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0 };
+            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, precisionGuide: 0, focusIncense: 0, collarOfPower: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0 };
             PetManager.pets.forEach(p => {
                 if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (p.shiny === undefined) p.shiny = false;
                 if (p.shinyBonus === undefined) p.shinyBonus = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+                if (p.equipment === undefined) p.equipment = null;
                 
                 // Fix malformed tiers from old upgrade bug
                 if (!p.tier || typeof p.tier !== "string" || p.tier.length < 2) {
@@ -47,6 +48,7 @@ const DataManager = {
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (p.shiny === undefined) p.shiny = false;
                 if (p.shinyBonus === undefined) p.shinyBonus = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+                if (p.equipment === undefined) p.equipment = null;
                 
                 // Fix malformed tiers from old upgrade bug
                 if (!p.tier || typeof p.tier !== "string" || p.tier.length < 2) {
@@ -376,7 +378,8 @@ const PetManager = {
             shiny: shiny,
             shinyBonus: shinyBonus,
             tier: tier,
-            tierBonus: this.calculateTierBonus(tier)
+            tierBonus: this.calculateTierBonus(tier),
+            equipment: null
         };
         
         pet.currentHP = this.calculateMaxHP(template, level, pet);
@@ -398,7 +401,8 @@ const PetManager = {
         const bonus = pet?.bonusStats?.hp || 0;
         const shinyBonus = pet?.shinyBonus?.hp || 0;
         const tierBonus = pet?.tierBonus || 0;
-        return base + bonus + shinyBonus + Math.floor(base * tierBonus / 100);
+        const equipStats = EquipmentSystem.getStats(pet) || { hp: 0 };
+        return base + bonus + shinyBonus + Math.floor(base * tierBonus / 100) + (equipStats.hp || 0);
     },
 
     calculateStats(template, level, pet) {
@@ -409,7 +413,8 @@ const PetManager = {
             const bonus = pet?.bonusStats?.[stat] || 0;
             const shinyBonus = pet?.shinyBonus?.[stat] || 0;
             const tierBonus = pet?.tierBonus || 0;
-            stats[stat] = base + bonus + shinyBonus + Math.floor(base * tierBonus / 100);
+            const equipStats = EquipmentSystem.getStats(pet) || {};
+            stats[stat] = base + bonus + shinyBonus + Math.floor(base * tierBonus / 100) + (equipStats[stat] || 0);
         }
         return stats;
     },
@@ -522,16 +527,25 @@ const PetManager = {
         
         if (!pet1 || !pet2) return { success: false, reason: "Pet not found!" };
         
+        if (pet2.equipment) {
+            Economy.inventory[pet2.equipment] = (Economy.inventory[pet2.equipment] || 0) + 1;
+        }
+        
         const template = PetTypes[pet1.typeId];
-        const newPrestigeLevel = pet1.prestigeLevel + 1;
-        pet1.prestigeLevel = newPrestigeLevel;
+        const currentEffectiveHP = PetManager.calculateMaxHP(template, pet1.level, pet1);
+        const baseAttack = Math.floor((template.baseStats.attack * 2 * pet1.level) / 100) + 5;
+        const baseDefense = Math.floor((template.baseStats.defense * 2 * pet1.level) / 100) + 5;
+        const baseSpeed = Math.floor((template.baseStats.speed * 2 * pet1.level) / 100) + 5;
+        const baseSpecial = Math.floor((template.baseStats.special * 2 * pet1.level) / 100) + 5;
+        
         pet1.bonusStats = {
-            hp: 5 * newPrestigeLevel,
-            attack: 5 * newPrestigeLevel,
-            defense: 5 * newPrestigeLevel,
-            speed: 5 * newPrestigeLevel,
-            special: 5 * newPrestigeLevel
+            hp: (pet1.bonusStats?.hp || 0) + Math.floor(currentEffectiveHP * 0.10),
+            attack: (pet1.bonusStats?.attack || 0) + Math.floor(baseAttack * 0.10),
+            defense: (pet1.bonusStats?.defense || 0) + Math.floor(baseDefense * 0.10),
+            speed: (pet1.bonusStats?.speed || 0) + Math.floor(baseSpeed * 0.10),
+            special: (pet1.bonusStats?.special || 0) + Math.floor(baseSpecial * 0.10)
         };
+        pet1.prestigeLevel++;
         
         pet1.stats = PetManager.calculateStats(template, pet1.level, pet1);
         const newMaxHP = PetManager.calculateMaxHP(template, pet1.level, pet1);
@@ -558,7 +572,15 @@ const Economy = {
         potion: 3,
         superPotion: 0,
         hyperPotion: 0,
-        tierStone: 0
+        tierStone: 0,
+        xpOrb: 0,
+        precisionGuide: 0,
+        focusIncense: 0,
+        collarOfPower: 0,
+        bandOfSwiftness: 0,
+        toughCollar: 0,
+        focusBand: 0,
+        lifeBangle: 0
     },
 
     shopItems: {
@@ -568,7 +590,15 @@ const Economy = {
         potion: { name: "Potion", price: 30, type: "heal", power: 20 },
         superPotion: { name: "Super Potion", price: 80, type: "heal", power: 50 },
         hyperPotion: { name: "Hyper Potion", price: 200, type: "heal", power: 100 },
-        tierStone: { name: "Tier Stone", price: 500, type: "upgrade", power: 1 }
+        tierStone: { name: "Tier Stone", price: 500, type: "upgrade", power: 1 },
+        xpOrb: { name: "XP Orb", price: 200, type: "xp", power: 500 },
+        precisionGuide: { name: "Precision Guide", price: 100, type: "training", power: 1 },
+        focusIncense: { name: "Focus Incense", price: 150, type: "training", power: 5 },
+        collarOfPower: { name: "Collar of Power", price: 5000, type: "equipment", power: 2, stats: { hp: 2, attack: 2, defense: 2, speed: 2, special: 2 } },
+        bandOfSwiftness: { name: "Band of Swiftness", price: 3000, type: "equipment", power: 10, stats: { speed: 10 } },
+        toughCollar: { name: "Tough Collar", price: 3000, type: "equipment", power: 10, stats: { defense: 10 } },
+        focusBand: { name: "Focus Band", price: 3000, type: "equipment", power: 10, stats: { special: 10 } },
+        lifeBangle: { name: "Life Bangle", price: 3000, type: "equipment", power: 10, stats: { hp: 10 } }
     },
 
     buyItem(itemId) {
@@ -589,12 +619,23 @@ const Economy = {
         if (item.type === "heal") {
             const maxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
             pet.currentHP = Math.min(maxHP, pet.currentHP + item.power);
+        } else if (item.type === "xp") {
+            PetManager.gainXP(pet, item.power);
+        } else if (item.type === "training") {
+            if (itemId === "precisionGuide") {
+                TrainingSystem.guaranteedPerfectNextStop = true;
+            } else if (itemId === "focusIncense") {
+                TrainingSystem.extraMissesNextSession = true;
+            }
         }
 
         return true;
     },
 
     sellPet(pet) {
+        if (pet.equipment) {
+            Economy.inventory[pet.equipment] = (Economy.inventory[pet.equipment] || 0) + 1;
+        }
         const value = pet.level * 25 + (pet.prestigeLevel || 0) * 1000 + (pet.shiny ? 5000 : 0) + TierSystem.getTierSellValue(pet.tier);
         this.money += value;
         PetManager.deletePet(pet.id);
@@ -845,6 +886,59 @@ const TierSystem = {
         pet.currentHP = Math.min(pet.currentHP, newMaxHP);
 
         return { success: true, pet, nextTier };
+    }
+};
+
+// ==================== EQUIPMENT SYSTEM ====================
+const EquipmentSystem = {
+    getStats(pet) {
+        if (!pet.equipment) return { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+        const item = Economy.shopItems[pet.equipment];
+        if (!item || !item.stats) return { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+        return item.stats;
+    },
+    
+    canEquip(petId) {
+        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
+                    PetManager.storage.find(p => String(p.id) === String(petId));
+        if (!pet) return { valid: false, reason: "Pet not found!" };
+        if (pet.equipment) return { valid: false, reason: "Pet already has equipment!" };
+        return { valid: true };
+    },
+    
+    equip(petId, itemId) {
+        const validation = this.canEquip(petId);
+        if (!validation.valid) return { success: false, reason: validation.reason };
+        
+        if (!Economy.inventory[itemId] || Economy.inventory[itemId] <= 0) {
+            return { success: false, reason: "No item in inventory!" };
+        }
+        
+        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
+                    PetManager.storage.find(p => String(p.id) === String(petId));
+        
+        Economy.inventory[itemId]--;
+        pet.equipment = itemId;
+        pet.stats = PetManager.calculateStats(PetTypes[pet.typeId], pet.level, pet);
+        const newMaxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
+        pet.currentHP = Math.min(pet.currentHP, newMaxHP);
+        
+        return { success: true, pet };
+    },
+    
+    unequip(petId) {
+        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
+                    PetManager.storage.find(p => String(p.id) === String(petId));
+        if (!pet || !pet.equipment) return { success: false, reason: "No equipment to unequip!" };
+        
+        const itemId = pet.equipment;
+        Economy.inventory[itemId] = (Economy.inventory[itemId] || 0) + 1;
+        pet.equipment = null;
+        pet.stats = PetManager.calculateStats(PetTypes[pet.typeId], pet.level, pet);
+        const newMaxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
+        pet.currentHP = Math.min(pet.currentHP, newMaxHP);
+        
+        return { success: true, pet };
     }
 };
 
@@ -1191,6 +1285,8 @@ const TrainingSystem = {
     missCount: 0,
     speed: 0.7,
     maxMisses: 3,
+    guaranteedPerfectNextStop: false,
+    extraMissesNextSession: false,
 
     startTraining() {
         this.sessionXP = 0;
@@ -1199,6 +1295,8 @@ const TrainingSystem = {
         this.running = true;
         this.markerPos = 0;
         this.direction = 1;
+        this.maxMisses = this.extraMissesNextSession ? 5 : 3;
+        this.extraMissesNextSession = false;
 
         UIManager.updateTrainingScreen();
         this.startLoop();
@@ -1232,9 +1330,14 @@ const TrainingSystem = {
         let xp = 0;
         let text = "";
         
-        if (this.markerPos >= 47 && this.markerPos <= 53) {
+        if (this.guaranteedPerfectNextStop || (this.markerPos >= 47 && this.markerPos <= 53)) {
+            if (this.guaranteedPerfectNextStop) {
+                this.guaranteedPerfectNextStop = false;
+                text = "🌟 PERFECT +50 (Guaranteed!)";
+            } else {
+                text = "🌟 PERFECT +50";
+            }
             xp = 50;
-            text = "🌟 PERFECT +50";
             this.speed += 0.08;
         } else if (this.markerPos >= 32 && this.markerPos <= 68) {
             xp = 20;
@@ -1472,6 +1575,7 @@ const UIManager = {
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
+                ${pet.equipment ? `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[pet.equipment].name}</div>` : ""}
                 <div class="opacity-90 text-sm">Tier: ${pet.tier} (+${pet.tierBonus}%)</div>
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 
@@ -1503,8 +1607,8 @@ const UIManager = {
         const pet = PetManager.pets.find(p => String(p.id) === String(id)) ||
                     PetManager.storage.find(p => String(p.id) === String(id));
         if (!pet) return;
-        
-        if (confirm(`Sell ${PetTypes[pet.typeId].name} for ${pet.level * 25 + (pet.prestigeLevel || 0) * 1000} gold?`)) {
+        const sellValue = pet.level * 25 + (pet.prestigeLevel || 0) * 1000 + (pet.shiny ? 5000 : 0) + TierSystem.getTierSellValue(pet.tier);
+        if (confirm(`Sell ${PetTypes[pet.typeId].name} for ${sellValue} gold?`)) {
             Economy.sellPet(pet);
             DataManager.save();
             this.renderPets();
@@ -1537,6 +1641,7 @@ const UIManager = {
             ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 font-bold">⭐ Prestige ${pet.prestigeLevel}</div><div class="text-purple-300 text-xs">+${pet.bonusStats.hp} HP | +${pet.bonusStats.attack} ATK | +${pet.bonusStats.defense} DEF | +${pet.bonusStats.speed} SPD | +${pet.bonusStats.special} SPC</div><br>` : ""}
             ${pet.shiny ? `<div class="text-yellow-300 font-bold">✨ Shiny</div><div class="text-yellow-300 text-xs">+${pet.shinyBonus.hp} HP | +${pet.shinyBonus.attack} ATK | +${pet.shinyBonus.defense} DEF | +${pet.shinyBonus.speed} SPD | +${pet.shinyBonus.special} SPC</div><br>` : ""}
             <div class="opacity-90 text-sm">Tier Bonus: +${pet.tierBonus || 0}%</div>
+            ${pet.equipment ? `<div class="opacity-90 text-sm">Equipment: ${Economy.shopItems[pet.equipment].name}</div>` : ""}
             <div class="opacity-90 text-sm">HP: ${pet.currentHP}/${maxHP}</div>
             <div class="opacity-90 text-sm">Attack: ${pet.stats.attack}</div>
             <div class="opacity-90 text-sm">Defense: ${pet.stats.defense}</div>
@@ -1563,11 +1668,33 @@ const UIManager = {
             upgradeBtn.onclick = () => this.upgradeTier(pet.id);
         }
         
+        const equipBtn = document.getElementById("equipBtn");
+        if (equipBtn) {
+            equipBtn.style.display = (!pet.equipment && (Economy.inventory.collarOfPower > 0 || Economy.inventory.bandOfSwiftness > 0 || Economy.inventory.toughCollar > 0 || Economy.inventory.focusBand > 0 || Economy.inventory.lifeBangle > 0)) ? "inline-block" : "none";
+        }
+        const unequipBtn = document.getElementById("unequipBtn");
+        if (unequipBtn) {
+            unequipBtn.style.display = pet.equipment ? "inline-block" : "none";
+        }
+        
         const canTrain = TrainingSystem.canTrain(pet);
         const cooldown = TrainingSystem.getCooldownRemaining(pet);
         const trainBtn = document.getElementById("trainBtn");
         trainBtn.disabled = !canTrain;
         trainBtn.innerText = canTrain ? "🎯 Train" : `⏳ ${cooldown}s`;
+        
+        const useXPOrb = document.getElementById("useXPOrb");
+        if (useXPOrb) {
+            useXPOrb.style.display = (Economy.inventory.xpOrb > 0) ? "inline-block" : "none";
+        }
+        const usePrecision = document.getElementById("usePrecision");
+        if (usePrecision) {
+            usePrecision.style.display = (Economy.inventory.precisionGuide > 0) ? "inline-block" : "none";
+        }
+        const useFocusIncense = document.getElementById("useFocusIncense");
+        if (useFocusIncense) {
+            useFocusIncense.style.display = (Economy.inventory.focusIncense > 0) ? "inline-block" : "none";
+        }
         
         this.updateTeamPower();
     },
@@ -1737,6 +1864,7 @@ const UIManager = {
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
+                ${pet.equipment ? `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[pet.equipment].name}</div>` : ""}
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
                     <div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div>
                 </div>
@@ -1794,12 +1922,21 @@ const UIManager = {
         const grid = document.getElementById("shopGrid");
         grid.innerHTML = "";
         
+        const typeLabels = {
+            catch: "Catch Item",
+            heal: "Healing Item",
+            upgrade: "Upgrade Item",
+            xp: "Training Item",
+            training: "Training Item",
+            equipment: "Equipment"
+        };
+        
         for (const [itemId, item] of Object.entries(Economy.shopItems)) {
             const card = document.createElement("div");
             card.className = "bg-white/10 rounded-xl p-4 text-center";
             card.innerHTML = `
                 <h3>${item.name}</h3>
-                <p class="text-xs">${item.type === "catch" ? "Catch Item" : "Healing Item"}</p>
+                <p class="text-xs">${typeLabels[item.type] || item.type}</p>
                 <div class="text-yellow-400 font-bold my-2.5">${item.price} 💰</div>
                 <div>Owned: ${Economy.inventory[itemId] || 0}</div>
                 <button onclick="UIManager.buyItem('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Buy</button>
@@ -1835,7 +1972,8 @@ const UIManager = {
             card.innerHTML = `
                 <div class="absolute top-1 right-1 bg-red-400 rounded-full w-6 h-6 text-xs leading-6">${count}</div>
                 <h4>${item.name}</h4>
-                ${item.type === "heal" ? `<button onclick="UIManager.useItem('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Use</button>` : ""}
+                ${item.type === "heal" || item.type === "xp" || item.type === "training" ? `<button onclick="UIManager.useItemForPet('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Use</button>` : ""}
+                ${item.type === "equipment" ? `<button onclick="UIManager.equipPet('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Equip</button>` : ""}
             `;
             grid.appendChild(card);
         }
@@ -1853,6 +1991,91 @@ const UIManager = {
             this.renderInventory();
             this.updatePetScreen();
         }
+    },
+
+    useItemForPet(itemId) {
+        const pet = PetManager.selectedPet;
+        if (!pet) {
+            alert("Select a pet first!");
+            return;
+        }
+        if (Economy.useItem(itemId, pet)) {
+            DataManager.save();
+            this.updatePetScreen();
+            this.renderInventory();
+            this.updateTeamPower();
+        } else {
+            alert("Can't use that item!");
+        }
+    },
+
+    equipPet(itemId) {
+        const pet = PetManager.selectedPet;
+        if (!pet) return;
+        const result = EquipmentSystem.equip(pet.id, itemId);
+        if (result.success) {
+            DataManager.save();
+            this.updatePetScreen();
+            this.renderPets();
+            this.updateTeamPower();
+        } else {
+            alert(result.reason);
+        }
+    },
+
+    unequipPet() {
+        const pet = PetManager.selectedPet;
+        if (!pet) return;
+        const result = EquipmentSystem.unequip(pet.id);
+        if (result.success) {
+            DataManager.save();
+            this.updatePetScreen();
+            this.renderPets();
+            this.updateTeamPower();
+        } else {
+            alert(result.reason);
+        }
+    },
+
+    openEquipOverlay() {
+        const pet = PetManager.selectedPet;
+        if (!pet) {
+            alert("Select a pet first!");
+            return;
+        }
+        
+        this.equipPetId = pet.id;
+        document.getElementById("equipPetInfo").innerText = `Equip accessory on ${PetTypes[pet.typeId].emoji} ${PetManager.getEvolution(pet)}`;
+        
+        const grid = document.getElementById("equipGrid");
+        grid.innerHTML = "";
+        
+        for (const [itemId, count] of Object.entries(Economy.inventory)) {
+            if (count <= 0) continue;
+            const item = Economy.shopItems[itemId];
+            if (!item || item.type !== "equipment") continue;
+            
+            const card = document.createElement("div");
+            card.className = "bg-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/20 transition-all";
+            const statsText = item.stats ? Object.entries(item.stats).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join(" | ") : "";
+            card.innerHTML = `
+                <h4>${item.name}</h4>
+                <p class="text-xs">${statsText}</p>
+                <button onclick="UIManager.equipPet('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Equip</button>
+            `;
+            card.onclick = (e) => {
+                if (e.target.tagName !== "BUTTON") {
+                    UIManager.equipPet(itemId);
+                }
+            };
+            grid.appendChild(card);
+        }
+        
+        document.getElementById("equipOverlay").classList.remove("hidden");
+    },
+
+    closeEquipOverlay() {
+        document.getElementById("equipOverlay").classList.add("hidden");
     },
 
     // Pet Storage Screen
@@ -1893,6 +2116,7 @@ const UIManager = {
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
+                ${pet.equipment ? `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[pet.equipment].name}</div>` : ""}
                 <div class="opacity-90 text-sm">Tier: ${pet.tier} (+${pet.tierBonus}%)</div>
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div></div>

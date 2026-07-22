@@ -72,6 +72,12 @@
             <button id="depositBtn" onclick="UIManager.depositSelectedPet()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">↪ Deposit to Storage</button>
             <button onclick="UIManager.openPrestigeForSelectedPet()" id="prestigeBtn" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-purple-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">✨ Prestige</button>
             <button id="upgradeTierBtn" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬆ Upgrade Tier</button>
+            <button id="equipBtn" onclick="UIManager.openEquipOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎒 Equip</button>
+            <button id="unequipBtn" onclick="UIManager.unequipPet()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">📤 Unequip</button>
+            <br><br>
+            <button id="useXPOrb" onclick="UIManager.useItemForPet('xpOrb')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-yellow-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🚀 Use XP Orb (+500 XP)</button>
+            <button id="usePrecision" onclick="UIManager.useItemForPet('precisionGuide')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-yellow-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎯 Precision Guide (Guaranteed Perfect)</button>
+            <button id="useFocusIncense" onclick="UIManager.useItemForPet('focusIncense')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-yellow-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🔥 Focus Incense (5 Misses)</button>
             <br><br>
             <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
         </div>
@@ -154,6 +160,16 @@
                 <button onclick="UIManager.confirmPrestige()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-purple-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">✨ Fuse</button>
                 <button onclick="UIManager.closePrestigeOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
             </div>
+        </div>
+    </div>
+
+    <!-- EQUIP OVERLAY -->
+    <div id="equipOverlay" class="hidden fixed inset-0 bg-black/90 z-50 p-5 overflow-y-auto">
+        <div class="max-w-4xl mx-auto my-5">
+            <h2>🎒 Equip Accessory</h2>
+            <p id="equipPetInfo" class="text-left max-w-md mx-auto mb-4"></p>
+            <div id="equipGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-4xl mx-5 my-5"></div>
+            <button onclick="UIManager.closeEquipOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
         </div>
     </div>
 

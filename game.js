@@ -119,7 +119,15 @@ const PetTypes = {
         ability: "Flash Fire - Immune to Fire, boosts Fire moves",
         evolution: ["Spark Dog", "Fire Hound", "Inferno Wolf"]
     },
-    
+    cinderHawk: {
+        name: "Cinder Hawk",
+        emoji: "🦅",
+        type: "fire",
+        baseStats: { hp: 48, attack: 58, defense: 42, speed: 62, special: 58 },
+        ability: "Blaze - Low HP increases Fire damage",
+        evolution: ["Ember Hawk", "Cinder Hawk", "Solar Phoenix"]
+    },
+
     // Water Types
     aquaTurtle: {
         name: "Aqua Turtle",
@@ -145,7 +153,15 @@ const PetTypes = {
         ability: "Water Absorb - Heals from Water moves",
         evolution: ["Wave Whale", "Tsunami Whale", "Leviathan"]
     },
-    
+    tidalCrab: {
+        name: "Tidal Crab",
+        emoji: "🦀",
+        type: "water",
+        baseStats: { hp: 50, attack: 55, defense: 60, speed: 38, special: 48 },
+        ability: "Torrent - Low HP increases Water damage",
+        evolution: ["Tide Crab", "Tidal Crab", "Abyssal Crustacean"]
+    },
+
     // Grass Types
     leafBunny: {
         name: "Leaf Bunny",
@@ -171,7 +187,15 @@ const PetTypes = {
         ability: "Thick Fat - Reduces Fire/Ice damage",
         evolution: ["Moss Bear", "Forest Bear", "Earth Guardian"]
     },
-    
+    thornHog: {
+        name: "Thorn Hog",
+        emoji: "🦔",
+        type: "grass",
+        baseStats: { hp: 55, attack: 60, defense: 48, speed: 45, special: 45 },
+        ability: "Overgrow - Low HP increases Grass damage",
+        evolution: ["Bramble Pig", "Thorn Hog", "Verdant Behemoth"]
+    },
+
     // Electric Types
     boltMouse: {
         name: "Bolt Mouse",
@@ -197,7 +221,15 @@ const PetTypes = {
         ability: "Motor Drive - Speed boosts from Electric moves",
         evolution: ["Zap Bird", "Storm Bird", "Thunder Hawk"]
     },
-    
+    voltageOx: {
+        name: "Voltage Ox",
+        emoji: "🐂",
+        type: "electric",
+        baseStats: { hp: 52, attack: 58, defense: 50, speed: 45, special: 48 },
+        ability: "Static - Paralyzes on contact",
+        evolution: ["Spark Calf", "Voltage Ox", "Thunder Beast"]
+    },
+
     // Psychic Types
     mindCat: {
         name: "Mind Cat",
@@ -223,7 +255,15 @@ const PetTypes = {
         ability: "Magic Guard - Only takes direct damage",
         evolution: ["Cosmic Fox", "Star Fox", "Galaxy Lord"]
     },
-    
+    mindApe: {
+        name: "Mind Ape",
+        emoji: "🙉",
+        type: "psychic",
+        baseStats: { hp: 48, attack: 45, defense: 45, speed: 58, special: 68 },
+        ability: "Magic Guard - Only takes direct damage",
+        evolution: ["Thought Chimp", "Mind Ape", "Enlightened Sage"]
+    },
+
     // Ice Types
     frostPenguin: {
         name: "Frost Penguin",
@@ -279,6 +319,14 @@ const PetTypes = {
         ability: "Slush Rush - Speed doubles in hail",
         evolution: ["Ice Cub", "Frost Bear", "Tundra King"]
     },
+    glacierFox: {
+        name: "Glacier Fox",
+        emoji: "🦊",
+        type: "ice",
+        baseStats: { hp: 50, attack: 48, defense: 48, speed: 60, special: 55 },
+        ability: "Snow Cloak - Evasion in snow",
+        evolution: ["Frost Kit", "Glacier Fox", "Permafrost Spirit"]
+    },
 
     // Dragon Types
     crystalWyrm: {
@@ -333,6 +381,14 @@ const PetTypes = {
         ability: "Shield Dust - Blocks secondary move effects",
         evolution: ["Dust Wisp", "Glimmer Moth", "Prism Sovereign"]
     },
+    sunstoneBeetle: {
+        name: "Sunstone Beetle",
+        emoji: "🪲",
+        type: "fairy",
+        baseStats: { hp: 44, attack: 42, defense: 48, speed: 65, special: 62 },
+        ability: "Shield Dust - Blocks secondary move effects",
+        evolution: ["Glow Grub", "Sunstone Beetle", "Aurora Scarab"]
+    },
 
     // Normal Types (NEW)
     cloudSheep: {
@@ -350,10 +406,36 @@ const PetTypes = {
         baseStats: { hp: 50, attack: 48, defense: 45, speed: 62, special: 50 },
         ability: "Run Away - Guaranteed to flee wild battles",
         evolution: ["Spotted Fawn", "Field Deer", "Forest Monarch"]
+    },
+    duneLion: {
+        name: "Dune Lion",
+        emoji: "🦁",
+        type: "normal",
+        baseStats: { hp: 55, attack: 60, defense: 48, speed: 55, special: 45 },
+        ability: "Intimidate - Lowers enemy attack on switch",
+        evolution: ["Sand Cub", "Dune Lion", "Savanna King"]
+    },
+
+    // Poison Types (NEW)
+    venomAsp: {
+        name: "Venom Asp",
+        emoji: "🐍",
+        type: "poison",
+        baseStats: { hp: 45, attack: 52, defense: 48, speed: 68, special: 60 },
+        ability: "Corrosion - Melts through enemy defenses",
+        evolution: ["Venom Asp", "Toxic Serpent", "Plague Sovereign"]
+    },
+    bogToad: {
+        name: "Bog Toad",
+        emoji: "🐸",
+        type: "poison",
+        baseStats: { hp: 58, attack: 50, defense: 55, speed: 40, special: 52 },
+        ability: "Corrosion - Acidic strikes ignore half defense",
+        evolution: ["Muck Tadpole", "Bog Toad", "Blight Matriarch"]
     }
 };
 
-const Starters = ["emberFox", "aquaTurtle", "leafBunny", "boltMouse", "mindCat", "shadowWolf", "moonPixie"];
+const Starters = ["emberFox", "aquaTurtle", "leafBunny", "boltMouse", "mindCat", "shadowWolf", "moonPixie", "venomAsp"];
 
 // ==================== PET MANAGER ====================
 const PetManager = {
@@ -667,14 +749,14 @@ const Exploration = {
             name: "Forest",
             emoji: "🌲",
             commonPets: ["leafBunny", "vineSnake", "mossBear", "glimmerMoth", "fieldDeer"],
-            rarePets: ["mindCat", "dreamOwl", "moonPixie"],
+            rarePets: ["mindCat", "dreamOwl", "moonPixie", "thornHog"],
             encounterRate: 1
         },
         cave: {
             name: "Cave",
             emoji: "⛰️",
             commonPets: ["scaleLizard", "sparkDog", "crystalSeal", "duskBat"],
-            rarePets: ["drakeWhelp", "frostPenguin", "shadowWolf", "frostBear", "crystalWyrm"],
+            rarePets: ["drakeWhelp", "frostPenguin", "shadowWolf", "frostBear", "crystalWyrm", "mindApe"],
             encounterRate: 1
         },
         lake: {
@@ -687,21 +769,21 @@ const Exploration = {
         mountain: {
             name: "Mountain",
             emoji: "🏔️",
-            commonPets: ["flameCat", "zapBird", "scaleLizard", "frostBear", "cloudSheep"],
-            rarePets: ["drakeWhelp", "cosmicFox", "crystalWyrm"],
+            commonPets: ["flameCat", "zapBird", "scaleLizard", "frostBear", "cloudSheep", "glacierFox"],
+            rarePets: ["drakeWhelp", "cosmicFox", "crystalWyrm", "voltageOx"],
             encounterRate: 1
         },
         desert: {
             name: "Desert",
             emoji: "🏜️",
-            commonPets: ["emberFox", "sparkDog", "scaleLizard", "cinderScorpion"],
+            commonPets: ["emberFox", "sparkDog", "scaleLizard", "cinderScorpion", "duneLion"],
             rarePets: ["flameCat", "drakeWhelp"],
             encounterRate: 1
         },
         ocean: {
             name: "Ocean",
             emoji: "🌊",
-            commonPets: ["waveWhale", "shockEel", "crystalSeal"],
+            commonPets: ["waveWhale", "shockEel", "crystalSeal", "tidalCrab"],
             rarePets: ["aquaTurtle", "frostPenguin"],
             encounterRate: 1
         },
@@ -709,13 +791,13 @@ const Exploration = {
             name: "Volcano",
             emoji: "🌋",
             commonPets: ["flameCat", "emberFox", "sparkDog"],
-            rarePets: ["drakeWhelp", "scaleLizard", "cinderScorpion"],
+            rarePets: ["drakeWhelp", "scaleLizard", "cinderScorpion", "cinderHawk"],
             encounterRate: 1
         },
         swamp: {
             name: "Swamp",
             emoji: "🐊",
-            commonPets: ["mistFrog", "vineSnake", "mossBear", "glimmerMoth", "marshCroc", "shadowWolf"],
+            commonPets: ["mistFrog", "vineSnake", "mossBear", "glimmerMoth", "marshCroc", "shadowWolf", "sunstoneBeetle"],
             rarePets: ["waveWhale", "dreamOwl", "frostBear"],
             encounterRate: 1
         },
@@ -724,6 +806,13 @@ const Exploration = {
             emoji: "☁️",
             commonPets: ["zapBird", "boltMouse", "dreamOwl", "cloudSheep"],
             rarePets: ["cosmicFox", "shockEel"],
+            encounterRate: 1
+        },
+        toxicMarsh: {
+            name: "Toxic Marsh",
+            emoji: "🧪",
+            commonPets: ["venomAsp", "bogToad", "mistFrog", "vineSnake"],
+            rarePets: ["shadowWolf", "cosmicFox", "moonPixie"],
             encounterRate: 1
         }
     },
@@ -1049,13 +1138,14 @@ const BattleSystem = {
     typeEffectiveness: {
         fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5, dragon: 0.5, fairy: 2, dark: 1, normal: 1 },
         water: { fire: 2, grass: 0.5, ground: 2, water: 0.5, dragon: 0.5, normal: 1 },
-        grass: { water: 2, fire: 0.5, ground: 2, grass: 0.5, dragon: 0.5, dark: 1, normal: 1 },
+        grass: { water: 2, fire: 0.5, ground: 2, grass: 0.5, dragon: 0.5, dark: 1, poison: 0.5, normal: 1 },
         electric: { water: 2, grass: 0.5, flying: 2, electric: 0.5, dragon: 0.5, normal: 1 },
         ice: { grass: 2, fire: 0.5, dragon: 2, ice: 0.5, fairy: 2, dark: 1, normal: 1 },
-        psychic: { psychic: 0.5, dark: 0.5, fairy: 1, normal: 1 },
+        psychic: { psychic: 0.5, dark: 0.5, fairy: 1, poison: 2, normal: 1 },
         dragon: { dragon: 2, fairy: 0, ice: 0.5, normal: 1 },
         dark: { psychic: 2, dark: 0.5, fairy: 0.5, ghost: 2, normal: 1 },
-        fairy: { dragon: 2, dark: 2, fire: 0.5, ice: 0.5, normal: 1 },
+        fairy: { dragon: 2, dark: 2, fire: 0.5, ice: 0.5, poison: 0.5, normal: 1 },
+        poison: { grass: 2, fairy: 2, poison: 0.5, ground: 0.5, rock: 0.5, ghost: 0.5, steel: 0, normal: 1 },
         normal: { rock: 0.5, ghost: 0, steel: 0.5, dark: 1, fairy: 1 }
     },
 
@@ -1139,9 +1229,15 @@ const BattleSystem = {
         
         // Use higher of attack or special
         const offensiveStat = Math.max(attack, special);
-        
+
+        // Corrosion - Poison pets ignore half of the enemy's defense
+        let effectiveDefense = defense;
+        if (attackerTemplate.type === "poison" && attackerTemplate.ability && attackerTemplate.ability.includes("Corrosion")) {
+            effectiveDefense = Math.floor(defense / 2);
+        }
+
         // Prevent division by zero
-        const safeDefense = Math.max(1, defense);
+        const safeDefense = Math.max(1, effectiveDefense);
         let damage = Math.floor((offensiveStat * 40) / safeDefense);
         
         // Type effectiveness
@@ -1543,6 +1639,7 @@ const UIManager = {
             dragon: "bg-violet-400",
             dark: "bg-gray-600",
             fairy: "bg-pink-400",
+            poison: "bg-fuchsia-700",
             normal: "bg-gray-400 text-gray-900"
         };
         return colors[type] || "bg-gray-400 text-gray-900";

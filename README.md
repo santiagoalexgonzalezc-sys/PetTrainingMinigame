@@ -8,16 +8,17 @@ PetTrainingMinigame is a browser-based pet collection and training game inspired
 
 ### Main Features
 
-- **Starter Selection** — Pick your first companion from 7 available starters (including Dark and Fairy types).
-- **30 Pet Types** across 10 elemental types: Fire, Water, Grass, Electric, Psychic, Ice, Dragon, Dark, Fairy, and Normal.
+- **Starter Selection** — Pick your first companion from 8 available starters (including Dark, Fairy, and Poison types).
+- **40 Pet Types** across 11 elemental types: Fire, Water, Grass, Electric, Psychic, Ice, Dragon, Dark, Fairy, Poison, and Normal.
 - **Training Minigame** — A timing-based skill challenge: stop the moving marker in the GOOD or PERFECT zone to earn XP and stat boosts.
-- **Exploration** — 9 different zones (Forest, Cave, Lake, Mountain, Desert, Ocean, Volcano, Swamp, Sky), each with common and rare pet encounters.
+- **Exploration** — 10 different zones (Forest, Cave, Lake, Mountain, Desert, Ocean, Volcano, Swamp, Sky, Toxic Marsh), each with common and rare pet encounters.
 - **Turn-Based Battle System** — Fight wild pets with type effectiveness (including immunities), critical hits, and speed-based turn order.
 - **Passive Abilities** — Some pets now have functional passive abilities that trigger in battle:
   - **Blaze** (Ember Fox) — damage scales up as HP drops (up to +40% at low HP).
   - **Overgrow** (Leaf Bunny) — same low-HP damage boost for Grass types.
-  - **Torrent** — low-HP damage boost for Water types.
-  - **Intimidate** (Flame Cat) — lowers the enemy's attack on switch-in.
+  - **Torrent** (Tidal Crab) — low-HP damage boost for Water types.
+  - **Intimidate** (Flame Cat, Dune Lion) — lowers the enemy's attack on switch-in.
+  - **Corrosion** (Venom Asp, Bog Toad) — Poison pets ignore half of the enemy's defense when attacking.
 - **Stat Modifiers** — Battle stats can be raised/lowered in stages (±25% per stage), enabling abilities like Intimidate to have a lasting effect.
 - **Pet Switching** — Mid-battle, switch to another party member via the 🔄 Switch button and overlay.
 - **Level Display** — Wild enemy pets now show their level on the battle screen.

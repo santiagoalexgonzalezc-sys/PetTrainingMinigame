@@ -87,6 +87,7 @@ function updatePowerSummaries() {
       <option value="dragon">Dragon</option>
       <option value="dark">Dark</option>
       <option value="fairy">Fairy</option>
+      <option value="poison">Poison</option>
       <option value="normal">Normal</option>
     </select>
     <label>Tier Filter: </label>
@@ -135,6 +136,7 @@ function updatePowerSummaries() {
       <option value="dragon">Dragon</option>
       <option value="dark">Dark</option>
       <option value="fairy">Fairy</option>
+      <option value="poison">Poison</option>
       <option value="normal">Normal</option>
     </select>
     <label>Tier Filter: </label>
@@ -183,6 +185,7 @@ function updatePowerSummaries() {
       <option value="dragon">Dragon</option>
       <option value="dark">Dark</option>
       <option value="fairy">Fairy</option>
+      <option value="poison">Poison</option>
       <option value="normal">Normal</option>
     </select>
     <label>Tier Filter: </label>
@@ -231,6 +234,7 @@ function updatePowerSummaries() {
       <option value="dragon">Dragon</option>
       <option value="dark">Dark</option>
       <option value="fairy">Fairy</option>
+      <option value="poison">Poison</option>
       <option value="normal">Normal</option>
     </select>
     <label>Tier Filter: </label>
@@ -281,7 +285,7 @@ function updatePowerSummaries() {
 <script>
 const TYPES = {
   fire:"Fire", water:"Water", grass:"Grass", electric:"Electric", psychic:"Psychic",
-  ice:"Ice", dragon:"Dragon", dark:"Dark", fairy:"Fairy", normal:"Normal"
+  ice:"Ice", dragon:"Dragon", dark:"Dark", fairy:"Fairy", poison:"Poison", normal:"Normal"
 };
 
 const PET_TEMPLATES = {
@@ -289,21 +293,27 @@ const PET_TEMPLATES = {
   flameCat:{name:"Flame Cat",emoji:"🐱",type:"fire",baseStats:{hp:48},evolution:["Flame Cat","Blaze Cat","Magma Tiger"]},
   sparkDog:{name:"Spark Dog",emoji:"🐶",type:"fire",baseStats:{hp:50},evolution:["Spark Dog","Fire Hound","Inferno Wolf"]},
   cinderScorpion:{name:"Cinder Scorpion",emoji:"🦂",type:"fire",baseStats:{hp:48},evolution:["Spark Tail","Cinder Scorpion","Inferno Stinger"]},
+  cinderHawk:{name:"Cinder Hawk",emoji:"🦅",type:"fire",baseStats:{hp:48},evolution:["Ember Hawk","Cinder Hawk","Solar Phoenix"]},
   aquaTurtle:{name:"Aqua Turtle",emoji:"🐢",type:"water",baseStats:{hp:55},evolution:["Aqua Turtle","Hydro Turtle","Ocean Guardian"]},
   mistFrog:{name:"Mist Frog",emoji:"🐸",type:"water",baseStats:{hp:50},evolution:["Mist Frog","Storm Frog","Tidal King"]},
   waveWhale:{name:"Wave Whale",emoji:"🐋",type:"water",baseStats:{hp:60},evolution:["Wave Whale","Tsunami Whale","Leviathan"]},
+  tidalCrab:{name:"Tidal Crab",emoji:"🦀",type:"water",baseStats:{hp:50},evolution:["Tide Crab","Tidal Crab","Abyssal Crustacean"]},
   leafBunny:{name:"Leaf Bunny",emoji:"🐰",type:"grass",baseStats:{hp:45},evolution:["Leaf Bunny","Forest Bunny","Nature Spirit"]},
   vineSnake:{name:"Vine Snake",emoji:"🐍",type:"grass",baseStats:{hp:48},evolution:["Vine Snake","Thorn Snake","Jungle Serpent"]},
   mossBear:{name:"Moss Bear",emoji:"🐻",type:"grass",baseStats:{hp:60},evolution:["Moss Bear","Forest Bear","Earth Guardian"]},
+  thornHog:{name:"Thorn Hog",emoji:"🦔",type:"grass",baseStats:{hp:55},evolution:["Bramble Pig","Thorn Hog","Verdant Behemoth"]},
   boltMouse:{name:"Bolt Mouse",emoji:"🐭",type:"electric",baseStats:{hp:40},evolution:["Bolt Mouse","Volt Mouse","Thunder Lord"]},
   shockEel:{name:"Shock Eel",emoji:"🐟",type:"electric",baseStats:{hp:50},evolution:["Shock Eel","Storm Eel","Lightning Serpent"]},
   zapBird:{name:"Zap Bird",emoji:"🐦",type:"electric",baseStats:{hp:45},evolution:["Zap Bird","Storm Bird","Thunder Hawk"]},
+  voltageOx:{name:"Voltage Ox",emoji:"🐂",type:"electric",baseStats:{hp:52},evolution:["Spark Calf","Voltage Ox","Thunder Beast"]},
   mindCat:{name:"Mind Cat",emoji:"😺",type:"psychic",baseStats:{hp:45},evolution:["Mind Cat","Psi Cat","Telepath Master"]},
   dreamOwl:{name:"Dream Owl",emoji:"🦉",type:"psychic",baseStats:{hp:50},evolution:["Dream Owl","Night Owl","Vision Sage"]},
   cosmicFox:{name:"Cosmic Fox",emoji:"🦊",type:"psychic",baseStats:{hp:48},evolution:["Cosmic Fox","Star Fox","Galaxy Lord"]},
+  mindApe:{name:"Mind Ape",emoji:"🙉",type:"psychic",baseStats:{hp:48},evolution:["Thought Chimp","Mind Ape","Enlightened Sage"]},
   frostPenguin:{name:"Frost Penguin",emoji:"🐧",type:"ice",baseStats:{hp:52},evolution:["Frost Penguin","Glacier Penguin","Ice Emperor"]},
   crystalSeal:{name:"Crystal Seal",emoji:"🦭",type:"ice",baseStats:{hp:55},evolution:["Crystal Seal","Diamond Seal","Frost Guardian"]},
   frostBear:{name:"Frost Bear",emoji:"🐻‍❄️",type:"ice",baseStats:{hp:65},evolution:["Ice Cub","Frost Bear","Tundra King"]},
+  glacierFox:{name:"Glacier Fox",emoji:"🦊",type:"ice",baseStats:{hp:50},evolution:["Frost Kit","Glacier Fox","Permafrost Spirit"]},
   scaleLizard:{name:"Scale Lizard",emoji:"🦎",type:"dragon",baseStats:{hp:50},evolution:["Scale Lizard","Dragon Lizard","Wyvern King"]},
   drakeWhelp:{name:"Drake Whelp",emoji:"🐉",type:"dragon",baseStats:{hp:55},evolution:["Drake Whelp","Storm Drake","Dragon Emperor"]},
   crystalWyrm:{name:"Crystal Wyrm",emoji:"🐉",type:"dragon",baseStats:{hp:55},evolution:["Shard Hatchling","Crystal Wyrm","Geode Leviathan"]},
@@ -312,8 +322,12 @@ const PET_TEMPLATES = {
   duskBat:{name:"Dusk Bat",emoji:"🦇",type:"dark",baseStats:{hp:45},evolution:["Dusk Bat","Night Bat","Vampire Emperor"]},
   moonPixie:{name:"Moon Pixie",emoji:"🦄",type:"fairy",baseStats:{hp:48},evolution:["Star Fawn","Moon Pixie","Astral Spirit"]},
   glimmerMoth:{name:"Glimmer Moth",emoji:"🦋",type:"fairy",baseStats:{hp:42},evolution:["Dust Wisp","Glimmer Moth","Prism Sovereign"]},
+  sunstoneBeetle:{name:"Sunstone Beetle",emoji:"🪲",type:"fairy",baseStats:{hp:44},evolution:["Glow Grub","Sunstone Beetle","Aurora Scarab"]},
   cloudSheep:{name:"Cloud Sheep",emoji:"🐑",type:"normal",baseStats:{hp:62},evolution:["Wool Lamb","Cloud Sheep","Sky Shepherd"]},
-  fieldDeer:{name:"Field Deer",emoji:"🦌",type:"normal",baseStats:{hp:50},evolution:["Spotted Fawn","Field Deer","Forest Monarch"]}
+  fieldDeer:{name:"Field Deer",emoji:"🦌",type:"normal",baseStats:{hp:50},evolution:["Spotted Fawn","Field Deer","Forest Monarch"]},
+  duneLion:{name:"Dune Lion",emoji:"🦁",type:"normal",baseStats:{hp:55},evolution:["Sand Cub","Dune Lion","Savanna King"]},
+  venomAsp:{name:"Venom Asp",emoji:"🐍",type:"poison",baseStats:{hp:45},evolution:["Venom Asp","Toxic Serpent","Plague Sovereign"]},
+  bogToad:{name:"Bog Toad",emoji:"🐸",type:"poison",baseStats:{hp:58},evolution:["Muck Tadpole","Bog Toad","Blight Matriarch"]}
 };
 
 function getData() {

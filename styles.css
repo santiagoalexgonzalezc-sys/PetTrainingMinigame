@@ -285,6 +285,7 @@ button:disabled:hover { transform: none; }
 .type-dragon { background: #9775fa; }
 .type-dark { background: #495057; }
 .type-fairy { background: #f783ac; }
+.type-poison { background: #a21caf; }
 .type-normal { background: #adb5bd; color: #333; }
 
 /* Currency display */

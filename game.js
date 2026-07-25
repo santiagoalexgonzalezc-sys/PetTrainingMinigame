@@ -170,7 +170,6 @@ const PetTypes = {
         baseStats: { hp: 55, attack: 60, defense: 52, speed: 40, special: 50 },
         ability: "Flame Armor - Deals contact damage to attackers",
         evolution: ["Ash Claw", "Cinder Crab", "Magma Guardian"]
-    }
     },
     // Grass Types
     leafBunny: {
@@ -443,7 +442,8 @@ const PetTypes = {
         ability: "Corrosion - Acidic strikes ignore half defense",
         evolution: ["Muck Tadpole", "Bog Toad", "Blight Matriarch"]
     }
-};
+},
+    
 
 const Starters = ["emberFox", "aquaTurtle", "leafBunny", "boltMouse", "mindCat", "shadowWolf", "moonPixie", "venomAsp"];
 

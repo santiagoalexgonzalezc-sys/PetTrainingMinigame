@@ -211,7 +211,13 @@ const PetTypes = {
         emoji: "🐭",
         type: "electric",
         baseStats: { hp: 60, attack: 45, defense: 40, speed: 75, special: 55 },
-        passive: "Static - Paralyzes on contact",
+        passive: "Fast feet - 10% of  dodging an attack",
+        ability: {
+            name: "Electric Ball",
+            type: "electric",
+            cooldown: 2,
+            description: "Paralizes enemy, making them lose their turn"
+        },
         evolution: ["Bolt Mouse", "Volt Mouse", "Thunder Lord"]
     },
     shockEel: {
@@ -1153,6 +1159,9 @@ const BattleSystem = {
     enemyPet: null,
     isPlayerTurn: true,
     battleLog: [],
+    turnCount: 0,
+    playerAbilityCooldown: 0,
+    paralyzed: null,
 
     typeEffectiveness: {
         fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5, dragon: 0.5, fairy: 2, dark: 1, normal: 1 },
@@ -1180,6 +1189,9 @@ const BattleSystem = {
         this.battleLog = [];
         this.playerStatMods = { attack: 0, defense: 0, speed: 0, special: 0 };
         this.enemyStatMods = { attack: 0, defense: 0, speed: 0, special: 0 };
+        this.turnCount = 0;
+        this.playerAbilityCooldown = 0;
+        this.paralyzed = null;
         
         // Determine who goes first by speed
         const playerSpeed = this.playerPet.stats.speed;
@@ -1244,10 +1256,8 @@ const BattleSystem = {
         
         const attack = Math.floor(attacker.stats.attack * attackMod);
         const defense = Math.floor(defender.stats.defense * defenseMod);
-        const special = Math.floor(attacker.stats.special * Math.pow(1.25, attackerMods.special));
         
-        // Use higher of attack or special
-        const offensiveStat = Math.max(attack, special);
+        const offensiveStat = attack;
 
         // Corrosion - Poison pets ignore half of the enemy's defense
         let effectiveDefense = defense;
@@ -1286,6 +1296,11 @@ const BattleSystem = {
     playerTurn() {
         if (!this.active || !this.isPlayerTurn) return;
         
+        this.turnCount++;
+        if (this.playerAbilityCooldown > 0) {
+            this.playerAbilityCooldown--;
+        }
+        
         this.attack(this.playerPet, this.enemyPet, true);
         
         if (this.enemyPet.currentHP <= 0) {
@@ -1295,6 +1310,18 @@ const BattleSystem = {
         
         this.isPlayerTurn = false;
         UIManager.updateBattleScreen();
+        
+        // Check if enemy is paralyzed
+        if (this.paralyzed) {
+            this.addLog(`${this.getPetName(this.enemyPet)} is paralyzed! It can't move!`);
+            this.paralyzed = false;
+            UIManager.updateBattleScreen();
+            
+            // Player gets another turn
+            this.isPlayerTurn = true;
+            setTimeout(() => UIManager.updateBattleScreen(), 500);
+            return;
+        }
         
         // Enemy attacks after delay
         setTimeout(() => this.enemyTurn(), 1000);
@@ -1329,6 +1356,95 @@ const BattleSystem = {
         
         this.addLog(logText);
         UIManager.updateBattleScreen();
+    },
+
+    calculateSpecialDamage(attacker, defender, abilityType) {
+        const attackerTemplate = PetTypes[attacker.typeId];
+        const defenderTemplate = PetTypes[defender.typeId];
+        
+        const attackerMods = attacker === this.playerPet ? this.playerStatMods : this.enemyStatMods;
+        const defenderMods = defender === this.playerPet ? this.playerStatMods : this.enemyStatMods;
+        
+        const specialMod = Math.pow(1.25, attackerMods.special);
+        const defenseMod = Math.pow(1.25, defenderMods.defense);
+        
+        const special = Math.floor(attacker.stats.special * specialMod);
+        const defense = Math.floor(defender.stats.defense * defenseMod);
+        
+        let effectiveDefense = defense;
+        if (attackerTemplate.type === "poison" && attackerTemplate.passive && attackerTemplate.passive.includes("Corrosion")) {
+            effectiveDefense = Math.floor(defense / 2);
+        }
+        
+        const safeDefense = Math.max(1, effectiveDefense);
+        let damage = Math.floor((special * 40) / safeDefense);
+        
+        const typeMult = this.getTypeEffectiveness(abilityType, defenderTemplate.type);
+        damage = Math.floor(damage * typeMult);
+        
+        const critChance = 0.1 + (attacker.stats.speed / 500);
+        const isCrit = Math.random() < critChance;
+        if (isCrit) {
+            damage = Math.floor(damage * 1.5);
+        }
+        
+        damage = Math.floor(damage * (0.85 + Math.random() * 0.15));
+        const passiveMultiplier = PassiveSystem.getPassiveMultiplier(attacker);
+        damage = Math.floor(damage * passiveMultiplier);
+        damage = Math.floor(damage * 0.25);
+        
+        return { damage, isCrit, typeMult };
+    },
+
+    useAbility() {
+        if (!this.active || !this.isPlayerTurn) return;
+        
+        const template = PetTypes[this.playerPet.typeId];
+        if (!template || !template.ability) return;
+        
+        const ability = template.ability;
+        if (this.playerAbilityCooldown > 0) return;
+        
+        // Electric Ball implementation
+        if (ability.name === "Electric Ball") {
+            const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+            this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+            
+            const attackerName = this.getPetName(this.playerPet);
+            const defenderName = this.getPetName(this.enemyPet);
+            
+            let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+            if (result.isCrit) logText += " (CRITICAL!)";
+            if (result.typeMult > 1) logText += " (Super effective!)";
+            else if (result.typeMult < 1) logText += " (Not very effective)";
+            
+            this.addLog(logText);
+            this.paralyzed = true;
+            this.playerAbilityCooldown = ability.cooldown;
+            
+            if (this.enemyPet.currentHP <= 0) {
+                UIManager.updateBattleScreen();
+                this.endBattle(true);
+                return;
+            }
+            
+            this.isPlayerTurn = false;
+            UIManager.updateBattleScreen();
+            
+            // Check if enemy is paralyzed
+            if (this.paralyzed) {
+                this.addLog(`${defenderName} is paralyzed! It can't move!`);
+                this.paralyzed = false;
+                UIManager.updateBattleScreen();
+                
+                // Player gets another turn
+                this.isPlayerTurn = true;
+                setTimeout(() => UIManager.updateBattleScreen(), 500);
+                return;
+            }
+            
+            setTimeout(() => this.enemyTurn(), 1000);
+        }
     },
 
     addLog(text) {
@@ -1966,8 +2082,21 @@ const UIManager = {
         
         // Update buttons based on turn
         const attackBtn = document.getElementById("attackBtn");
+        const abilityBtn = document.getElementById("abilityBtn");
         const switchBtn = document.getElementById("switchBtn");
         const catchBtn = document.getElementById("catchBtn");
+        
+        const hasAbility = playerTemplate && playerTemplate.ability;
+        const abilityOnCooldown = BattleSystem.playerAbilityCooldown > 0;
+        
+        if (hasAbility && !abilityOnCooldown) {
+            abilityBtn.style.display = BattleSystem.isPlayerTurn ? "inline-block" : "none";
+            abilityBtn.disabled = !BattleSystem.isPlayerTurn;
+            abilityBtn.innerText = abilityOnCooldown ? `⏳ ${BattleSystem.playerAbilityCooldown}` : `✨ ${playerTemplate.ability.name}`;
+        } else {
+            abilityBtn.style.display = "none";
+        }
+        
         attackBtn.disabled = !BattleSystem.isPlayerTurn;
         attackBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
         switchBtn.disabled = !BattleSystem.isPlayerTurn;

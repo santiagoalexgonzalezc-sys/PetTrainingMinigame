@@ -841,7 +841,7 @@ const Exploration = {
         function getWildPetLevel() {
             const playerLevel = PetManager.selectedPet.level;
             if (playerLevel <= 5) {
-                return Math.floor(Math.random() * 5) + 1;
+                return playerLevel;
             }
             if (playerLevel < 20) {
                 return Math.floor(Math.random() * 17) + 3;

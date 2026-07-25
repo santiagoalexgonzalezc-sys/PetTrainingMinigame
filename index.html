@@ -87,9 +87,9 @@
         <h2>🎯 Training</h2>
         <p>Hit GOOD or PERFECT!</p>
 
-        <div id="barContainer" class="w-full max-w-2xl mx-5 my-8 h-8.5 bg-gray-800 rounded-2xl relative overflow-hidden">
-            <div id="goodZone" class="absolute h-full left-32% w-36% bg-green-400/12"></div>
-            <div id="perfectZone" class="absolute h-full left-47% w-6% bg-yellow-400/40"></div>
+        <div id="barContainer" class="w-full max-w-2xl mx-5 my-8 h-10 bg-gray-800 rounded-2xl relative overflow-hidden">
+            <div id="goodZone" class="absolute h-full left-[32%] w-[36%] bg-green-400/30"></div>
+            <div id="perfectZone" class="absolute h-full left-[47%] w-[6%] bg-yellow-400/40"></div>
             <div id="marker" class="absolute w-2 h-full bg-white shadow-lg shadow-white"></div>
         </div>
 
@@ -143,6 +143,7 @@
         <div id="battleLog" class="max-w-2xl mx-5 my-5 h-50 overflow-y-auto bg-black/30 rounded-xl p-4 text-left"></div>
 
         <button id="attackBtn" onclick="UIManager.playerAttack()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⚔️ Attack</button>
+        <button id="abilityBtn" onclick="BattleSystem.useAbility()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-purple-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">✨ Ability</button>
         <button id="switchBtn" onclick="UIManager.openSwitchOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🔄 Switch</button>
         <button id="catchBtn" onclick="UIManager.tryCatch()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎱 Catch</button>
         <button onclick="UIManager.fleeBattle()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🏃 Flee</button>

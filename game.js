@@ -99,32 +99,32 @@ const PetTypes = {
         name: "Ember Fox",
         emoji: "🦊",
         type: "fire",
-        baseStats: { hp: 45, attack: 52, defense: 43, speed: 65, special: 60 },
-        ability: "Blaze - Low HP increases Fire damage",
+        baseStats: { hp: 65, attack: 52, defense: 43, speed: 65, special: 60 },
+        passive: "Blaze - Low HP increases Fire damage",
         evolution: ["Ember Fox", "Inferno Fox", "Phoenix Lord"]
     },
     flameCat: {
         name: "Flame Cat",
         emoji: "🐱",
         type: "fire",
-        baseStats: { hp: 48, attack: 55, defense: 40, speed: 60, special: 55 },
-        ability: "Intimidate - Lowers enemy attack on switch",
+        baseStats: { hp: 68, attack: 55, defense: 40, speed: 60, special: 55 },
+        passive: "Intimidate - Lowers enemy attack on switch",
         evolution: ["Flame Cat", "Blaze Cat", "Magma Tiger"]
     },
     sparkDog: {
         name: "Spark Dog",
         emoji: "🐶",
         type: "fire",
-        baseStats: { hp: 50, attack: 50, defense: 45, speed: 55, special: 50 },
-        ability: "Flash Fire - Immune to Fire, boosts Fire moves",
+        baseStats: { hp: 70, attack: 50, defense: 45, speed: 55, special: 50 },
+        passive: "Flash Fire - Immune to Fire, boosts Fire moves",
         evolution: ["Spark Dog", "Fire Hound", "Inferno Wolf"]
     },
     cinderHawk: {
         name: "Cinder Hawk",
         emoji: "🦅",
         type: "fire",
-        baseStats: { hp: 48, attack: 58, defense: 42, speed: 62, special: 58 },
-        ability: "Blaze - Low HP increases Fire damage",
+        baseStats: { hp: 68, attack: 58, defense: 42, speed: 62, special: 58 },
+        passive: "Blaze - Low HP increases Fire damage",
         evolution: ["Ember Hawk", "Cinder Hawk", "Solar Phoenix"]
     },
 
@@ -133,66 +133,75 @@ const PetTypes = {
         name: "Aqua Turtle",
         emoji: "🐢",
         type: "water",
-        baseStats: { hp: 55, attack: 40, defense: 65, speed: 35, special: 50 },
-        ability: "Rain Dish - Heals in rain",
+        baseStats: { hp: 75, attack: 40, defense: 65, speed: 35, special: 50 },
+        passive: "Rain Dish - Heals in rain",
         evolution: ["Aqua Turtle", "Hydro Turtle", "Ocean Guardian"]
     },
     mistFrog: {
         name: "Mist Frog",
         emoji: "🐸",
         type: "water",
-        baseStats: { hp: 50, attack: 45, defense: 50, speed: 55, special: 55 },
-        ability: "Swift Swim - Speed doubles in rain",
+        baseStats: { hp: 70, attack: 45, defense: 50, speed: 55, special: 55 },
+        passive: "Swift Swim - Speed doubles in rain",
         evolution: ["Mist Frog", "Storm Frog", "Tidal King"]
     },
     waveWhale: {
         name: "Wave Whale",
         emoji: "🐋",
         type: "water",
-        baseStats: { hp: 60, attack: 45, defense: 55, speed: 40, special: 60 },
-        ability: "Water Absorb - Heals from Water moves",
+        baseStats: { hp: 80, attack: 45, defense: 55, speed: 40, special: 60 },
+        passive: "Water Absorb - Heals from Water moves",
         evolution: ["Wave Whale", "Tsunami Whale", "Leviathan"]
     },
     tidalCrab: {
         name: "Tidal Crab",
         emoji: "🦀",
         type: "water",
-        baseStats: { hp: 50, attack: 55, defense: 60, speed: 38, special: 48 },
-        ability: "Torrent - Low HP increases Water damage",
+        baseStats: { hp: 70, attack: 55, defense: 60, speed: 38, special: 48 },
+        passive: "Torrent - Low HP increases Water damage",
         evolution: ["Tide Crab", "Tidal Crab", "Abyssal Crustacean"]
     },
 
+    // Fire Type
+    cinderCrab: {
+        name: "Cinder Crab",
+        emoji: "🦀",
+        type: "fire",
+        baseStats: { hp: 65, attack: 60, defense: 52, speed: 40, special: 50 },
+        passive: "Flame Armor - Deals contact damage to attackers",
+        evolution: ["Ash Claw", "Cinder Crab", "Magma Guardian"]
+    },
     // Grass Types
     leafBunny: {
         name: "Leaf Bunny",
         emoji: "🐰",
         type: "grass",
-        baseStats: { hp: 45, attack: 50, defense: 45, speed: 70, special: 45 },
-        ability: "Overgrow - Low HP increases Grass damage",
+        baseStats: { hp: 65, attack: 50, defense: 45, speed: 70, special: 45 },
+        passive: "Overgrow - Low HP increases Grass damage",
         evolution: ["Leaf Bunny", "Forest Bunny", "Nature Spirit"]
     },
     vineSnake: {
         name: "Vine Snake",
         emoji: "🐍",
         type: "grass",
-        baseStats: { hp: 48, attack: 55, defense: 40, speed: 60, special: 50 },
-        ability: "Chlorophyll - Speed doubles in sun",
+        baseStats: { hp: 68, attack: 55, defense: 40, speed: 60, special: 50 },
+        passive: "Chlorophyll - Speed doubles in sun",
         evolution: ["Vine Snake", "Thorn Snake", "Jungle Serpent"]
     },
     mossBear: {
         name: "Moss Bear",
         emoji: "🐻",
         type: "grass",
-        baseStats: { hp: 60, attack: 55, defense: 50, speed: 35, special: 45 },
-        ability: "Thick Fat - Reduces Fire/Ice damage",
+        baseStats: { hp: 80, attack: 55, defense: 50, speed: 35, special: 45 },
+        passive: "Thick Fat - Reduces Fire/Ice damage",
         evolution: ["Moss Bear", "Forest Bear", "Earth Guardian"]
     },
     thornHog: {
         name: "Thorn Hog",
         emoji: "🦔",
         type: "grass",
-        baseStats: { hp: 55, attack: 60, defense: 48, speed: 45, special: 45 },
-        ability: "Overgrow - Low HP increases Grass damage",
+        baseStats: { hp: 75, attack: 60, defense: 48, speed: 45, special: 45 },
+        passive: "Overgrow - Low HP increases Grass damage",
         evolution: ["Bramble Pig", "Thorn Hog", "Verdant Behemoth"]
     },
 
@@ -201,32 +210,38 @@ const PetTypes = {
         name: "Bolt Mouse",
         emoji: "🐭",
         type: "electric",
-        baseStats: { hp: 40, attack: 45, defense: 40, speed: 75, special: 55 },
-        ability: "Static - Paralyzes on contact",
+        baseStats: { hp: 60, attack: 45, defense: 40, speed: 80, special: 55 },
+        passive: "Fast feet - 10% of  dodging an attack",
+        ability: {
+            name: "Electric Ball",
+            type: "electric",
+            cooldown: 2,
+            description: "Paralizes enemy, making them lose their turn"
+        },
         evolution: ["Bolt Mouse", "Volt Mouse", "Thunder Lord"]
     },
     shockEel: {
         name: "Shock Eel",
         emoji: "🐟",
         type: "electric",
-        baseStats: { hp: 50, attack: 50, defense: 45, speed: 65, special: 50 },
-        ability: "Volt Absorb - Heals from Electric moves",
+        baseStats: { hp: 70, attack: 50, defense: 45, speed: 65, special: 50 },
+        passive: "Volt Absorb - Heals from Electric moves",
         evolution: ["Shock Eel", "Storm Eel", "Lightning Serpent"]
     },
     zapBird: {
         name: "Zap Bird",
         emoji: "🐦",
         type: "electric",
-        baseStats: { hp: 45, attack: 48, defense: 42, speed: 70, special: 55 },
-        ability: "Motor Drive - Speed boosts from Electric moves",
+        baseStats: { hp: 65, attack: 48, defense: 42, speed: 70, special: 55 },
+        passive: "Motor Drive - Speed boosts from Electric moves",
         evolution: ["Zap Bird", "Storm Bird", "Thunder Hawk"]
     },
     voltageOx: {
         name: "Voltage Ox",
         emoji: "🐂",
         type: "electric",
-        baseStats: { hp: 52, attack: 58, defense: 50, speed: 45, special: 48 },
-        ability: "Static - Paralyzes on contact",
+        baseStats: { hp: 72, attack: 58, defense: 50, speed: 45, special: 48 },
+        passive: "Static - Paralyzes on contact",
         evolution: ["Spark Calf", "Voltage Ox", "Thunder Beast"]
     },
 
@@ -235,32 +250,32 @@ const PetTypes = {
         name: "Mind Cat",
         emoji: "😺",
         type: "psychic",
-        baseStats: { hp: 45, attack: 40, defense: 45, speed: 60, special: 70 },
-        ability: "Synchronize - Shares status conditions",
+        baseStats: { hp: 65, attack: 40, defense: 45, speed: 60, special: 70 },
+        passive: "Synchronize - Shares status conditions",
         evolution: ["Mind Cat", "Psi Cat", "Telepath Master"]
     },
     dreamOwl: {
         name: "Dream Owl",
         emoji: "🦉",
         type: "psychic",
-        baseStats: { hp: 50, attack: 42, defense: 48, speed: 55, special: 65 },
-        ability: "Insomnia - Cannot fall asleep",
+        baseStats: { hp: 70, attack: 42, defense: 48, speed: 55, special: 65 },
+        passive: "Insomnia - Cannot fall asleep",
         evolution: ["Dream Owl", "Night Owl", "Vision Sage"]
     },
     cosmicFox: {
         name: "Cosmic Fox",
         emoji: "🦊",
         type: "psychic",
-        baseStats: { hp: 48, attack: 45, defense: 42, speed: 65, special: 68 },
-        ability: "Magic Guard - Only takes direct damage",
+        baseStats: { hp: 68, attack: 45, defense: 42, speed: 65, special: 68 },
+        passive: "Magic Guard - Only takes direct damage",
         evolution: ["Cosmic Fox", "Star Fox", "Galaxy Lord"]
     },
     mindApe: {
         name: "Mind Ape",
         emoji: "🙉",
         type: "psychic",
-        baseStats: { hp: 48, attack: 45, defense: 45, speed: 58, special: 68 },
-        ability: "Magic Guard - Only takes direct damage",
+        baseStats: { hp: 68, attack: 45, defense: 45, speed: 58, special: 68 },
+        passive: "Magic Guard - Only takes direct damage",
         evolution: ["Thought Chimp", "Mind Ape", "Enlightened Sage"]
     },
 
@@ -269,16 +284,16 @@ const PetTypes = {
         name: "Frost Penguin",
         emoji: "🐧",
         type: "ice",
-        baseStats: { hp: 52, attack: 48, defense: 50, speed: 45, special: 55 },
-        ability: "Snow Cloak - Evasion in snow",
+        baseStats: { hp: 72, attack: 48, defense: 50, speed: 45, special: 55 },
+        passive: "Snow Cloak - Evasion in snow",
         evolution: ["Frost Penguin", "Glacier Penguin", "Ice Emperor"]
     },
     crystalSeal: {
         name: "Crystal Seal",
         emoji: "🦭",
         type: "ice",
-        baseStats: { hp: 55, attack: 45, defense: 55, speed: 40, special: 50 },
-        ability: "Ice Body - Heals in hail",
+        baseStats: { hp: 75, attack: 45, defense: 55, speed: 40, special: 50 },
+        passive: "Ice Body - Heals in hail",
         evolution: ["Crystal Seal", "Diamond Seal", "Frost Guardian"]
     },
     
@@ -287,16 +302,16 @@ const PetTypes = {
         name: "Scale Lizard",
         emoji: "🦎",
         type: "dragon",
-        baseStats: { hp: 50, attack: 55, defense: 45, speed: 50, special: 50 },
-        ability: "Rough Skin - Damages attackers",
+        baseStats: { hp: 70, attack: 55, defense: 45, speed: 50, special: 50 },
+        passive: "Rough Skin - Damages attackers",
         evolution: ["Scale Lizard", "Dragon Lizard", "Wyvern King"]
     },
     drakeWhelp: {
         name: "Drake Whelp",
         emoji: "🐉",
         type: "dragon",
-        baseStats: { hp: 55, attack: 60, defense: 50, speed: 45, special: 55 },
-        ability: "Multiscale - Reduces damage at full HP",
+        baseStats: { hp: 75, attack: 60, defense: 50, speed: 45, special: 55 },
+        passive: "Multiscale - Reduces damage at full HP",
         evolution: ["Drake Whelp", "Storm Drake", "Dragon Emperor"]
     },
 
@@ -305,8 +320,8 @@ const PetTypes = {
         name: "Cinder Scorpion",
         emoji: "🦂",
         type: "fire",
-        baseStats: { hp: 48, attack: 60, defense: 52, speed: 55, special: 50 },
-        ability: "Flame Body - May burn attackers on contact",
+        baseStats: { hp: 68, attack: 60, defense: 52, speed: 55, special: 50 },
+        passive: "Flame Body - May burn attackers on contact",
         evolution: ["Spark Tail", "Cinder Scorpion", "Inferno Stinger"]
     },
 
@@ -315,16 +330,16 @@ const PetTypes = {
         name: "Frost Bear",
         emoji: "🐻‍❄️",
         type: "ice",
-        baseStats: { hp: 65, attack: 58, defense: 55, speed: 35, special: 50 },
-        ability: "Slush Rush - Speed doubles in hail",
+        baseStats: { hp: 85, attack: 58, defense: 55, speed: 35, special: 50 },
+        passive: "Slush Rush - Speed doubles in hail",
         evolution: ["Ice Cub", "Frost Bear", "Tundra King"]
     },
     glacierFox: {
         name: "Glacier Fox",
         emoji: "🦊",
         type: "ice",
-        baseStats: { hp: 50, attack: 48, defense: 48, speed: 60, special: 55 },
-        ability: "Snow Cloak - Evasion in snow",
+        baseStats: { hp: 70, attack: 48, defense: 48, speed: 60, special: 55 },
+        passive: "Snow Cloak - Evasion in snow",
         evolution: ["Frost Kit", "Glacier Fox", "Permafrost Spirit"]
     },
 
@@ -333,16 +348,16 @@ const PetTypes = {
         name: "Crystal Wyrm",
         emoji: "🐉",
         type: "dragon",
-        baseStats: { hp: 55, attack: 58, defense: 52, speed: 50, special: 62 },
-        ability: "Levitate - Immune to ground moves",
+        baseStats: { hp: 75, attack: 58, defense: 52, speed: 50, special: 62 },
+        passive: "Levitate - Immune to ground moves",
         evolution: ["Shard Hatchling", "Crystal Wyrm", "Geode Leviathan"]
     },
     marshCroc: {
         name: "Marsh Croc",
         emoji: "🐊",
         type: "dragon",
-        baseStats: { hp: 60, attack: 64, defense: 55, speed: 42, special: 48 },
-        ability: "Strong Jaw - Boosts bite moves",
+        baseStats: { hp: 80, attack: 64, defense: 55, speed: 42, special: 48 },
+        passive: "Strong Jaw - Boosts bite moves",
         evolution: ["Mud Wader", "Marsh Croc", "Bog Tyrant"]
     },
 
@@ -351,16 +366,16 @@ const PetTypes = {
         name: "Shadow Wolf",
         emoji: "🐺",
         type: "dark",
-        baseStats: { hp: 50, attack: 58, defense: 45, speed: 62, special: 50 },
-        ability: "Alpha Hunter - Boosts attack when facing an stronger foe",
+        baseStats: { hp: 70, attack: 58, defense: 45, speed: 62, special: 50 },
+        passive: "Alpha Hunter - Boosts attack when facing an stronger foe",
         evolution: ["Shadow Pup", "Umbra Wolf", "Nightfall Alpha"]
     },
     duskBat: {
         name: "Dusk Bat",
         emoji: "🦇",
         type: "dark",
-        baseStats: { hp: 45, attack: 45, defense: 42, speed: 72, special: 55 },
-        ability: "Vampiric - Heals from a fraction of damage dealt",
+        baseStats: { hp: 65, attack: 45, defense: 42, speed: 72, special: 55 },
+        passive: "Vampiric - Heals from a fraction of damage dealt",
         evolution: ["Dusk Bat", "Night Bat", "Vampire Emperor"]
     },
 
@@ -369,24 +384,24 @@ const PetTypes = {
         name: "Moon Pixie",
         emoji: "🦄",
         type: "fairy",
-        baseStats: { hp: 48, attack: 42, defense: 48, speed: 60, special: 68 },
-        ability: "Cute Charm - May infatuate attackers on contact",
+        baseStats: { hp: 68, attack: 42, defense: 48, speed: 60, special: 68 },
+        passive: "Cute Charm - May infatuate attackers on contact",
         evolution: ["Star Fawn", "Moon Pixie", "Astral Spirit"]
     },
     glimmerMoth: {
         name: "Glimmer Moth",
         emoji: "🦋",
         type: "fairy",
-        baseStats: { hp: 42, attack: 40, defense: 45, speed: 72, special: 65 },
-        ability: "Shield Dust - Blocks secondary move effects",
+        baseStats: { hp: 62, attack: 40, defense: 45, speed: 72, special: 65 },
+        passive: "Shield Dust - Blocks secondary move effects",
         evolution: ["Dust Wisp", "Glimmer Moth", "Prism Sovereign"]
     },
     sunstoneBeetle: {
         name: "Sunstone Beetle",
         emoji: "🪲",
         type: "fairy",
-        baseStats: { hp: 44, attack: 42, defense: 48, speed: 65, special: 62 },
-        ability: "Shield Dust - Blocks secondary move effects",
+        baseStats: { hp: 64, attack: 42, defense: 48, speed: 65, special: 62 },
+        passive: "Shield Dust - Blocks secondary move effects",
         evolution: ["Glow Grub", "Sunstone Beetle", "Aurora Scarab"]
     },
 
@@ -395,24 +410,24 @@ const PetTypes = {
         name: "Cloud Sheep",
         emoji: "🐑",
         type: "normal",
-        baseStats: { hp: 62, attack: 42, defense: 58, speed: 38, special: 50 },
-        ability: "Fluffy - Halves contact damage taken",
+        baseStats: { hp: 82, attack: 42, defense: 58, speed: 38, special: 50 },
+        passive: "Fluffy - Halves contact damage taken",
         evolution: ["Wool Lamb", "Cloud Sheep", "Sky Shepherd"]
     },
     fieldDeer: {
         name: "Field Deer",
         emoji: "🦌",
         type: "normal",
-        baseStats: { hp: 50, attack: 48, defense: 45, speed: 62, special: 50 },
-        ability: "Run Away - Guaranteed to flee wild battles",
+        baseStats: { hp: 70, attack: 48, defense: 45, speed: 62, special: 50 },
+        passive: "Run Away - Guaranteed to flee wild battles",
         evolution: ["Spotted Fawn", "Field Deer", "Forest Monarch"]
     },
     duneLion: {
         name: "Dune Lion",
         emoji: "🦁",
         type: "normal",
-        baseStats: { hp: 55, attack: 60, defense: 48, speed: 55, special: 45 },
-        ability: "Intimidate - Lowers enemy attack on switch",
+        baseStats: { hp: 75, attack: 60, defense: 48, speed: 55, special: 45 },
+        passive: "Intimidate - Lowers enemy attack on switch",
         evolution: ["Sand Cub", "Dune Lion", "Savanna King"]
     },
 
@@ -421,19 +436,20 @@ const PetTypes = {
         name: "Venom Asp",
         emoji: "🐍",
         type: "poison",
-        baseStats: { hp: 45, attack: 52, defense: 48, speed: 68, special: 60 },
-        ability: "Corrosion - Melts through enemy defenses",
+        baseStats: { hp: 65, attack: 52, defense: 48, speed: 68, special: 60 },
+        passive: "Corrosion - Melts through enemy defenses",
         evolution: ["Venom Asp", "Toxic Serpent", "Plague Sovereign"]
     },
     bogToad: {
         name: "Bog Toad",
         emoji: "🐸",
         type: "poison",
-        baseStats: { hp: 58, attack: 50, defense: 55, speed: 40, special: 52 },
-        ability: "Corrosion - Acidic strikes ignore half defense",
+        baseStats: { hp: 78, attack: 50, defense: 55, speed: 40, special: 52 },
+        passive: "Corrosion - Acidic strikes ignore half defense",
         evolution: ["Muck Tadpole", "Bog Toad", "Blight Matriarch"]
     }
 };
+    
 
 const Starters = ["emberFox", "aquaTurtle", "leafBunny", "boltMouse", "mindCat", "shadowWolf", "moonPixie", "venomAsp"];
 
@@ -610,8 +626,6 @@ const PetManager = {
         if (pet1.typeId !== pet2.typeId) return { valid: false, reason: "Pets must be the same race!" };
         if (pet1.prestigeLevel !== pet2.prestigeLevel) return { valid: false, reason: "Prestige levels must match!" };
         if (pet1.prestigeLevel >= 100) return { valid: false, reason: "Max prestige level reached!" };
-        if (pet1.level < 15) return { valid: false, reason: "Both pets must be at least level 15!" };
-        if (pet2.level < 15) return { valid: false, reason: "Both pets must be at least level 15!" };
         if (pet1.currentHP <= 0) return { valid: false, reason: "Primary pet must have HP above 0!" };
         
         return { valid: true };
@@ -841,10 +855,13 @@ const Exploration = {
         function getWildPetLevel() {
             const playerLevel = PetManager.selectedPet.level;
             if (playerLevel <= 5) {
-                return Math.floor(Math.random() * 5) + 1;
+                return playerLevel;
             }
             if (playerLevel < 20) {
-                return Math.floor(Math.random() * 17) + 3;
+                return Math.floor(Math.random() * playerLevel) + 1;
+            }
+            if (playerLevel < 30) {
+                return Math.floor(Math.random() * (playerLevel - 10 + 1)) + 10;
             }
             const bracket = Math.floor(playerLevel / 20) * 20;
             const minLevel = bracket;
@@ -891,8 +908,12 @@ function rollTierForZone(zoneId) {
 }
 
 function randomTier(rank) {
-    const sub = Math.floor(Math.random() * 5) + 1;
-    return `${rank}${sub}`;
+    const roll = Math.random();
+    if (roll < 0.50) return `${rank}1`;
+    if (roll < 0.70) return `${rank}2`;
+    if (roll < 0.85) return `${rank}3`;
+    if (roll < 0.95) return `${rank}4`;
+    return `${rank}5`;
 }
 
 // Tier System
@@ -1061,18 +1082,18 @@ const EquipmentSystem = {
     }
 };
 
-// ==================== ABILITY SYSTEM ====================
-const AbilitySystem = {
-    getPassiveAbilityMultiplier(attacker) {
+// ==================== passive SYSTEM ====================
+const PassiveSystem = {
+    getPassiveMultiplier(attacker) {
         const template = PetTypes[attacker.typeId];
-        if (!template || !template.ability) return 1;
+        if (!template || !template.passive) return 1;
         
-        const ability = template.ability;
+        const passive = template.passive;
         const maxHP = PetManager.calculateMaxHP(template, attacker.level, attacker);
         const hpPercent = (attacker.currentHP / maxHP) * 100;
         
         // Blaze - Fire type, HP-based damage boost
-        if (ability.includes("Blaze") && template.type === "fire") {
+        if (passive.includes("Blaze") && template.type === "fire") {
             if (hpPercent >= 70) return 1.05;
             if (hpPercent <= 20) return 1.40;
             // Linear interpolation between 70% and 20%
@@ -1084,7 +1105,7 @@ const AbilitySystem = {
         }
         
         // Overgrow - Grass type, HP-based damage boost
-        if (ability.includes("Overgrow") && template.type === "grass") {
+        if (passive.includes("Overgrow") && template.type === "grass") {
             if (hpPercent >= 70) return 1.05;
             if (hpPercent <= 20) return 1.40;
             const range = 70 - 20;
@@ -1095,7 +1116,7 @@ const AbilitySystem = {
         }
         
         // Torrent - Water type, HP-based damage boost
-        if (ability.includes("Torrent") && template.type === "water") {
+        if (passive.includes("Torrent") && template.type === "water") {
             if (hpPercent >= 70) return 1.05;
             if (hpPercent <= 20) return 1.40;
             const range = 70 - 20;
@@ -1108,14 +1129,14 @@ const AbilitySystem = {
         return 1;
     },
     
-    triggerSwitchAbility(switchingPet, enemyPet, battleSystem) {
+    triggerSwitchPassive(switchingPet, enemyPet, battleSystem) {
         const template = PetTypes[switchingPet.typeId];
-        if (!template || !template.ability) return;
+        if (!template || !template.passive) return;
         
-        const ability = template.ability;
+        const passive = template.passive;
         
         // Intimidate - Lowers enemy attack by 1 stage
-        if (ability.includes("Intimidate")) {
+        if (passive.includes("Intimidate")) {
             battleSystem.enemyStatMods.attack = Math.min(6, battleSystem.enemyStatMods.attack - 1);
             battleSystem.addLog(`${template.name}'s Intimidate lowered enemy's attack!`);
         }
@@ -1139,6 +1160,9 @@ const BattleSystem = {
     enemyPet: null,
     isPlayerTurn: true,
     battleLog: [],
+    turnCount: 0,
+    playerAbilityCooldown: 0,
+    paralyzed: null,
 
     typeEffectiveness: {
         fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5, dragon: 0.5, fairy: 2, dark: 1, normal: 1 },
@@ -1166,6 +1190,9 @@ const BattleSystem = {
         this.battleLog = [];
         this.playerStatMods = { attack: 0, defense: 0, speed: 0, special: 0 };
         this.enemyStatMods = { attack: 0, defense: 0, speed: 0, special: 0 };
+        this.turnCount = 0;
+        this.playerAbilityCooldown = 0;
+        this.paralyzed = null;
         
         // Determine who goes first by speed
         const playerSpeed = this.playerPet.stats.speed;
@@ -1197,7 +1224,7 @@ const BattleSystem = {
         this.addLog(`${this.getPetName(this.playerPet)} was sent out!`);
         
         // Trigger switch abilities
-        AbilitySystem.triggerSwitchAbility(this.playerPet, this.enemyPet, this);
+        PassiveSystem.triggerSwitchPassive(this.playerPet, this.enemyPet, this);
         
         UIManager.updateBattleScreen();
         
@@ -1230,14 +1257,12 @@ const BattleSystem = {
         
         const attack = Math.floor(attacker.stats.attack * attackMod);
         const defense = Math.floor(defender.stats.defense * defenseMod);
-        const special = Math.floor(attacker.stats.special * Math.pow(1.25, attackerMods.special));
         
-        // Use higher of attack or special
-        const offensiveStat = Math.max(attack, special);
+        const offensiveStat = attack;
 
         // Corrosion - Poison pets ignore half of the enemy's defense
         let effectiveDefense = defense;
-        if (attackerTemplate.type === "poison" && attackerTemplate.ability && attackerTemplate.ability.includes("Corrosion")) {
+        if (attackerTemplate.type === "poison" && attackerTemplate.passive && attackerTemplate.passive.includes("Corrosion")) {
             effectiveDefense = Math.floor(defense / 2);
         }
 
@@ -1259,9 +1284,9 @@ const BattleSystem = {
         // Random variance (0.85-1.0)
         damage = Math.floor(damage * (0.85 + Math.random() * 0.15));
         
-        // Apply passive ability multiplier
-        const abilityMultiplier = AbilitySystem.getPassiveAbilityMultiplier(attacker);
-        damage = Math.floor(damage * abilityMultiplier);
+        // Apply passive multiplier
+        const passiveMultiplier = PassiveSystem.getPassiveMultiplier(attacker);
+        damage = Math.floor(damage * passiveMultiplier);
         
         // Reduce all damage by 75% for fairer battles
         damage = Math.floor(damage * 0.25);
@@ -1272,6 +1297,11 @@ const BattleSystem = {
     playerTurn() {
         if (!this.active || !this.isPlayerTurn) return;
         
+        this.turnCount++;
+        if (this.playerAbilityCooldown > 0) {
+            this.playerAbilityCooldown--;
+        }
+        
         this.attack(this.playerPet, this.enemyPet, true);
         
         if (this.enemyPet.currentHP <= 0) {
@@ -1281,6 +1311,18 @@ const BattleSystem = {
         
         this.isPlayerTurn = false;
         UIManager.updateBattleScreen();
+        
+        // Check if enemy is paralyzed
+        if (this.paralyzed) {
+            this.addLog(`${this.getPetName(this.enemyPet)} is paralyzed! It can't move!`);
+            this.paralyzed = false;
+            UIManager.updateBattleScreen();
+            
+            // Player gets another turn
+            this.isPlayerTurn = true;
+            setTimeout(() => UIManager.updateBattleScreen(), 500);
+            return;
+        }
         
         // Enemy attacks after delay
         setTimeout(() => this.enemyTurn(), 1000);
@@ -1301,6 +1343,16 @@ const BattleSystem = {
     },
 
     attack(attacker, defender, isPlayerAttacker) {
+        const defenderTemplate = PetTypes[defender.typeId];
+        if (defenderTemplate.passive && defenderTemplate.passive.includes("Fast feet")) {
+            if (Math.random() < 0.10) {
+                const defenderName = this.getPetName(defender);
+                this.addLog(`${defenderName} dodged the attack!`);
+                UIManager.updateBattleScreen();
+                return;
+            }
+        }
+        
         const result = this.calculateDamage(attacker, defender);
         defender.currentHP = Math.max(0, defender.currentHP - result.damage);
         
@@ -1315,6 +1367,107 @@ const BattleSystem = {
         
         this.addLog(logText);
         UIManager.updateBattleScreen();
+    },
+
+    calculateSpecialDamage(attacker, defender, abilityType) {
+        const attackerTemplate = PetTypes[attacker.typeId];
+        const defenderTemplate = PetTypes[defender.typeId];
+        
+        if (defenderTemplate.passive && defenderTemplate.passive.includes("Fast feet")) {
+            if (Math.random() < 0.10) {
+                const defenderName = this.getPetName(defender);
+                return { damage: 0, isCrit: false, typeMult: 1, dodged: true, dodgerName: defenderName };
+            }
+        }
+        
+        const attackerMods = attacker === this.playerPet ? this.playerStatMods : this.enemyStatMods;
+        const defenderMods = defender === this.playerPet ? this.playerStatMods : this.enemyStatMods;
+        
+        const specialMod = Math.pow(1.25, attackerMods.special);
+        const defenseMod = Math.pow(1.25, defenderMods.defense);
+        
+        const special = Math.floor(attacker.stats.special * specialMod);
+        const defense = Math.floor(defender.stats.defense * defenseMod);
+        
+        let effectiveDefense = defense;
+        if (attackerTemplate.type === "poison" && attackerTemplate.passive && attackerTemplate.passive.includes("Corrosion")) {
+            effectiveDefense = Math.floor(defense / 2);
+        }
+        
+        const safeDefense = Math.max(1, effectiveDefense);
+        let damage = Math.floor((special * 40) / safeDefense);
+        
+        const typeMult = this.getTypeEffectiveness(abilityType, defenderTemplate.type);
+        damage = Math.floor(damage * typeMult);
+        
+        const critChance = 0.1 + (attacker.stats.speed / 500);
+        const isCrit = Math.random() < critChance;
+        if (isCrit) {
+            damage = Math.floor(damage * 1.5);
+        }
+        
+        damage = Math.floor(damage * (0.85 + Math.random() * 0.15));
+        const passiveMultiplier = PassiveSystem.getPassiveMultiplier(attacker);
+        damage = Math.floor(damage * passiveMultiplier);
+        damage = Math.floor(damage * 0.25);
+        
+        return { damage, isCrit, typeMult };
+    },
+
+    useAbility() {
+        if (!this.active || !this.isPlayerTurn) return;
+        
+        const template = PetTypes[this.playerPet.typeId];
+        if (!template || !template.ability) return;
+        
+        const ability = template.ability;
+        if (this.playerAbilityCooldown > 0) return;
+        
+        // Electric Ball implementation
+        if (ability.name === "Electric Ball") {
+            const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+            
+            if (result.dodged) {
+                this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+            } else {
+                this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                
+                const attackerName = this.getPetName(this.playerPet);
+                const defenderName = this.getPetName(this.enemyPet);
+                
+                let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                if (result.isCrit) logText += " (CRITICAL!)";
+                if (result.typeMult > 1) logText += " (Super effective!)";
+                else if (result.typeMult < 1) logText += " (Not very effective)";
+                
+                this.addLog(logText);
+                this.paralyzed = true;
+                
+                if (this.enemyPet.currentHP <= 0) {
+                    UIManager.updateBattleScreen();
+                    this.endBattle(true);
+                    return;
+                }
+            }
+            
+            this.playerAbilityCooldown = ability.cooldown;
+            this.isPlayerTurn = false;
+            UIManager.updateBattleScreen();
+            
+            // Check if enemy is paralyzed
+            if (this.paralyzed) {
+                this.addLog(`${this.getPetName(this.enemyPet)} is paralyzed! It can't move!`);
+                this.paralyzed = false;
+                UIManager.updateBattleScreen();
+                
+                // Player gets another turn
+                this.isPlayerTurn = true;
+                setTimeout(() => UIManager.updateBattleScreen(), 500);
+                return;
+            }
+            
+            setTimeout(() => this.enemyTurn(), 1000);
+        }
     },
 
     addLog(text) {
@@ -1541,7 +1694,7 @@ const Game = {
     },
 
     selectStarter(typeId) {
-        const pet = PetManager.createPet(typeId, 5);
+        const pet = PetManager.createPet(typeId, 1);
         PetManager.pets.push(pet);
         PetManager.selectedPet = pet;
         this.hasStarter = true;
@@ -1626,7 +1779,7 @@ const UIManager = {
                 <div class="text-5xl">${template.emoji}</div>
                 <h3>${template.name}</h3>
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
-                <p class="text-xs mt-2.5">${template.ability}</p>
+                <p class="text-xs mt-2.5">${template.passive}</p>
             `;
             card.onclick = () => Game.selectStarter(typeId);
             grid.appendChild(card);
@@ -1781,14 +1934,14 @@ const UIManager = {
             <div class="opacity-90 text-sm">Speed: ${pet.stats.speed}</div>
             <div class="opacity-90 text-sm">Special: ${pet.stats.special}</div>
             <br>
-            <div class="opacity-90 text-xs">Ability: ${template.ability}</div>
+            <div class="opacity-90 text-xs">passive: ${template.passive}</div>
         `;
         
         const hasSameRaceAlive = PetManager.pets.some(p => String(p.id) !== String(pet.id) && p.typeId === pet.typeId && p.currentHP > 0) ||
                                  PetManager.storage.some(p => p.typeId === pet.typeId && p.currentHP > 0);
         const prestigeBtn = document.getElementById("prestigeBtn");
         if (prestigeBtn) {
-            prestigeBtn.style.display = (pet.level >= 15 && hasSameRaceAlive) ? "inline-block" : "none";
+            prestigeBtn.style.display = (hasSameRaceAlive) ? "inline-block" : "none";
         }
         
         const upgradeBtn = document.getElementById("upgradeTierBtn");
@@ -1952,8 +2105,21 @@ const UIManager = {
         
         // Update buttons based on turn
         const attackBtn = document.getElementById("attackBtn");
+        const abilityBtn = document.getElementById("abilityBtn");
         const switchBtn = document.getElementById("switchBtn");
         const catchBtn = document.getElementById("catchBtn");
+        
+        const hasAbility = playerTemplate && playerTemplate.ability;
+        const abilityOnCooldown = BattleSystem.playerAbilityCooldown > 0;
+        
+        if (hasAbility && !abilityOnCooldown) {
+            abilityBtn.style.display = BattleSystem.isPlayerTurn ? "inline-block" : "none";
+            abilityBtn.disabled = !BattleSystem.isPlayerTurn;
+            abilityBtn.innerText = abilityOnCooldown ? `⏳ ${BattleSystem.playerAbilityCooldown}` : `✨ ${playerTemplate.ability.name}`;
+        } else {
+            abilityBtn.style.display = "none";
+        }
+        
         attackBtn.disabled = !BattleSystem.isPlayerTurn;
         attackBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
         switchBtn.disabled = !BattleSystem.isPlayerTurn;
@@ -2370,7 +2536,7 @@ const UIManager = {
         grid.innerHTML = "";
         
         PetManager.pets.forEach(pet => {
-            if (pet.level < 15 || pet.currentHP <= 0) return;
+            if (pet.currentHP <= 0) return;
             
             const template = PetTypes[pet.typeId];
             const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
@@ -2439,7 +2605,6 @@ const UIManager = {
                          PetManager.storage.find(p => String(p.id) === String(id));
             if (!pet2 || pet2.typeId !== pet1.typeId) return;
             if (pet2.prestigeLevel !== pet1.prestigeLevel) return;
-            if (pet2.level < 15) return;
             if (pet2.currentHP <= 0) return;
             
             const template2 = PetTypes[pet2.typeId];
@@ -2519,3 +2684,6 @@ const UIManager = {
 
 // Initialize game when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => Game.init());
+
+
+

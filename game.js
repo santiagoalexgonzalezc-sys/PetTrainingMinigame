@@ -626,8 +626,6 @@ const PetManager = {
         if (pet1.typeId !== pet2.typeId) return { valid: false, reason: "Pets must be the same race!" };
         if (pet1.prestigeLevel !== pet2.prestigeLevel) return { valid: false, reason: "Prestige levels must match!" };
         if (pet1.prestigeLevel >= 100) return { valid: false, reason: "Max prestige level reached!" };
-        if (pet1.level < 15) return { valid: false, reason: "Both pets must be at least level 15!" };
-        if (pet2.level < 15) return { valid: false, reason: "Both pets must be at least level 15!" };
         if (pet1.currentHP <= 0) return { valid: false, reason: "Primary pet must have HP above 0!" };
         
         return { valid: true };
@@ -2535,7 +2533,7 @@ const UIManager = {
         grid.innerHTML = "";
         
         PetManager.pets.forEach(pet => {
-            if (pet.level < 15 || pet.currentHP <= 0) return;
+            if (pet.currentHP <= 0) return;
             
             const template = PetTypes[pet.typeId];
             const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
@@ -2604,7 +2602,6 @@ const UIManager = {
                          PetManager.storage.find(p => String(p.id) === String(id));
             if (!pet2 || pet2.typeId !== pet1.typeId) return;
             if (pet2.prestigeLevel !== pet1.prestigeLevel) return;
-            if (pet2.level < 15) return;
             if (pet2.currentHP <= 0) return;
             
             const template2 = PetTypes[pet2.typeId];

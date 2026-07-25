@@ -854,7 +854,7 @@ const Exploration = {
                 return playerLevel;
             }
             if (playerLevel < 20) {
-                return Math.floor(Math.random() * 17) + 3;
+                return Math.floor(Math.random() * playerLevel) + 1;
             }
             const bracket = Math.floor(playerLevel / 20) * 20;
             const minLevel = bracket;

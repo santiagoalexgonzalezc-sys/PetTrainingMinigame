@@ -840,6 +840,9 @@ const Exploration = {
         // Generate wild pet level
         function getWildPetLevel() {
             const playerLevel = PetManager.selectedPet.level;
+            if (playerLevel <= 5) {
+                return Math.floor(Math.random() * 5) + 1;
+            }
             if (playerLevel < 20) {
                 return Math.floor(Math.random() * 17) + 3;
             }
@@ -878,7 +881,9 @@ const Exploration = {
 function rollTierForZone(zoneId) {
     const tierRoll = Math.random();
     let tier;
-    if (tierRoll < 0.05) tier = randomTier("A");
+    if (PetManager.selectedPet.level < 20) {
+        tier = randomTier("D");
+    } else if (tierRoll < 0.05) tier = randomTier("A");
     else if (tierRoll < 0.20) tier = randomTier("B");
     else if (tierRoll < 0.50) tier = randomTier("C");
     else tier = randomTier("D");

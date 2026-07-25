@@ -99,7 +99,7 @@ const PetTypes = {
         name: "Ember Fox",
         emoji: "🦊",
         type: "fire",
-        baseStats: { hp: 45, attack: 52, defense: 43, speed: 65, special: 60 },
+        baseStats: { hp: 55, attack: 52, defense: 43, speed: 65, special: 60 },
         ability: "Blaze - Low HP increases Fire damage",
         evolution: ["Ember Fox", "Inferno Fox", "Phoenix Lord"]
     },
@@ -107,7 +107,7 @@ const PetTypes = {
         name: "Flame Cat",
         emoji: "🐱",
         type: "fire",
-        baseStats: { hp: 48, attack: 55, defense: 40, speed: 60, special: 55 },
+        baseStats: { hp: 58, attack: 55, defense: 40, speed: 60, special: 55 },
         ability: "Intimidate - Lowers enemy attack on switch",
         evolution: ["Flame Cat", "Blaze Cat", "Magma Tiger"]
     },
@@ -115,7 +115,7 @@ const PetTypes = {
         name: "Spark Dog",
         emoji: "🐶",
         type: "fire",
-        baseStats: { hp: 50, attack: 50, defense: 45, speed: 55, special: 50 },
+        baseStats: { hp: 60, attack: 50, defense: 45, speed: 55, special: 50 },
         ability: "Flash Fire - Immune to Fire, boosts Fire moves",
         evolution: ["Spark Dog", "Fire Hound", "Inferno Wolf"]
     },
@@ -123,7 +123,7 @@ const PetTypes = {
         name: "Cinder Hawk",
         emoji: "🦅",
         type: "fire",
-        baseStats: { hp: 48, attack: 58, defense: 42, speed: 62, special: 58 },
+        baseStats: { hp: 58, attack: 58, defense: 42, speed: 62, special: 58 },
         ability: "Blaze - Low HP increases Fire damage",
         evolution: ["Ember Hawk", "Cinder Hawk", "Solar Phoenix"]
     },
@@ -133,7 +133,7 @@ const PetTypes = {
         name: "Aqua Turtle",
         emoji: "🐢",
         type: "water",
-        baseStats: { hp: 55, attack: 40, defense: 65, speed: 35, special: 50 },
+        baseStats: { hp: 65, attack: 40, defense: 65, speed: 35, special: 50 },
         ability: "Rain Dish - Heals in rain",
         evolution: ["Aqua Turtle", "Hydro Turtle", "Ocean Guardian"]
     },
@@ -141,7 +141,7 @@ const PetTypes = {
         name: "Mist Frog",
         emoji: "🐸",
         type: "water",
-        baseStats: { hp: 50, attack: 45, defense: 50, speed: 55, special: 55 },
+        baseStats: { hp: 60, attack: 45, defense: 50, speed: 55, special: 55 },
         ability: "Swift Swim - Speed doubles in rain",
         evolution: ["Mist Frog", "Storm Frog", "Tidal King"]
     },
@@ -149,7 +149,7 @@ const PetTypes = {
         name: "Wave Whale",
         emoji: "🐋",
         type: "water",
-        baseStats: { hp: 60, attack: 45, defense: 55, speed: 40, special: 60 },
+        baseStats: { hp: 70, attack: 45, defense: 55, speed: 40, special: 60 },
         ability: "Water Absorb - Heals from Water moves",
         evolution: ["Wave Whale", "Tsunami Whale", "Leviathan"]
     },
@@ -157,7 +157,7 @@ const PetTypes = {
         name: "Tidal Crab",
         emoji: "🦀",
         type: "water",
-        baseStats: { hp: 50, attack: 55, defense: 60, speed: 38, special: 48 },
+        baseStats: { hp: 60, attack: 55, defense: 60, speed: 38, special: 48 },
         ability: "Torrent - Low HP increases Water damage",
         evolution: ["Tide Crab", "Tidal Crab", "Abyssal Crustacean"]
     },
@@ -167,7 +167,7 @@ const PetTypes = {
         name: "Leaf Bunny",
         emoji: "🐰",
         type: "grass",
-        baseStats: { hp: 45, attack: 50, defense: 45, speed: 70, special: 45 },
+        baseStats: { hp: 55, attack: 50, defense: 45, speed: 70, special: 45 },
         ability: "Overgrow - Low HP increases Grass damage",
         evolution: ["Leaf Bunny", "Forest Bunny", "Nature Spirit"]
     },
@@ -175,7 +175,7 @@ const PetTypes = {
         name: "Vine Snake",
         emoji: "🐍",
         type: "grass",
-        baseStats: { hp: 48, attack: 55, defense: 40, speed: 60, special: 50 },
+        baseStats: { hp: 58, attack: 55, defense: 40, speed: 60, special: 50 },
         ability: "Chlorophyll - Speed doubles in sun",
         evolution: ["Vine Snake", "Thorn Snake", "Jungle Serpent"]
     },
@@ -183,7 +183,7 @@ const PetTypes = {
         name: "Moss Bear",
         emoji: "🐻",
         type: "grass",
-        baseStats: { hp: 60, attack: 55, defense: 50, speed: 35, special: 45 },
+        baseStats: { hp: 70, attack: 55, defense: 50, speed: 35, special: 45 },
         ability: "Thick Fat - Reduces Fire/Ice damage",
         evolution: ["Moss Bear", "Forest Bear", "Earth Guardian"]
     },
@@ -191,7 +191,7 @@ const PetTypes = {
         name: "Thorn Hog",
         emoji: "🦔",
         type: "grass",
-        baseStats: { hp: 55, attack: 60, defense: 48, speed: 45, special: 45 },
+        baseStats: { hp: 65, attack: 60, defense: 48, speed: 45, special: 45 },
         ability: "Overgrow - Low HP increases Grass damage",
         evolution: ["Bramble Pig", "Thorn Hog", "Verdant Behemoth"]
     },
@@ -201,7 +201,7 @@ const PetTypes = {
         name: "Bolt Mouse",
         emoji: "🐭",
         type: "electric",
-        baseStats: { hp: 40, attack: 45, defense: 40, speed: 75, special: 55 },
+        baseStats: { hp: 50, attack: 45, defense: 40, speed: 75, special: 55 },
         ability: "Static - Paralyzes on contact",
         evolution: ["Bolt Mouse", "Volt Mouse", "Thunder Lord"]
     },
@@ -209,7 +209,7 @@ const PetTypes = {
         name: "Shock Eel",
         emoji: "🐟",
         type: "electric",
-        baseStats: { hp: 50, attack: 50, defense: 45, speed: 65, special: 50 },
+        baseStats: { hp: 60, attack: 50, defense: 45, speed: 65, special: 50 },
         ability: "Volt Absorb - Heals from Electric moves",
         evolution: ["Shock Eel", "Storm Eel", "Lightning Serpent"]
     },
@@ -217,7 +217,7 @@ const PetTypes = {
         name: "Zap Bird",
         emoji: "🐦",
         type: "electric",
-        baseStats: { hp: 45, attack: 48, defense: 42, speed: 70, special: 55 },
+        baseStats: { hp: 55, attack: 48, defense: 42, speed: 70, special: 55 },
         ability: "Motor Drive - Speed boosts from Electric moves",
         evolution: ["Zap Bird", "Storm Bird", "Thunder Hawk"]
     },
@@ -225,7 +225,7 @@ const PetTypes = {
         name: "Voltage Ox",
         emoji: "🐂",
         type: "electric",
-        baseStats: { hp: 52, attack: 58, defense: 50, speed: 45, special: 48 },
+        baseStats: { hp: 62, attack: 58, defense: 50, speed: 45, special: 48 },
         ability: "Static - Paralyzes on contact",
         evolution: ["Spark Calf", "Voltage Ox", "Thunder Beast"]
     },
@@ -235,7 +235,7 @@ const PetTypes = {
         name: "Mind Cat",
         emoji: "😺",
         type: "psychic",
-        baseStats: { hp: 45, attack: 40, defense: 45, speed: 60, special: 70 },
+        baseStats: { hp: 55, attack: 40, defense: 45, speed: 60, special: 70 },
         ability: "Synchronize - Shares status conditions",
         evolution: ["Mind Cat", "Psi Cat", "Telepath Master"]
     },
@@ -243,7 +243,7 @@ const PetTypes = {
         name: "Dream Owl",
         emoji: "🦉",
         type: "psychic",
-        baseStats: { hp: 50, attack: 42, defense: 48, speed: 55, special: 65 },
+        baseStats: { hp: 60, attack: 42, defense: 48, speed: 55, special: 65 },
         ability: "Insomnia - Cannot fall asleep",
         evolution: ["Dream Owl", "Night Owl", "Vision Sage"]
     },
@@ -251,7 +251,7 @@ const PetTypes = {
         name: "Cosmic Fox",
         emoji: "🦊",
         type: "psychic",
-        baseStats: { hp: 48, attack: 45, defense: 42, speed: 65, special: 68 },
+        baseStats: { hp: 58, attack: 45, defense: 42, speed: 65, special: 68 },
         ability: "Magic Guard - Only takes direct damage",
         evolution: ["Cosmic Fox", "Star Fox", "Galaxy Lord"]
     },
@@ -259,7 +259,7 @@ const PetTypes = {
         name: "Mind Ape",
         emoji: "🙉",
         type: "psychic",
-        baseStats: { hp: 48, attack: 45, defense: 45, speed: 58, special: 68 },
+        baseStats: { hp: 58, attack: 45, defense: 45, speed: 58, special: 68 },
         ability: "Magic Guard - Only takes direct damage",
         evolution: ["Thought Chimp", "Mind Ape", "Enlightened Sage"]
     },
@@ -269,7 +269,7 @@ const PetTypes = {
         name: "Frost Penguin",
         emoji: "🐧",
         type: "ice",
-        baseStats: { hp: 52, attack: 48, defense: 50, speed: 45, special: 55 },
+        baseStats: { hp: 62, attack: 48, defense: 50, speed: 45, special: 55 },
         ability: "Snow Cloak - Evasion in snow",
         evolution: ["Frost Penguin", "Glacier Penguin", "Ice Emperor"]
     },
@@ -277,7 +277,7 @@ const PetTypes = {
         name: "Crystal Seal",
         emoji: "🦭",
         type: "ice",
-        baseStats: { hp: 55, attack: 45, defense: 55, speed: 40, special: 50 },
+        baseStats: { hp: 65, attack: 45, defense: 55, speed: 40, special: 50 },
         ability: "Ice Body - Heals in hail",
         evolution: ["Crystal Seal", "Diamond Seal", "Frost Guardian"]
     },
@@ -287,7 +287,7 @@ const PetTypes = {
         name: "Scale Lizard",
         emoji: "🦎",
         type: "dragon",
-        baseStats: { hp: 50, attack: 55, defense: 45, speed: 50, special: 50 },
+        baseStats: { hp: 60, attack: 55, defense: 45, speed: 50, special: 50 },
         ability: "Rough Skin - Damages attackers",
         evolution: ["Scale Lizard", "Dragon Lizard", "Wyvern King"]
     },
@@ -295,7 +295,7 @@ const PetTypes = {
         name: "Drake Whelp",
         emoji: "🐉",
         type: "dragon",
-        baseStats: { hp: 55, attack: 60, defense: 50, speed: 45, special: 55 },
+        baseStats: { hp: 65, attack: 60, defense: 50, speed: 45, special: 55 },
         ability: "Multiscale - Reduces damage at full HP",
         evolution: ["Drake Whelp", "Storm Drake", "Dragon Emperor"]
     },
@@ -305,7 +305,7 @@ const PetTypes = {
         name: "Cinder Scorpion",
         emoji: "🦂",
         type: "fire",
-        baseStats: { hp: 48, attack: 60, defense: 52, speed: 55, special: 50 },
+        baseStats: { hp: 58, attack: 60, defense: 52, speed: 55, special: 50 },
         ability: "Flame Body - May burn attackers on contact",
         evolution: ["Spark Tail", "Cinder Scorpion", "Inferno Stinger"]
     },
@@ -315,7 +315,7 @@ const PetTypes = {
         name: "Frost Bear",
         emoji: "🐻‍❄️",
         type: "ice",
-        baseStats: { hp: 65, attack: 58, defense: 55, speed: 35, special: 50 },
+        baseStats: { hp: 75, attack: 58, defense: 55, speed: 35, special: 50 },
         ability: "Slush Rush - Speed doubles in hail",
         evolution: ["Ice Cub", "Frost Bear", "Tundra King"]
     },
@@ -323,7 +323,7 @@ const PetTypes = {
         name: "Glacier Fox",
         emoji: "🦊",
         type: "ice",
-        baseStats: { hp: 50, attack: 48, defense: 48, speed: 60, special: 55 },
+        baseStats: { hp: 60, attack: 48, defense: 48, speed: 60, special: 55 },
         ability: "Snow Cloak - Evasion in snow",
         evolution: ["Frost Kit", "Glacier Fox", "Permafrost Spirit"]
     },
@@ -333,7 +333,7 @@ const PetTypes = {
         name: "Crystal Wyrm",
         emoji: "🐉",
         type: "dragon",
-        baseStats: { hp: 55, attack: 58, defense: 52, speed: 50, special: 62 },
+        baseStats: { hp: 65, attack: 58, defense: 52, speed: 50, special: 62 },
         ability: "Levitate - Immune to ground moves",
         evolution: ["Shard Hatchling", "Crystal Wyrm", "Geode Leviathan"]
     },
@@ -341,7 +341,7 @@ const PetTypes = {
         name: "Marsh Croc",
         emoji: "🐊",
         type: "dragon",
-        baseStats: { hp: 60, attack: 64, defense: 55, speed: 42, special: 48 },
+        baseStats: { hp: 70, attack: 64, defense: 55, speed: 42, special: 48 },
         ability: "Strong Jaw - Boosts bite moves",
         evolution: ["Mud Wader", "Marsh Croc", "Bog Tyrant"]
     },
@@ -351,7 +351,7 @@ const PetTypes = {
         name: "Shadow Wolf",
         emoji: "🐺",
         type: "dark",
-        baseStats: { hp: 50, attack: 58, defense: 45, speed: 62, special: 50 },
+        baseStats: { hp: 60, attack: 58, defense: 45, speed: 62, special: 50 },
         ability: "Alpha Hunter - Boosts attack when facing an stronger foe",
         evolution: ["Shadow Pup", "Umbra Wolf", "Nightfall Alpha"]
     },
@@ -359,7 +359,7 @@ const PetTypes = {
         name: "Dusk Bat",
         emoji: "🦇",
         type: "dark",
-        baseStats: { hp: 45, attack: 45, defense: 42, speed: 72, special: 55 },
+        baseStats: { hp: 55, attack: 45, defense: 42, speed: 72, special: 55 },
         ability: "Vampiric - Heals from a fraction of damage dealt",
         evolution: ["Dusk Bat", "Night Bat", "Vampire Emperor"]
     },
@@ -369,7 +369,7 @@ const PetTypes = {
         name: "Moon Pixie",
         emoji: "🦄",
         type: "fairy",
-        baseStats: { hp: 48, attack: 42, defense: 48, speed: 60, special: 68 },
+        baseStats: { hp: 58, attack: 42, defense: 48, speed: 60, special: 68 },
         ability: "Cute Charm - May infatuate attackers on contact",
         evolution: ["Star Fawn", "Moon Pixie", "Astral Spirit"]
     },
@@ -377,7 +377,7 @@ const PetTypes = {
         name: "Glimmer Moth",
         emoji: "🦋",
         type: "fairy",
-        baseStats: { hp: 42, attack: 40, defense: 45, speed: 72, special: 65 },
+        baseStats: { hp: 52, attack: 40, defense: 45, speed: 72, special: 65 },
         ability: "Shield Dust - Blocks secondary move effects",
         evolution: ["Dust Wisp", "Glimmer Moth", "Prism Sovereign"]
     },
@@ -385,7 +385,7 @@ const PetTypes = {
         name: "Sunstone Beetle",
         emoji: "🪲",
         type: "fairy",
-        baseStats: { hp: 44, attack: 42, defense: 48, speed: 65, special: 62 },
+        baseStats: { hp: 54, attack: 42, defense: 48, speed: 65, special: 62 },
         ability: "Shield Dust - Blocks secondary move effects",
         evolution: ["Glow Grub", "Sunstone Beetle", "Aurora Scarab"]
     },
@@ -395,7 +395,7 @@ const PetTypes = {
         name: "Cloud Sheep",
         emoji: "🐑",
         type: "normal",
-        baseStats: { hp: 62, attack: 42, defense: 58, speed: 38, special: 50 },
+        baseStats: { hp: 72, attack: 42, defense: 58, speed: 38, special: 50 },
         ability: "Fluffy - Halves contact damage taken",
         evolution: ["Wool Lamb", "Cloud Sheep", "Sky Shepherd"]
     },
@@ -403,7 +403,7 @@ const PetTypes = {
         name: "Field Deer",
         emoji: "🦌",
         type: "normal",
-        baseStats: { hp: 50, attack: 48, defense: 45, speed: 62, special: 50 },
+        baseStats: { hp: 60, attack: 48, defense: 45, speed: 62, special: 50 },
         ability: "Run Away - Guaranteed to flee wild battles",
         evolution: ["Spotted Fawn", "Field Deer", "Forest Monarch"]
     },
@@ -411,7 +411,7 @@ const PetTypes = {
         name: "Dune Lion",
         emoji: "🦁",
         type: "normal",
-        baseStats: { hp: 55, attack: 60, defense: 48, speed: 55, special: 45 },
+        baseStats: { hp: 65, attack: 60, defense: 48, speed: 55, special: 45 },
         ability: "Intimidate - Lowers enemy attack on switch",
         evolution: ["Sand Cub", "Dune Lion", "Savanna King"]
     },
@@ -421,7 +421,7 @@ const PetTypes = {
         name: "Venom Asp",
         emoji: "🐍",
         type: "poison",
-        baseStats: { hp: 45, attack: 52, defense: 48, speed: 68, special: 60 },
+        baseStats: { hp: 55, attack: 52, defense: 48, speed: 68, special: 60 },
         ability: "Corrosion - Melts through enemy defenses",
         evolution: ["Venom Asp", "Toxic Serpent", "Plague Sovereign"]
     },
@@ -429,7 +429,7 @@ const PetTypes = {
         name: "Bog Toad",
         emoji: "🐸",
         type: "poison",
-        baseStats: { hp: 58, attack: 50, defense: 55, speed: 40, special: 52 },
+        baseStats: { hp: 68, attack: 50, defense: 55, speed: 40, special: 52 },
         ability: "Corrosion - Acidic strikes ignore half defense",
         evolution: ["Muck Tadpole", "Bog Toad", "Blight Matriarch"]
     }

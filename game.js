@@ -162,6 +162,16 @@ const PetTypes = {
         evolution: ["Tide Crab", "Tidal Crab", "Abyssal Crustacean"]
     },
 
+    // Fire Type
+    cinderCrab: {
+        name: "Cinder Crab",
+        emoji: "🦀",
+        type: "fire",
+        baseStats: { hp: 55, attack: 60, defense: 52, speed: 40, special: 50 },
+        ability: "Flame Armor - Deals contact damage to attackers",
+        evolution: ["Ash Claw", "Cinder Crab", "Magma Guardian"]
+    }
+    },
     // Grass Types
     leafBunny: {
         name: "Leaf Bunny",
@@ -2523,3 +2533,4 @@ const UIManager = {
 
 // Initialize game when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => Game.init());
+

@@ -210,7 +210,7 @@ const PetTypes = {
         name: "Bolt Mouse",
         emoji: "🐭",
         type: "electric",
-        baseStats: { hp: 60, attack: 45, defense: 40, speed: 75, special: 55 },
+        baseStats: { hp: 60, attack: 45, defense: 40, speed: 80, special: 55 },
         passive: "Fast feet - 10% of  dodging an attack",
         ability: {
             name: "Electric Ball",
@@ -1342,6 +1342,16 @@ const BattleSystem = {
     },
 
     attack(attacker, defender, isPlayerAttacker) {
+        const defenderTemplate = PetTypes[defender.typeId];
+        if (defenderTemplate.passive && defenderTemplate.passive.includes("Fast feet")) {
+            if (Math.random() < 0.10) {
+                const defenderName = this.getPetName(defender);
+                this.addLog(`${defenderName} dodged the attack!`);
+                UIManager.updateBattleScreen();
+                return;
+            }
+        }
+        
         const result = this.calculateDamage(attacker, defender);
         defender.currentHP = Math.max(0, defender.currentHP - result.damage);
         
@@ -1361,6 +1371,13 @@ const BattleSystem = {
     calculateSpecialDamage(attacker, defender, abilityType) {
         const attackerTemplate = PetTypes[attacker.typeId];
         const defenderTemplate = PetTypes[defender.typeId];
+        
+        if (defenderTemplate.passive && defenderTemplate.passive.includes("Fast feet")) {
+            if (Math.random() < 0.10) {
+                const defenderName = this.getPetName(defender);
+                return { damage: 0, isCrit: false, typeMult: 1, dodged: true, dodgerName: defenderName };
+            }
+        }
         
         const attackerMods = attacker === this.playerPet ? this.playerStatMods : this.enemyStatMods;
         const defenderMods = defender === this.playerPet ? this.playerStatMods : this.enemyStatMods;
@@ -1408,32 +1425,37 @@ const BattleSystem = {
         // Electric Ball implementation
         if (ability.name === "Electric Ball") {
             const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
-            this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
             
-            const attackerName = this.getPetName(this.playerPet);
-            const defenderName = this.getPetName(this.enemyPet);
-            
-            let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
-            if (result.isCrit) logText += " (CRITICAL!)";
-            if (result.typeMult > 1) logText += " (Super effective!)";
-            else if (result.typeMult < 1) logText += " (Not very effective)";
-            
-            this.addLog(logText);
-            this.paralyzed = true;
-            this.playerAbilityCooldown = ability.cooldown;
-            
-            if (this.enemyPet.currentHP <= 0) {
-                UIManager.updateBattleScreen();
-                this.endBattle(true);
-                return;
+            if (result.dodged) {
+                this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+            } else {
+                this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                
+                const attackerName = this.getPetName(this.playerPet);
+                const defenderName = this.getPetName(this.enemyPet);
+                
+                let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                if (result.isCrit) logText += " (CRITICAL!)";
+                if (result.typeMult > 1) logText += " (Super effective!)";
+                else if (result.typeMult < 1) logText += " (Not very effective)";
+                
+                this.addLog(logText);
+                this.paralyzed = true;
+                
+                if (this.enemyPet.currentHP <= 0) {
+                    UIManager.updateBattleScreen();
+                    this.endBattle(true);
+                    return;
+                }
             }
             
+            this.playerAbilityCooldown = ability.cooldown;
             this.isPlayerTurn = false;
             UIManager.updateBattleScreen();
             
             // Check if enemy is paralyzed
             if (this.paralyzed) {
-                this.addLog(`${defenderName} is paralyzed! It can't move!`);
+                this.addLog(`${this.getPetName(this.enemyPet)} is paralyzed! It can't move!`);
                 this.paralyzed = false;
                 UIManager.updateBattleScreen();
                 

@@ -891,8 +891,12 @@ function rollTierForZone(zoneId) {
 }
 
 function randomTier(rank) {
-    const sub = Math.floor(Math.random() * 5) + 1;
-    return `${rank}${sub}`;
+    const roll = Math.random();
+    if (roll < 0.50) return `${rank}1`;
+    if (roll < 0.70) return `${rank}2`;
+    if (roll < 0.85) return `${rank}3`;
+    if (roll < 0.95) return `${rank}4`;
+    return `${rank}5`;
 }
 
 // Tier System
@@ -1541,7 +1545,7 @@ const Game = {
     },
 
     selectStarter(typeId) {
-        const pet = PetManager.createPet(typeId, 5);
+        const pet = PetManager.createPet(typeId, 1);
         PetManager.pets.push(pet);
         PetManager.selectedPet = pet;
         this.hasStarter = true;

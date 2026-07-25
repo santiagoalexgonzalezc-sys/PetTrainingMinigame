@@ -1938,7 +1938,7 @@ const UIManager = {
                                  PetManager.storage.some(p => p.typeId === pet.typeId && p.currentHP > 0);
         const prestigeBtn = document.getElementById("prestigeBtn");
         if (prestigeBtn) {
-            prestigeBtn.style.display = (pet.level >= 15 && hasSameRaceAlive) ? "inline-block" : "none";
+            prestigeBtn.style.display = (hasSameRaceAlive) ? "inline-block" : "none";
         }
         
         const upgradeBtn = document.getElementById("upgradeTierBtn");

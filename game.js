@@ -100,7 +100,7 @@ const PetTypes = {
         emoji: "🦊",
         type: "fire",
         baseStats: { hp: 65, attack: 52, defense: 43, speed: 65, special: 60 },
-        ability: "Blaze - Low HP increases Fire damage",
+        passive: "Blaze - Low HP increases Fire damage",
         evolution: ["Ember Fox", "Inferno Fox", "Phoenix Lord"]
     },
     flameCat: {
@@ -108,7 +108,7 @@ const PetTypes = {
         emoji: "🐱",
         type: "fire",
         baseStats: { hp: 68, attack: 55, defense: 40, speed: 60, special: 55 },
-        ability: "Intimidate - Lowers enemy attack on switch",
+        passive: "Intimidate - Lowers enemy attack on switch",
         evolution: ["Flame Cat", "Blaze Cat", "Magma Tiger"]
     },
     sparkDog: {
@@ -116,7 +116,7 @@ const PetTypes = {
         emoji: "🐶",
         type: "fire",
         baseStats: { hp: 70, attack: 50, defense: 45, speed: 55, special: 50 },
-        ability: "Flash Fire - Immune to Fire, boosts Fire moves",
+        passive: "Flash Fire - Immune to Fire, boosts Fire moves",
         evolution: ["Spark Dog", "Fire Hound", "Inferno Wolf"]
     },
     cinderHawk: {
@@ -124,7 +124,7 @@ const PetTypes = {
         emoji: "🦅",
         type: "fire",
         baseStats: { hp: 68, attack: 58, defense: 42, speed: 62, special: 58 },
-        ability: "Blaze - Low HP increases Fire damage",
+        passive: "Blaze - Low HP increases Fire damage",
         evolution: ["Ember Hawk", "Cinder Hawk", "Solar Phoenix"]
     },
 
@@ -134,7 +134,7 @@ const PetTypes = {
         emoji: "🐢",
         type: "water",
         baseStats: { hp: 75, attack: 40, defense: 65, speed: 35, special: 50 },
-        ability: "Rain Dish - Heals in rain",
+        passive: "Rain Dish - Heals in rain",
         evolution: ["Aqua Turtle", "Hydro Turtle", "Ocean Guardian"]
     },
     mistFrog: {
@@ -142,7 +142,7 @@ const PetTypes = {
         emoji: "🐸",
         type: "water",
         baseStats: { hp: 70, attack: 45, defense: 50, speed: 55, special: 55 },
-        ability: "Swift Swim - Speed doubles in rain",
+        passive: "Swift Swim - Speed doubles in rain",
         evolution: ["Mist Frog", "Storm Frog", "Tidal King"]
     },
     waveWhale: {
@@ -150,7 +150,7 @@ const PetTypes = {
         emoji: "🐋",
         type: "water",
         baseStats: { hp: 80, attack: 45, defense: 55, speed: 40, special: 60 },
-        ability: "Water Absorb - Heals from Water moves",
+        passive: "Water Absorb - Heals from Water moves",
         evolution: ["Wave Whale", "Tsunami Whale", "Leviathan"]
     },
     tidalCrab: {
@@ -158,7 +158,7 @@ const PetTypes = {
         emoji: "🦀",
         type: "water",
         baseStats: { hp: 70, attack: 55, defense: 60, speed: 38, special: 48 },
-        ability: "Torrent - Low HP increases Water damage",
+        passive: "Torrent - Low HP increases Water damage",
         evolution: ["Tide Crab", "Tidal Crab", "Abyssal Crustacean"]
     },
 
@@ -168,7 +168,7 @@ const PetTypes = {
         emoji: "🦀",
         type: "fire",
         baseStats: { hp: 65, attack: 60, defense: 52, speed: 40, special: 50 },
-        ability: "Flame Armor - Deals contact damage to attackers",
+        passive: "Flame Armor - Deals contact damage to attackers",
         evolution: ["Ash Claw", "Cinder Crab", "Magma Guardian"]
     },
     // Grass Types
@@ -177,7 +177,7 @@ const PetTypes = {
         emoji: "🐰",
         type: "grass",
         baseStats: { hp: 65, attack: 50, defense: 45, speed: 70, special: 45 },
-        ability: "Overgrow - Low HP increases Grass damage",
+        passive: "Overgrow - Low HP increases Grass damage",
         evolution: ["Leaf Bunny", "Forest Bunny", "Nature Spirit"]
     },
     vineSnake: {
@@ -185,7 +185,7 @@ const PetTypes = {
         emoji: "🐍",
         type: "grass",
         baseStats: { hp: 68, attack: 55, defense: 40, speed: 60, special: 50 },
-        ability: "Chlorophyll - Speed doubles in sun",
+        passive: "Chlorophyll - Speed doubles in sun",
         evolution: ["Vine Snake", "Thorn Snake", "Jungle Serpent"]
     },
     mossBear: {
@@ -193,7 +193,7 @@ const PetTypes = {
         emoji: "🐻",
         type: "grass",
         baseStats: { hp: 80, attack: 55, defense: 50, speed: 35, special: 45 },
-        ability: "Thick Fat - Reduces Fire/Ice damage",
+        passive: "Thick Fat - Reduces Fire/Ice damage",
         evolution: ["Moss Bear", "Forest Bear", "Earth Guardian"]
     },
     thornHog: {
@@ -201,7 +201,7 @@ const PetTypes = {
         emoji: "🦔",
         type: "grass",
         baseStats: { hp: 75, attack: 60, defense: 48, speed: 45, special: 45 },
-        ability: "Overgrow - Low HP increases Grass damage",
+        passive: "Overgrow - Low HP increases Grass damage",
         evolution: ["Bramble Pig", "Thorn Hog", "Verdant Behemoth"]
     },
 
@@ -211,7 +211,7 @@ const PetTypes = {
         emoji: "🐭",
         type: "electric",
         baseStats: { hp: 60, attack: 45, defense: 40, speed: 75, special: 55 },
-        ability: "Static - Paralyzes on contact",
+        passive: "Static - Paralyzes on contact",
         evolution: ["Bolt Mouse", "Volt Mouse", "Thunder Lord"]
     },
     shockEel: {
@@ -219,7 +219,7 @@ const PetTypes = {
         emoji: "🐟",
         type: "electric",
         baseStats: { hp: 70, attack: 50, defense: 45, speed: 65, special: 50 },
-        ability: "Volt Absorb - Heals from Electric moves",
+        passive: "Volt Absorb - Heals from Electric moves",
         evolution: ["Shock Eel", "Storm Eel", "Lightning Serpent"]
     },
     zapBird: {
@@ -227,7 +227,7 @@ const PetTypes = {
         emoji: "🐦",
         type: "electric",
         baseStats: { hp: 65, attack: 48, defense: 42, speed: 70, special: 55 },
-        ability: "Motor Drive - Speed boosts from Electric moves",
+        passive: "Motor Drive - Speed boosts from Electric moves",
         evolution: ["Zap Bird", "Storm Bird", "Thunder Hawk"]
     },
     voltageOx: {
@@ -235,7 +235,7 @@ const PetTypes = {
         emoji: "🐂",
         type: "electric",
         baseStats: { hp: 72, attack: 58, defense: 50, speed: 45, special: 48 },
-        ability: "Static - Paralyzes on contact",
+        passive: "Static - Paralyzes on contact",
         evolution: ["Spark Calf", "Voltage Ox", "Thunder Beast"]
     },
 
@@ -245,7 +245,7 @@ const PetTypes = {
         emoji: "😺",
         type: "psychic",
         baseStats: { hp: 65, attack: 40, defense: 45, speed: 60, special: 70 },
-        ability: "Synchronize - Shares status conditions",
+        passive: "Synchronize - Shares status conditions",
         evolution: ["Mind Cat", "Psi Cat", "Telepath Master"]
     },
     dreamOwl: {
@@ -253,7 +253,7 @@ const PetTypes = {
         emoji: "🦉",
         type: "psychic",
         baseStats: { hp: 70, attack: 42, defense: 48, speed: 55, special: 65 },
-        ability: "Insomnia - Cannot fall asleep",
+        passive: "Insomnia - Cannot fall asleep",
         evolution: ["Dream Owl", "Night Owl", "Vision Sage"]
     },
     cosmicFox: {
@@ -261,7 +261,7 @@ const PetTypes = {
         emoji: "🦊",
         type: "psychic",
         baseStats: { hp: 68, attack: 45, defense: 42, speed: 65, special: 68 },
-        ability: "Magic Guard - Only takes direct damage",
+        passive: "Magic Guard - Only takes direct damage",
         evolution: ["Cosmic Fox", "Star Fox", "Galaxy Lord"]
     },
     mindApe: {
@@ -269,7 +269,7 @@ const PetTypes = {
         emoji: "🙉",
         type: "psychic",
         baseStats: { hp: 68, attack: 45, defense: 45, speed: 58, special: 68 },
-        ability: "Magic Guard - Only takes direct damage",
+        passive: "Magic Guard - Only takes direct damage",
         evolution: ["Thought Chimp", "Mind Ape", "Enlightened Sage"]
     },
 
@@ -279,7 +279,7 @@ const PetTypes = {
         emoji: "🐧",
         type: "ice",
         baseStats: { hp: 72, attack: 48, defense: 50, speed: 45, special: 55 },
-        ability: "Snow Cloak - Evasion in snow",
+        passive: "Snow Cloak - Evasion in snow",
         evolution: ["Frost Penguin", "Glacier Penguin", "Ice Emperor"]
     },
     crystalSeal: {
@@ -287,7 +287,7 @@ const PetTypes = {
         emoji: "🦭",
         type: "ice",
         baseStats: { hp: 75, attack: 45, defense: 55, speed: 40, special: 50 },
-        ability: "Ice Body - Heals in hail",
+        passive: "Ice Body - Heals in hail",
         evolution: ["Crystal Seal", "Diamond Seal", "Frost Guardian"]
     },
     
@@ -297,7 +297,7 @@ const PetTypes = {
         emoji: "🦎",
         type: "dragon",
         baseStats: { hp: 70, attack: 55, defense: 45, speed: 50, special: 50 },
-        ability: "Rough Skin - Damages attackers",
+        passive: "Rough Skin - Damages attackers",
         evolution: ["Scale Lizard", "Dragon Lizard", "Wyvern King"]
     },
     drakeWhelp: {
@@ -305,7 +305,7 @@ const PetTypes = {
         emoji: "🐉",
         type: "dragon",
         baseStats: { hp: 75, attack: 60, defense: 50, speed: 45, special: 55 },
-        ability: "Multiscale - Reduces damage at full HP",
+        passive: "Multiscale - Reduces damage at full HP",
         evolution: ["Drake Whelp", "Storm Drake", "Dragon Emperor"]
     },
 
@@ -315,7 +315,7 @@ const PetTypes = {
         emoji: "🦂",
         type: "fire",
         baseStats: { hp: 68, attack: 60, defense: 52, speed: 55, special: 50 },
-        ability: "Flame Body - May burn attackers on contact",
+        passive: "Flame Body - May burn attackers on contact",
         evolution: ["Spark Tail", "Cinder Scorpion", "Inferno Stinger"]
     },
 
@@ -325,7 +325,7 @@ const PetTypes = {
         emoji: "🐻‍❄️",
         type: "ice",
         baseStats: { hp: 85, attack: 58, defense: 55, speed: 35, special: 50 },
-        ability: "Slush Rush - Speed doubles in hail",
+        passive: "Slush Rush - Speed doubles in hail",
         evolution: ["Ice Cub", "Frost Bear", "Tundra King"]
     },
     glacierFox: {
@@ -333,7 +333,7 @@ const PetTypes = {
         emoji: "🦊",
         type: "ice",
         baseStats: { hp: 70, attack: 48, defense: 48, speed: 60, special: 55 },
-        ability: "Snow Cloak - Evasion in snow",
+        passive: "Snow Cloak - Evasion in snow",
         evolution: ["Frost Kit", "Glacier Fox", "Permafrost Spirit"]
     },
 
@@ -343,7 +343,7 @@ const PetTypes = {
         emoji: "🐉",
         type: "dragon",
         baseStats: { hp: 75, attack: 58, defense: 52, speed: 50, special: 62 },
-        ability: "Levitate - Immune to ground moves",
+        passive: "Levitate - Immune to ground moves",
         evolution: ["Shard Hatchling", "Crystal Wyrm", "Geode Leviathan"]
     },
     marshCroc: {
@@ -351,7 +351,7 @@ const PetTypes = {
         emoji: "🐊",
         type: "dragon",
         baseStats: { hp: 80, attack: 64, defense: 55, speed: 42, special: 48 },
-        ability: "Strong Jaw - Boosts bite moves",
+        passive: "Strong Jaw - Boosts bite moves",
         evolution: ["Mud Wader", "Marsh Croc", "Bog Tyrant"]
     },
 
@@ -361,7 +361,7 @@ const PetTypes = {
         emoji: "🐺",
         type: "dark",
         baseStats: { hp: 70, attack: 58, defense: 45, speed: 62, special: 50 },
-        ability: "Alpha Hunter - Boosts attack when facing an stronger foe",
+        passive: "Alpha Hunter - Boosts attack when facing an stronger foe",
         evolution: ["Shadow Pup", "Umbra Wolf", "Nightfall Alpha"]
     },
     duskBat: {
@@ -369,7 +369,7 @@ const PetTypes = {
         emoji: "🦇",
         type: "dark",
         baseStats: { hp: 65, attack: 45, defense: 42, speed: 72, special: 55 },
-        ability: "Vampiric - Heals from a fraction of damage dealt",
+        passive: "Vampiric - Heals from a fraction of damage dealt",
         evolution: ["Dusk Bat", "Night Bat", "Vampire Emperor"]
     },
 
@@ -379,7 +379,7 @@ const PetTypes = {
         emoji: "🦄",
         type: "fairy",
         baseStats: { hp: 68, attack: 42, defense: 48, speed: 60, special: 68 },
-        ability: "Cute Charm - May infatuate attackers on contact",
+        passive: "Cute Charm - May infatuate attackers on contact",
         evolution: ["Star Fawn", "Moon Pixie", "Astral Spirit"]
     },
     glimmerMoth: {
@@ -387,7 +387,7 @@ const PetTypes = {
         emoji: "🦋",
         type: "fairy",
         baseStats: { hp: 62, attack: 40, defense: 45, speed: 72, special: 65 },
-        ability: "Shield Dust - Blocks secondary move effects",
+        passive: "Shield Dust - Blocks secondary move effects",
         evolution: ["Dust Wisp", "Glimmer Moth", "Prism Sovereign"]
     },
     sunstoneBeetle: {
@@ -395,7 +395,7 @@ const PetTypes = {
         emoji: "🪲",
         type: "fairy",
         baseStats: { hp: 64, attack: 42, defense: 48, speed: 65, special: 62 },
-        ability: "Shield Dust - Blocks secondary move effects",
+        passive: "Shield Dust - Blocks secondary move effects",
         evolution: ["Glow Grub", "Sunstone Beetle", "Aurora Scarab"]
     },
 
@@ -405,7 +405,7 @@ const PetTypes = {
         emoji: "🐑",
         type: "normal",
         baseStats: { hp: 82, attack: 42, defense: 58, speed: 38, special: 50 },
-        ability: "Fluffy - Halves contact damage taken",
+        passive: "Fluffy - Halves contact damage taken",
         evolution: ["Wool Lamb", "Cloud Sheep", "Sky Shepherd"]
     },
     fieldDeer: {
@@ -413,7 +413,7 @@ const PetTypes = {
         emoji: "🦌",
         type: "normal",
         baseStats: { hp: 70, attack: 48, defense: 45, speed: 62, special: 50 },
-        ability: "Run Away - Guaranteed to flee wild battles",
+        passive: "Run Away - Guaranteed to flee wild battles",
         evolution: ["Spotted Fawn", "Field Deer", "Forest Monarch"]
     },
     duneLion: {
@@ -421,7 +421,7 @@ const PetTypes = {
         emoji: "🦁",
         type: "normal",
         baseStats: { hp: 75, attack: 60, defense: 48, speed: 55, special: 45 },
-        ability: "Intimidate - Lowers enemy attack on switch",
+        passive: "Intimidate - Lowers enemy attack on switch",
         evolution: ["Sand Cub", "Dune Lion", "Savanna King"]
     },
 
@@ -431,7 +431,7 @@ const PetTypes = {
         emoji: "🐍",
         type: "poison",
         baseStats: { hp: 65, attack: 52, defense: 48, speed: 68, special: 60 },
-        ability: "Corrosion - Melts through enemy defenses",
+        passive: "Corrosion - Melts through enemy defenses",
         evolution: ["Venom Asp", "Toxic Serpent", "Plague Sovereign"]
     },
     bogToad: {
@@ -439,7 +439,7 @@ const PetTypes = {
         emoji: "🐸",
         type: "poison",
         baseStats: { hp: 78, attack: 50, defense: 55, speed: 40, special: 52 },
-        ability: "Corrosion - Acidic strikes ignore half defense",
+        passive: "Corrosion - Acidic strikes ignore half defense",
         evolution: ["Muck Tadpole", "Bog Toad", "Blight Matriarch"]
     }
 };
@@ -1075,18 +1075,18 @@ const EquipmentSystem = {
     }
 };
 
-// ==================== ABILITY SYSTEM ====================
-const AbilitySystem = {
-    getPassiveAbilityMultiplier(attacker) {
+// ==================== passive SYSTEM ====================
+const PassiveSystem = {
+    getPassiveMultiplier(attacker) {
         const template = PetTypes[attacker.typeId];
-        if (!template || !template.ability) return 1;
+        if (!template || !template.passive) return 1;
         
-        const ability = template.ability;
+        const passive = template.passive;
         const maxHP = PetManager.calculateMaxHP(template, attacker.level, attacker);
         const hpPercent = (attacker.currentHP / maxHP) * 100;
         
         // Blaze - Fire type, HP-based damage boost
-        if (ability.includes("Blaze") && template.type === "fire") {
+        if (passive.includes("Blaze") && template.type === "fire") {
             if (hpPercent >= 70) return 1.05;
             if (hpPercent <= 20) return 1.40;
             // Linear interpolation between 70% and 20%
@@ -1098,7 +1098,7 @@ const AbilitySystem = {
         }
         
         // Overgrow - Grass type, HP-based damage boost
-        if (ability.includes("Overgrow") && template.type === "grass") {
+        if (passive.includes("Overgrow") && template.type === "grass") {
             if (hpPercent >= 70) return 1.05;
             if (hpPercent <= 20) return 1.40;
             const range = 70 - 20;
@@ -1109,7 +1109,7 @@ const AbilitySystem = {
         }
         
         // Torrent - Water type, HP-based damage boost
-        if (ability.includes("Torrent") && template.type === "water") {
+        if (passive.includes("Torrent") && template.type === "water") {
             if (hpPercent >= 70) return 1.05;
             if (hpPercent <= 20) return 1.40;
             const range = 70 - 20;
@@ -1122,14 +1122,14 @@ const AbilitySystem = {
         return 1;
     },
     
-    triggerSwitchAbility(switchingPet, enemyPet, battleSystem) {
+    triggerSwitchPassive(switchingPet, enemyPet, battleSystem) {
         const template = PetTypes[switchingPet.typeId];
-        if (!template || !template.ability) return;
+        if (!template || !template.passive) return;
         
-        const ability = template.ability;
+        const passive = template.passive;
         
         // Intimidate - Lowers enemy attack by 1 stage
-        if (ability.includes("Intimidate")) {
+        if (passive.includes("Intimidate")) {
             battleSystem.enemyStatMods.attack = Math.min(6, battleSystem.enemyStatMods.attack - 1);
             battleSystem.addLog(`${template.name}'s Intimidate lowered enemy's attack!`);
         }
@@ -1211,7 +1211,7 @@ const BattleSystem = {
         this.addLog(`${this.getPetName(this.playerPet)} was sent out!`);
         
         // Trigger switch abilities
-        AbilitySystem.triggerSwitchAbility(this.playerPet, this.enemyPet, this);
+        PassiveSystem.triggerSwitchPassive(this.playerPet, this.enemyPet, this);
         
         UIManager.updateBattleScreen();
         
@@ -1251,7 +1251,7 @@ const BattleSystem = {
 
         // Corrosion - Poison pets ignore half of the enemy's defense
         let effectiveDefense = defense;
-        if (attackerTemplate.type === "poison" && attackerTemplate.ability && attackerTemplate.ability.includes("Corrosion")) {
+        if (attackerTemplate.type === "poison" && attackerTemplate.passive && attackerTemplate.passive.includes("Corrosion")) {
             effectiveDefense = Math.floor(defense / 2);
         }
 
@@ -1273,9 +1273,9 @@ const BattleSystem = {
         // Random variance (0.85-1.0)
         damage = Math.floor(damage * (0.85 + Math.random() * 0.15));
         
-        // Apply passive ability multiplier
-        const abilityMultiplier = AbilitySystem.getPassiveAbilityMultiplier(attacker);
-        damage = Math.floor(damage * abilityMultiplier);
+        // Apply passive multiplier
+        const passiveMultiplier = PassiveSystem.getPassiveMultiplier(attacker);
+        damage = Math.floor(damage * passiveMultiplier);
         
         // Reduce all damage by 75% for fairer battles
         damage = Math.floor(damage * 0.25);
@@ -1640,7 +1640,7 @@ const UIManager = {
                 <div class="text-5xl">${template.emoji}</div>
                 <h3>${template.name}</h3>
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
-                <p class="text-xs mt-2.5">${template.ability}</p>
+                <p class="text-xs mt-2.5">${template.passive}</p>
             `;
             card.onclick = () => Game.selectStarter(typeId);
             grid.appendChild(card);
@@ -1795,7 +1795,7 @@ const UIManager = {
             <div class="opacity-90 text-sm">Speed: ${pet.stats.speed}</div>
             <div class="opacity-90 text-sm">Special: ${pet.stats.special}</div>
             <br>
-            <div class="opacity-90 text-xs">Ability: ${template.ability}</div>
+            <div class="opacity-90 text-xs">passive: ${template.passive}</div>
         `;
         
         const hasSameRaceAlive = PetManager.pets.some(p => String(p.id) !== String(pet.id) && p.typeId === pet.typeId && p.currentHP > 0) ||
@@ -2533,4 +2533,6 @@ const UIManager = {
 
 // Initialize game when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => Game.init());
+
+
 

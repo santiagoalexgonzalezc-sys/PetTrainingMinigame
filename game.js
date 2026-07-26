@@ -8,7 +8,10 @@ const DataManager = {
             inventory: Economy.inventory,
             selectedPet: PetManager.selectedPet?.id || null,
             hasStarter: Game.hasStarter,
-            explorationCooldowns: Exploration.cooldowns
+            explorationCooldowns: Exploration.cooldowns,
+            player: PlayerSystem,
+            maxPartySize: PetManager.maxPartySize,
+            maxTotalPets: PetManager.maxTotalPets
         };
         localStorage.setItem("petSimulator", JSON.stringify(data));
     },
@@ -81,6 +84,37 @@ const DataManager = {
             PetManager.selectedPet = PetManager.pets.find(p => String(p.id) === String(data.selectedPet)) || null;
             Game.hasStarter = data.hasStarter || false;
             Exploration.cooldowns = data.explorationCooldowns || {};
+            
+            // Migration: initialize PlayerSystem if missing
+            if (data.player) {
+                PlayerSystem.level = data.player.level || 1;
+                PlayerSystem.xp = data.player.xp || 0;
+                PlayerSystem.battleStreak = data.player.battleStreak || 0;
+                PlayerSystem.bestStreak = data.player.bestStreak || 0;
+                PlayerSystem.unlockedZones = data.player.unlockedZones || ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh"];
+                PlayerSystem.totalBattles = data.player.totalBattles || 0;
+                PlayerSystem.totalCatches = data.player.totalCatches || 0;
+                PlayerSystem.totalTrainings = data.player.totalTrainings || 0;
+                PlayerSystem.totalExplores = data.player.totalExplores || 0;
+                PlayerSystem.lastDailyBonus = data.player.lastDailyBonus || null;
+                PlayerSystem.dailyActivities = data.player.dailyActivities ? new Set(data.player.dailyActivities) : new Set();
+            } else {
+                PlayerSystem.level = 1;
+                PlayerSystem.xp = 0;
+                PlayerSystem.battleStreak = 0;
+                PlayerSystem.bestStreak = 0;
+                PlayerSystem.unlockedZones = ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh"];
+                PlayerSystem.totalBattles = 0;
+                PlayerSystem.totalCatches = 0;
+                PlayerSystem.totalTrainings = 0;
+                PlayerSystem.totalExplores = 0;
+                PlayerSystem.lastDailyBonus = null;
+                PlayerSystem.dailyActivities = new Set();
+            }
+            
+            // Migration: restore maxPartySize and maxTotalPets from save or defaults
+            PetManager.maxPartySize = data.maxPartySize || 6;
+            PetManager.maxTotalPets = data.maxTotalPets || 300;
         }   
     },
 
@@ -665,6 +699,9 @@ const PetManager = {
         this.pets = this.pets.filter(p => String(p.id) !== String(pet2.id));
         this.storage = this.storage.filter(p => String(p.id) !== String(pet2.id));
         
+        // Award player XP for prestige fusion
+        addXP(10);
+        
         if (String(this.selectedPet?.id) === String(pet2.id)) {
             this.selectedPet = this.pets[0] || null;
         }
@@ -756,12 +793,80 @@ const Economy = {
     }
 };
 
+// ==================== PLAYER SYSTEM ====================
+const PlayerSystem = {
+    level: 1,
+    xp: 0,
+    battleStreak: 0,
+    bestStreak: 0,
+    unlockedZones: ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh"],
+    totalBattles: 0,
+    totalCatches: 0,
+    totalTrainings: 0,
+    totalExplores: 0,
+    lastDailyBonus: null,
+    dailyActivities: new Set()
+};
+
+function xpNeeded(level) {
+    return level * 150;
+}
+
+function addXP(amount) {
+    const oldLevel = PlayerSystem.level;
+    PlayerSystem.xp += amount;
+    let leveledUp = false;
+    while (PlayerSystem.xp >= xpNeeded(PlayerSystem.level) && PlayerSystem.level < 1000) {
+        PlayerSystem.xp -= xpNeeded(PlayerSystem.level);
+        PlayerSystem.level++;
+        leveledUp = true;
+    }
+    if (leveledUp && PlayerSystem.level > oldLevel) {
+        applyLevelUpRewards(oldLevel, PlayerSystem.level);
+    }
+    return leveledUp;
+}
+
+function applyLevelUpRewards(fromLevel, toLevel) {
+    // +1 to all stats on every owned pet for each level gained
+    PetManager.pets.forEach(pet => {
+        for (const stat in pet.bonusStats) {
+            pet.bonusStats[stat] += 1;
+        }
+        const template = PetTypes[pet.typeId];
+        if (template) {
+            pet.stats = PetManager.calculateStats(template, pet.level, pet);
+            const newMaxHP = PetManager.calculateMaxHP(template, pet.level, pet);
+            pet.currentHP = Math.min(pet.currentHP, newMaxHP);
+        }
+    });
+
+    // Every 5 levels: +1 team slot (cap at 12)
+    const teamSlotsGained = Math.floor(toLevel / 5) - Math.floor((fromLevel - 1) / 5);
+    PetManager.maxPartySize = Math.min(12, PetManager.maxPartySize + teamSlotsGained);
+
+    // Every 25 levels: +1 storage slot (cap at 300)
+    const storageSlotsGained = Math.floor(toLevel / 25) - Math.floor((fromLevel - 1) / 25);
+    PetManager.maxTotalPets = Math.min(300, PetManager.maxTotalPets + storageSlotsGained);
+}
+
+function getPlayerLevelBonus() {
+    return PlayerSystem.level;
+}
+
+function getExploreExplore() {
+    PlayerSystem.totalExplores++;
+}
+
 // ==================== EXPLORATION ====================
 const Exploration = {
     zones: {
         forest: {
             name: "Forest",
             emoji: "🌲",
+            unlockLevel: 1,
+            floorSize: 5,
+            maxFloor: 200,
             commonPets: ["leafBunny", "vineSnake", "mossBear", "glimmerMoth", "fieldDeer"],
             rarePets: ["mindCat", "dreamOwl", "moonPixie", "thornHog"],
             encounterRate: 1
@@ -769,6 +874,9 @@ const Exploration = {
         cave: {
             name: "Cave",
             emoji: "⛰️",
+            unlockLevel: 1,
+            floorSize: 5,
+            maxFloor: 200,
             commonPets: ["scaleLizard", "sparkDog", "crystalSeal", "duskBat"],
             rarePets: ["drakeWhelp", "frostPenguin", "shadowWolf", "frostBear", "crystalWyrm", "mindApe"],
             encounterRate: 1
@@ -776,6 +884,9 @@ const Exploration = {
         lake: {
             name: "Lake",
             emoji: "💧",
+            unlockLevel: 1,
+            floorSize: 5,
+            maxFloor: 200,
             commonPets: ["aquaTurtle", "mistFrog", "waveWhale"],
             rarePets: ["shockEel", "boltMouse"],
             encounterRate: 1
@@ -783,6 +894,9 @@ const Exploration = {
         mountain: {
             name: "Mountain",
             emoji: "🏔️",
+            unlockLevel: 5,
+            floorSize: 5,
+            maxFloor: 200,
             commonPets: ["flameCat", "zapBird", "scaleLizard", "frostBear", "cloudSheep", "glacierFox"],
             rarePets: ["drakeWhelp", "cosmicFox", "crystalWyrm", "voltageOx"],
             encounterRate: 1
@@ -790,6 +904,9 @@ const Exploration = {
         desert: {
             name: "Desert",
             emoji: "🏜️",
+            unlockLevel: 10,
+            floorSize: 5,
+            maxFloor: 200,
             commonPets: ["emberFox", "sparkDog", "scaleLizard", "cinderScorpion", "duneLion"],
             rarePets: ["flameCat", "drakeWhelp"],
             encounterRate: 1
@@ -797,6 +914,9 @@ const Exploration = {
         ocean: {
             name: "Ocean",
             emoji: "🌊",
+            unlockLevel: 15,
+            floorSize: 5,
+            maxFloor: 200,
             commonPets: ["waveWhale", "shockEel", "crystalSeal", "tidalCrab"],
             rarePets: ["aquaTurtle", "frostPenguin"],
             encounterRate: 1
@@ -804,6 +924,9 @@ const Exploration = {
         volcano: {
             name: "Volcano",
             emoji: "🌋",
+            unlockLevel: 20,
+            floorSize: 5,
+            maxFloor: 200,
             commonPets: ["flameCat", "emberFox", "sparkDog"],
             rarePets: ["drakeWhelp", "scaleLizard", "cinderScorpion", "cinderHawk"],
             encounterRate: 1
@@ -811,6 +934,9 @@ const Exploration = {
         swamp: {
             name: "Swamp",
             emoji: "🐊",
+            unlockLevel: 25,
+            floorSize: 5,
+            maxFloor: 200,
             commonPets: ["mistFrog", "vineSnake", "mossBear", "glimmerMoth", "marshCroc", "shadowWolf", "sunstoneBeetle"],
             rarePets: ["waveWhale", "dreamOwl", "frostBear"],
             encounterRate: 1
@@ -818,6 +944,9 @@ const Exploration = {
         sky: {
             name: "Sky",
             emoji: "☁️",
+            unlockLevel: 30,
+            floorSize: 5,
+            maxFloor: 200,
             commonPets: ["zapBird", "boltMouse", "dreamOwl", "cloudSheep"],
             rarePets: ["cosmicFox", "shockEel"],
             encounterRate: 1
@@ -825,25 +954,32 @@ const Exploration = {
         toxicMarsh: {
             name: "Toxic Marsh",
             emoji: "🧪",
+            unlockLevel: 35,
+            floorSize: 5,
+            maxFloor: 200,
             commonPets: ["venomAsp", "bogToad", "mistFrog", "vineSnake"],
             rarePets: ["shadowWolf", "cosmicFox", "moonPixie"],
             encounterRate: 1
         }
     },
     cooldowns: {},
-    cooldownTime: 1000, // 1 second
+    cooldownTime: 1000,
+    currentFloor: null,
+    selectedZoneId: null,
+    floorPage: 0,
 
-    explore(zoneId) {
+    explore(zoneId, floorIndex) {
         const now = Date.now();
         if (this.cooldowns[zoneId] && now < this.cooldowns[zoneId]) {
             return null;
         }
 
         this.cooldowns[zoneId] = now + this.cooldownTime;
+        this.currentFloor = { zoneId, floorIndex };
         const zone = this.zones[zoneId];
 
         if (Math.random() > zone.encounterRate) {
-            return null; // No encounter
+            return null;
         }
 
         // Determine pet rarity
@@ -851,32 +987,15 @@ const Exploration = {
         const petPool = isRare ? zone.rarePets : zone.commonPets;
         const petType = petPool[Math.floor(Math.random() * petPool.length)];
 
-        // Generate wild pet level
-        function getWildPetLevel() {
-            const playerLevel = PetManager.selectedPet.level;
-            if (playerLevel <= 5) {
-                return playerLevel;
-            }
-            if (playerLevel < 20) {
-                return Math.floor(Math.random() * playerLevel) + 1;
-            }
-            if (playerLevel < 30) {
-                return Math.floor(Math.random() * (playerLevel - 10 + 1)) + 10;
-            }
-            const bracket = Math.floor(playerLevel / 20) * 20;
-            const minLevel = bracket;
-            const maxLevel = Math.min(bracket + 19, 1000);
-            return Math.floor(Math.random() * (maxLevel - minLevel + 1)) + minLevel;
-        }
+        // Generate wild pet level from floor index
+        const level = getWildPetLevelForFloor(floorIndex, zone.floorSize);
 
-        const level = getWildPetLevel();
-        
         // Shiny roll: 1 in 500
         const isShiny = Math.random() < 0.002;
-        
+
         // Tier roll based on zone
         const tier = rollTierForZone(zoneId);
-        
+
         const wildPet = PetManager.createPet(petType, level, { shiny: isShiny, tier });
 
         if (!wildPet || !wildPet.stats) {
@@ -886,7 +1005,7 @@ const Exploration = {
 
         return { pet: wildPet, isRare, isShiny };
     },
-    
+
     getCooldownRemaining(zoneId) {
         if (!this.cooldowns[zoneId]) return 0;
         const remaining = this.cooldowns[zoneId] - Date.now();
@@ -895,14 +1014,20 @@ const Exploration = {
 };
 
 // Tier helpers
+function getWildPetLevelForFloor(floorIndex, floorSize) {
+    const floorMin = (floorIndex - 1) * floorSize + 1;
+    const floorMax = floorIndex * floorSize;
+    return Math.floor(Math.random() * (floorMax - floorMin + 1)) + floorMin;
+}
+
 function rollTierForZone(zoneId) {
     const tierRoll = Math.random();
     let tier;
-    if (PetManager.selectedPet.level < 50) {
+    if (PlayerSystem.level < 50) {
         tier = randomTier("D");
     } else if (tierRoll < 0.05) tier = randomTier("A");
     else if (tierRoll < 0.10) tier = randomTier("B");
-    else if (tierRoll < 0.30) tier = randomTier("C");
+    else if (tierRoll < 0.50) tier = randomTier("C");
     else tier = randomTier("D");
     return tier;
 }
@@ -1478,13 +1603,33 @@ const BattleSystem = {
     endBattle(playerWon) {
         this.active = false;
         
-        const xpReward = this.enemyPet.level * 20;
+        const xpReward = this.enemyPet.level * 10;
         const moneyReward = this.enemyPet.level * 20;
         
         if (playerWon) {
-            this.petsDefeated =  this.petsDefeated + 1
-            console.log(this.petsDefeated)
-            this.addLog(`🎉 Victory! +${xpReward} XP, +${moneyReward} Gold`);
+            this.petsDefeated = this.petsDefeated + 1;
+            PlayerSystem.totalBattles++;
+            PlayerSystem.battleStreak++;
+            if (PlayerSystem.battleStreak > PlayerSystem.bestStreak) {
+                PlayerSystem.bestStreak = PlayerSystem.battleStreak;
+            }
+            
+            // Win streak bonus multiplier
+            const streakMultiplier = 1 + Math.min(PlayerSystem.battleStreak * 0.1, 1.0);
+            
+            // Type advantage bonus
+            const playerTemplate = PetTypes[this.playerPet.typeId];
+            const enemyTemplate = PetTypes[this.enemyPet.typeId];
+            const typeMult = this.getTypeEffectiveness(playerTemplate.type, enemyTemplate.type);
+            const typeAdvantageMultiplier = typeMult > 1 ? 1.2 : 1;
+            
+            const totalXP = Math.floor(xpReward * streakMultiplier * typeAdvantageMultiplier);
+            const playerLevelUp = addXP(totalXP);
+            
+            this.addLog(`🎉 Victory! +${totalXP} XP, +${moneyReward} Gold`);
+            if (playerLevelUp) {
+                this.addLog(`⬆ Player Level Up! Now level ${PlayerSystem.level}`);
+            }
             
             // Update actual player pet
             const actualPet = PetManager.pets.find(p => String(p.id) === String(this.playerPet.id));
@@ -1498,6 +1643,8 @@ const BattleSystem = {
             
             Economy.money += moneyReward;
         } else {
+            PlayerSystem.battleStreak = 0;
+            PlayerSystem.totalBattles++;
             this.addLog(`💀 Defeat! Your pet needs healing...`);
             
             // Update actual player pet
@@ -1515,6 +1662,7 @@ const BattleSystem = {
             UIManager.renderPets();
             UIManager.updateCurrency();
             UIManager.updateTeamPower();
+            UIManager.updatePlayerLevelDisplay();
         }, 500);
     },
 
@@ -1649,6 +1797,14 @@ const TrainingSystem = {
         PetManager.gainXP(pet, this.sessionXP);
         pet.lastTraining = Date.now();
         
+        // Award player XP (half of training session XP)
+        const playerXP = Math.floor(this.sessionXP * 0.5);
+        if (playerXP > 0) {
+            addXP(playerXP);
+        }
+        
+        PlayerSystem.totalTrainings++;
+        
         DataManager.save();
         
         setTimeout(() => {
@@ -1656,6 +1812,7 @@ const TrainingSystem = {
             UIManager.showScreen("petScreen");
             UIManager.updatePetScreen();
             UIManager.renderPets();
+            UIManager.updatePlayerLevelDisplay();
         }, 300);
     },
 
@@ -1753,6 +1910,7 @@ const UIManager = {
         if (screenId === "storageScreen") {
             this.renderStorage();
         }
+        this.updatePlayerLevelDisplay();
     },
 
     updateCurrency() {
@@ -1764,6 +1922,20 @@ const UIManager = {
         const party = TeamPowerSystem.getPartyPower();
         document.getElementById("teamPowerDisplay").innerHTML = `⚔️ Total: <span>${total}</span>`;
         document.getElementById("partyPowerDisplay").innerHTML = `🛡️ Party: <span>${party}</span>`;
+    },
+
+    updatePlayerLevelDisplay() {
+        const levelDisplay = document.getElementById("playerLevelDisplay");
+        const xpBarDisplay = document.getElementById("playerXpBar");
+        if (levelDisplay) {
+            levelDisplay.innerText = `Lv ${PlayerSystem.level}`;
+        }
+        if (xpBarDisplay) {
+            const xpNeeded = xpNeeded(PlayerSystem.level);
+            const xpPercent = (PlayerSystem.xp / xpNeeded) * 100;
+            xpBarDisplay.style.width = xpPercent + "%";
+            document.getElementById("playerXpText").innerText = `${PlayerSystem.xp}/${xpNeeded}`;
+        }
     },
 
     // Starter Screen
@@ -2030,17 +2202,20 @@ const UIManager = {
         
         for (const [zoneId, zone] of Object.entries(Exploration.zones)) {
             const cooldown = Exploration.getCooldownRemaining(zoneId);
+            const isLocked = PlayerSystem.level < zone.unlockLevel;
             const card = document.createElement("div");
-            card.className = `bg-white/10 rounded-2xl p-5 cursor-pointer transition-all duration-200 ${cooldown > 0 ? "opacity-50 cursor-not-allowed" : "hover:bg-white/12 hover:-translate-y-1"}`;
+            card.className = `bg-white/10 rounded-2xl p-5 cursor-pointer transition-all duration-200 ${cooldown > 0 || isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-white/12 hover:-translate-y-1"}`;
             card.innerHTML = `
                 <div class="text-5xl">${zone.emoji}</div>
                 <h3>${zone.name}</h3>
                 <p class="text-xs">Encounter Rate: ${(zone.encounterRate * 100).toFixed(0)}%</p>
                 ${cooldown > 0 ? `<p class="text-red-400">Cooldown: ${cooldown}s</p>` : ""}
+                ${isLocked ? `<p class="text-red-400 text-xs mt-1">🔒 Unlock at Lv ${zone.unlockLevel}</p>` : ""}
+                ${!isLocked && cooldown === 0 ? `<p class="text-green-400 text-xs mt-1">Tap to select floor</p>` : ""}
             `;
             
-            if (cooldown === 0) {
-                card.onclick = () => this.exploreZone(zoneId);
+            if (cooldown === 0 && !isLocked) {
+                card.onclick = () => this.showFloorOverlay(zoneId);
             }
             
             grid.appendChild(card);
@@ -2053,7 +2228,86 @@ const UIManager = {
             return;
         }
         
-        const result = Exploration.explore(zoneId);
+        const zone = Exploration.zones[zoneId];
+        if (PlayerSystem.level < zone.unlockLevel) {
+            alert(`Reach player level ${zone.unlockLevel} to unlock ${zone.name}!`);
+            return;
+        }
+        
+        // Open floor overlay for zone selection
+        this.showFloorOverlay(zoneId);
+    },
+
+    showFloorOverlay(zoneId) {
+        Exploration.selectedZoneId = zoneId;
+        Exploration.floorPage = 0;
+        this.renderFloorOverlay();
+        document.getElementById("floorOverlay").classList.remove("hidden");
+    },
+
+    renderFloorOverlay() {
+        const zoneId = Exploration.selectedZoneId;
+        const zone = Exploration.zones[zoneId];
+        const grid = document.getElementById("floorGrid");
+        grid.innerHTML = "";
+        
+        const floorsPerPage = 10;
+        const totalPages = Math.ceil(zone.maxFloor / floorsPerPage);
+        const startFloor = Exploration.floorPage * floorsPerPage + 1;
+        const endFloor = Math.min(startFloor + floorsPerPage - 1, zone.maxFloor);
+        
+        for (let i = startFloor; i <= endFloor; i++) {
+            const floorMin = (i - 1) * zone.floorSize + 1;
+            const floorMax = i * zone.floorSize;
+            const isLocked = PlayerSystem.level < floorMin;
+            const isRecommended = PlayerSystem.level >= floorMin && PlayerSystem.level <= floorMax;
+            
+            const card = document.createElement("div");
+            card.className = `bg-white/10 rounded-xl p-3 text-center cursor-pointer transition-all duration-150 ${isLocked ? "opacity-40 cursor-not-allowed" : "hover:bg-white/12 hover:-translate-y-0.5"} ${isRecommended ? "border-2 border-green-400" : ""}`;
+            card.innerHTML = `
+                <div class="text-lg font-bold">Floor ${i}</div>
+                <div class="text-xs opacity-70">Levels ${floorMin}-${floorMax}</div>
+                ${isLocked ? `<div class="text-red-400 text-xs mt-1">🔒 Requires Lv ${floorMin}</div>` : ""}
+                ${isRecommended ? `<div class="text-green-400 text-xs mt-1">⭐ Recommended</div>` : ""}
+            `;
+            
+            if (!isLocked) {
+                card.onclick = () => {
+                    document.getElementById("floorOverlay").classList.add("hidden");
+                    this.doExploreWithFloor(zoneId, i);
+                };
+            }
+            
+            grid.appendChild(card);
+        }
+        
+        // Update page info
+        document.getElementById("floorPageInfo").innerText = `Page ${Exploration.floorPage + 1}/${totalPages}`;
+        document.getElementById("floorPrevBtn").disabled = Exploration.floorPage === 0;
+        document.getElementById("floorNextBtn").disabled = Exploration.floorPage >= totalPages - 1;
+        document.getElementById("floorZoneName").innerText = `Floors — ${zone.emoji} ${zone.name}`;
+    },
+
+    floorPrevPage() {
+        if (Exploration.floorPage > 0) {
+            Exploration.floorPage--;
+            this.renderFloorOverlay();
+        }
+    },
+
+    floorNextPage() {
+        const zone = Exploration.zones[Exploration.selectedZoneId];
+        if (zone) {
+            const totalPages = Math.ceil(zone.maxFloor / 10);
+            if (Exploration.floorPage < totalPages - 1) {
+                Exploration.floorPage++;
+                this.renderFloorOverlay();
+            }
+        }
+    },
+
+    doExploreWithFloor(zoneId, floorIndex) {
+        const result = Exploration.explore(zoneId, floorIndex);
         this.renderExploration();
         
         if (result && result.pet && result.pet.stats) {

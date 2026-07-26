@@ -20,6 +20,10 @@
 </head>
 <body class="m-0 font-sans bg-gradient-to-b from-gray-900 to-black text-white text-center min-h-screen">
     <div class="fixed top-2.5 right-2.5 bg-black/50 px-5 py-2.5 rounded-full z-50 flex flex-col items-end gap-1" id="topRightStats">
+        <div id="playerLevelDisplay">Lv 1</div>
+        <div class="w-32 h-3 bg-gray-800 rounded-full overflow-hidden">
+            <div id="playerXpBar" class="h-full bg-gradient-to-r from-green-400 to-blue-400 transition-all duration-300" style="width: 0%"></div>
+        </div>
         <div id="currencyDisplay">💰 <span class="text-yellow-400 font-bold">100</span></div>
         <div id="teamPowerDisplay">⚔️ <span class="text-red-400 font-bold">0</span></div>
         <div id="partyPowerDisplay">🛡️ <span class="text-blue-400 font-bold">0</span></div>
@@ -109,6 +113,22 @@
         <div id="zoneGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-5 my-5"></div>
         <br>
         <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
+    </div>
+
+    <!-- FLOOR SELECTION OVERLAY -->
+    <div id="floorOverlay" class="hidden fixed inset-0 bg-black/90 z-50 p-5 overflow-y-auto">
+        <div class="max-w-4xl mx-auto my-5">
+            <h2 id="floorZoneName">Select Floor</h2>
+            <div id="floorGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl mx-5 my-5"></div>
+            <div class="flex items-center justify-center gap-4 my-4">
+                <button id="floorPrevBtn" onclick="UIManager.floorPrevPage()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">◀ Prev</button>
+                <span id="floorPageInfo" class="text-sm opacity-80">Page 1/1</span>
+                <button id="floorNextBtn" onclick="UIManager.floorNextPage()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Next ▶</button>
+            </div>
+            <div class="text-center">
+                <button onclick="document.getElementById('floorOverlay').classList.add('hidden')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <!-- BATTLE SCREEN -->

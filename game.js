@@ -9,7 +9,19 @@ const DataManager = {
             selectedPet: PetManager.selectedPet?.id || null,
             hasStarter: Game.hasStarter,
             explorationCooldowns: Exploration.cooldowns,
-            player: PlayerSystem,
+            player: {
+                level: PlayerSystem.level,
+                xp: PlayerSystem.xp,
+                battleStreak: PlayerSystem.battleStreak,
+                bestStreak: PlayerSystem.bestStreak,
+                unlockedZones: PlayerSystem.unlockedZones,
+                totalBattles: PlayerSystem.totalBattles,
+                totalCatches: PlayerSystem.totalCatches,
+                totalTrainings: PlayerSystem.totalTrainings,
+                totalExplores: PlayerSystem.totalExplores,
+                lastDailyBonus: PlayerSystem.lastDailyBonus,
+                dailyActivities: Array.from(PlayerSystem.dailyActivities)
+            },
             maxPartySize: PetManager.maxPartySize,
             maxTotalPets: PetManager.maxTotalPets
         };
@@ -97,7 +109,7 @@ const DataManager = {
                 PlayerSystem.totalTrainings = data.player.totalTrainings || 0;
                 PlayerSystem.totalExplores = data.player.totalExplores || 0;
                 PlayerSystem.lastDailyBonus = data.player.lastDailyBonus || null;
-                PlayerSystem.dailyActivities = data.player.dailyActivities ? new Set(data.player.dailyActivities) : new Set();
+                PlayerSystem.dailyActivities = new Set(Array.isArray(data.player.dailyActivities) ? data.player.dailyActivities : []);
             } else {
                 PlayerSystem.level = 1;
                 PlayerSystem.xp = 0;

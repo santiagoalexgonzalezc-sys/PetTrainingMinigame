@@ -20,7 +20,10 @@
 </head>
 <body class="m-0 font-sans bg-gradient-to-b from-gray-900 to-black text-white text-center min-h-screen">
     <div class="fixed top-2.5 right-2.5 bg-black/50 px-5 py-2.5 rounded-full z-50 flex flex-col items-end gap-1" id="topRightStats">
-        <div id="playerLevelDisplay">Lv 1</div>
+        <div class="flex items-center gap-2">
+            <div id="playerLevelDisplay">Lv 1</div>
+            <button id="profileBtn" onclick="UIManager.toggleProfile()" class="w-6 h-6 bg-red-600 rounded-full text-white text-xs font-bold flex items-center justify-center cursor-pointer border-none hover:scale-110 transition-transform">?</button>
+        </div>
         <div class="w-32 h-3 bg-gray-800 rounded-full overflow-hidden">
             <div id="playerXpBar" class="h-full bg-gradient-to-r from-green-400 to-blue-400 transition-all duration-300" style="width: 0%"></div>
         </div>
@@ -129,6 +132,17 @@
             <div class="text-center">
                 <button onclick="document.getElementById('floorOverlay').classList.add('hidden')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
             </div>
+        </div>
+    </div>
+
+    <!-- PROFILE OVERLAY -->
+    <div id="profileOverlay" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-5" onclick="if(event.target===this)UIManager.toggleProfile()">
+        <div class="bg-gray-900/95 rounded-2xl p-5 max-w-sm w-full border border-white/10">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold">Profile</h2>
+                <button onclick="UIManager.toggleProfile()" class="text-white text-xl cursor-pointer bg-transparent border-none">✕</button>
+            </div>
+            <div id="profileStats" class="space-y-2 text-sm"></div>
         </div>
     </div>
 

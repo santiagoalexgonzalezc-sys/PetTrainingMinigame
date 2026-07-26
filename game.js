@@ -1938,8 +1938,12 @@ const UIManager = {
         const levelDisplay = document.getElementById("playerLevelDisplay");
         const xpBarDisplay = document.getElementById("playerXpBar");
         const xpTextDisplay = document.getElementById("playerXpText");
+        const profileBtn = document.getElementById("profileBtn");
         if (levelDisplay) {
             levelDisplay.innerText = `Lv ${PlayerSystem.level}`;
+        }
+        if (profileBtn) {
+            profileBtn.innerText = PlayerSystem.level;
         }
         if (xpBarDisplay) {
             const needed = xpNeeded(PlayerSystem.level);
@@ -1949,6 +1953,48 @@ const UIManager = {
                 xpTextDisplay.innerText = `${PlayerSystem.xp}/${needed}`;
             }
         }
+    },
+
+    toggleProfile() {
+        const overlay = document.getElementById("profileOverlay");
+        if (!overlay) return;
+        const isHidden = overlay.classList.contains("hidden");
+        if (isHidden) {
+            this.updateProfileStats();
+            overlay.classList.remove("hidden");
+        } else {
+            overlay.classList.add("hidden");
+        }
+    },
+
+    updateProfileStats() {
+        const container = document.getElementById("profileStats");
+        if (!container) return;
+
+        const partyCount = PetManager.pets.length;
+        const totalCount = PetManager.pets.length + PetManager.storage.length;
+        const totalPower = TeamPowerSystem.getTotalPower();
+        const partyPower = TeamPowerSystem.getPartyPower();
+        const zonesUnlocked = PlayerSystem.unlockedZones.length;
+
+        const stats = [
+            { label: "Level", value: PlayerSystem.level, color: "" },
+            { label: "XP", value: `${PlayerSystem.xp} / ${xpNeeded(PlayerSystem.level)}`, color: "" },
+            { label: "Party Pets", value: `${partyCount} / ${PetManager.maxPartySize}`, color: "" },
+            { label: "Total Pets", value: `${totalCount} / ${PetManager.maxTotalPets}`, color: "" },
+            { label: "Total Catches", value: PlayerSystem.totalCatches, color: "" },
+            { label: "Total Battles", value: PlayerSystem.totalBattles, color: "" },
+            { label: "Best Streak", value: PlayerSystem.bestStreak, color: "" },
+            { label: "Total Trainings", value: PlayerSystem.totalTrainings, color: "" },
+            { label: "Total Explores", value: PlayerSystem.totalExplores, color: "" },
+            { label: "Zones Unlocked", value: `${zonesUnlocked} / ${Object.keys(Exploration.zones).length}`, color: "" },
+            { label: "Total Power", value: totalPower, color: "text-yellow-400" },
+            { label: "Party Power", value: partyPower, color: "text-blue-400" },
+        ];
+
+        container.innerHTML = stats
+            .map(s => `<div class="flex justify-between"><span>${s.label}</span><span class="${s.color} font-bold">${s.value}</span></div>`)
+            .join("");
     },
 
     // Starter Screen

@@ -898,11 +898,11 @@ const Exploration = {
 function rollTierForZone(zoneId) {
     const tierRoll = Math.random();
     let tier;
-    if (PetManager.selectedPet.level < 20) {
+    if (PetManager.selectedPet.level < 50) {
         tier = randomTier("D");
     } else if (tierRoll < 0.05) tier = randomTier("A");
-    else if (tierRoll < 0.20) tier = randomTier("B");
-    else if (tierRoll < 0.50) tier = randomTier("C");
+    else if (tierRoll < 0.10) tier = randomTier("B");
+    else if (tierRoll < 0.30) tier = randomTier("C");
     else tier = randomTier("D");
     return tier;
 }

@@ -840,10 +840,10 @@ function addXP(amount) {
 }
 
 function applyLevelUpRewards(fromLevel, toLevel) {
-    // +1 to all stats on every owned pet for each level gained
+    const levelsGained = toLevel - fromLevel;
     PetManager.pets.forEach(pet => {
         for (const stat in pet.bonusStats) {
-            pet.bonusStats[stat] += 1;
+            pet.bonusStats[stat] += levelsGained;
         }
         const template = PetTypes[pet.typeId];
         if (template) {
@@ -853,12 +853,10 @@ function applyLevelUpRewards(fromLevel, toLevel) {
         }
     });
 
-    // Every 5 levels: +1 team slot (cap at 12)
-    const teamSlotsGained = Math.floor(toLevel / 5) - Math.floor((fromLevel - 1) / 5);
+    const teamSlotsGained = Math.floor(toLevel / 5) - Math.floor(fromLevel / 5);
     PetManager.maxPartySize = Math.min(12, PetManager.maxPartySize + teamSlotsGained);
 
-    // Every 25 levels: +1 storage slot (cap at 300)
-    const storageSlotsGained = Math.floor(toLevel / 25) - Math.floor((fromLevel - 1) / 25);
+    const storageSlotsGained = Math.floor(toLevel / 25) - Math.floor(fromLevel / 25);
     PetManager.maxTotalPets = Math.min(300, PetManager.maxTotalPets + storageSlotsGained);
 }
 

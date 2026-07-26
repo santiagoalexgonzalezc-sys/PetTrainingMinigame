@@ -1937,14 +1937,17 @@ const UIManager = {
     updatePlayerLevelDisplay() {
         const levelDisplay = document.getElementById("playerLevelDisplay");
         const xpBarDisplay = document.getElementById("playerXpBar");
+        const xpTextDisplay = document.getElementById("playerXpText");
         if (levelDisplay) {
             levelDisplay.innerText = `Lv ${PlayerSystem.level}`;
         }
         if (xpBarDisplay) {
-            const xpNeeded = xpNeeded(PlayerSystem.level);
-            const xpPercent = (PlayerSystem.xp / xpNeeded) * 100;
+            const needed = xpNeeded(PlayerSystem.level);
+            const xpPercent = (PlayerSystem.xp / needed) * 100;
             xpBarDisplay.style.width = xpPercent + "%";
-            document.getElementById("playerXpText").innerText = `${PlayerSystem.xp}/${xpNeeded}`;
+            if (xpTextDisplay) {
+                xpTextDisplay.innerText = `${PlayerSystem.xp}/${needed}`;
+            }
         }
     },
 

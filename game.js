@@ -149,6 +149,13 @@ const PetTypes = {
         type: "fire",
         baseStats: { hp: 65, attack: 52, defense: 43, speed: 65, special: 60 },
         passive: "Blaze - Low HP increases Fire damage",
+        ability: {
+            name: "Fireball",
+            type: "fire",
+            cooldown: 2,
+            description: "Deals based on special + 5 flat. Leaves the opponent burning for the rest of the battle (25% of initial damage per turn).",
+            burn: true
+        },
         evolution: ["Ember Fox", "Inferno Fox", "Phoenix Lord"]
     },
     flameCat: {
@@ -414,7 +421,7 @@ const PetTypes = {
         name: "Shadow Wolf",
         emoji: "🐺",
         type: "dark",
-        baseStats: { hp: 70, attack: 65, defense: 45, speed: 62, special: 50 },
+        baseStats: { hp: 70, attack: 55, defense: 45, speed: 62, special: 60 },
         passive: "Alpha Hunter - Boosts attack when facing an stronger foe. Deals 1.5x damage if foe has higher total power. Bleeding Claw (Ability) - Leaves the enemy bleeding for the rest of the battle.",
         ability: {
             name: "Bleeding Claw",
@@ -1323,6 +1330,8 @@ const BattleSystem = {
     paralyzed: null,
     bleeding: null,
     bleedDamage: 0,
+    burning: null,
+    burnDamage: 0,
 
     typeEffectiveness: {
         fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5, dragon: 0.5, fairy: 2, dark: 1, normal: 1 },
@@ -1355,6 +1364,8 @@ const BattleSystem = {
         this.paralyzed = null;
         this.bleeding = null;
         this.bleedDamage = 0;
+        this.burning = null;
+        this.burnDamage = 0;
         
         // Determine who goes first by speed
         const playerSpeed = this.playerPet.stats.speed;
@@ -1532,6 +1543,9 @@ this.addLog(logText);
          
          // Apply bleed damage after each attack
          this.applyBleedDamage();
+         
+         // Apply burn damage after each attack
+         this.applyBurnDamage();
      },
  
      applyBleedDamage() {
@@ -1544,6 +1558,24 @@ this.addLog(logText);
              UIManager.updateBattleScreen();
              if (target.currentHP <= 0) {
                  if (this.bleeding === "enemy") {
+                     this.endBattle(true);
+                 } else {
+                     this.endBattle(false);
+                 }
+             }
+         }
+     },
+
+     applyBurnDamage() {
+         if (this.burning && this.burnDamage > 0 && this.active) {
+             const burnDmg = Math.max(1, Math.floor(this.burnDamage * 0.25));
+             const target = this.burning === "enemy" ? this.enemyPet : this.playerPet;
+             const targetName = this.burning === "enemy" ? this.getPetName(this.enemyPet) : this.getPetName(this.playerPet);
+             target.currentHP = Math.max(0, target.currentHP - burnDmg);
+             this.addLog(`🔥 Burning deals ${burnDmg} damage to ${targetName}!`);
+             UIManager.updateBattleScreen();
+             if (target.currentHP <= 0) {
+                 if (this.burning === "enemy") {
                      this.endBattle(true);
                  } else {
                      this.endBattle(false);
@@ -1683,6 +1715,50 @@ setTimeout(() => this.enemyTurn(), 1000);
                      this.endBattle(true);
                      return;
                  }
+             }
+             
+             this.playerAbilityCooldown = ability.cooldown;
+             this.isPlayerTurn = false;
+             UIManager.updateBattleScreen();
+             
+             setTimeout(() => this.enemyTurn(), 1000);
+         }
+         
+         // Fireball implementation (Ember Fox ability)
+         if (ability.name === "Fireball" && ability.burn) {
+             if (this.playerAbilityCooldown > 0) return;
+             
+             // Fireball damage: special stat + 5 flat
+             const specialStat = attacker.stats.special;
+             const baseDamage = specialStat + 5;
+             
+             const defenderTemplate = PetTypes[this.enemyPet.typeId];
+             const typeMult = this.getTypeEffectiveness("fire", defenderTemplate.type);
+             
+             let rawDmg = Math.floor((baseDamage * 40) / Math.max(1, defenderTemplate.stats.defense));
+             rawDmg = Math.floor(rawDmg * typeMult);
+             rawDmg = Math.floor(rawDmg * 0.25); // Global damage reduction
+             
+             this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - rawDmg);
+             
+             // Set burning state
+             this.burning = "enemy";
+             this.burnDamage = rawDmg;
+             
+             const attackerName = this.getPetName(this.playerPet);
+             const defenderName = this.getPetName(this.enemyPet);
+             
+             let logText = `${attackerName} used ${ability.name}! Deals ${rawDmg} damage to ${defenderName}`;
+             if (typeMult > 1) logText += " (Super effective!)";
+             else if (typeMult < 1) logText += " (Not very effective)";
+             
+             this.addLog(logText);
+             this.addLog(`🔥 ${defenderName} is now burning!`);
+             
+             if (this.enemyPet.currentHP <= 0) {
+                 UIManager.updateBattleScreen();
+                 this.endBattle(true);
+                 return;
              }
              
              this.playerAbilityCooldown = ability.cooldown;
@@ -2483,9 +2559,9 @@ const UIManager = {
         
         document.getElementById("playerPetSprite").innerText = playerTemplate.emoji;
         document.getElementById("enemyPetSprite").innerText = enemyTemplate.emoji;
-        document.getElementById("playerPetName").innerText = PetManager.getEvolution(player) + (BattleSystem.bleeding === "player" ? " 🩸" : "");
+        document.getElementById("playerPetName").innerText = PetManager.getEvolution(player) + (BattleSystem.bleeding === "player" ? " 🩸" : "") + (BattleSystem.burning === "player" ? " 🔥" : "");
         document.getElementById("playerTier").innerText = `Tier: ${player.tier || "D1"}`;
-        document.getElementById("enemyPetName").innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy) + (BattleSystem.bleeding === "enemy" ? " 🩸" : "");
+        document.getElementById("enemyPetName").innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy) + (BattleSystem.bleeding === "enemy" ? " 🩸" : "") + (BattleSystem.burning === "enemy" ? " 🔥" : "");
         document.getElementById("enemyTier").innerText = `Tier: ${enemy.tier || "D1"}` + (enemy.shiny ? " ✨" : "");
         document.getElementById("enemyPetLevel").innerText = `Level ${enemy.level}`;
         

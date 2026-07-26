@@ -1619,7 +1619,7 @@ const BattleSystem = {
     endBattle(playerWon) {
         this.active = false;
         
-        const xpReward = this.enemyPet.level * 10;
+        const petXPReward = this.enemyPet.level * 20;
         const moneyReward = this.enemyPet.level * 20;
         
         if (playerWon) {
@@ -1630,16 +1630,18 @@ const BattleSystem = {
                 PlayerSystem.bestStreak = PlayerSystem.battleStreak;
             }
             
-            // Win streak bonus multiplier
+            // Win streak bonus multiplier (player XP only)
             const streakMultiplier = 1 + Math.min(PlayerSystem.battleStreak * 0.1, 1.0);
             
-            // Type advantage bonus
+            // Type advantage bonus (player XP only)
             const playerTemplate = PetTypes[this.playerPet.typeId];
             const enemyTemplate = PetTypes[this.enemyPet.typeId];
             const typeMult = this.getTypeEffectiveness(playerTemplate.type, enemyTemplate.type);
             const typeAdvantageMultiplier = typeMult > 1 ? 1.2 : 1;
             
-            const totalXP = Math.floor(xpReward * streakMultiplier * typeAdvantageMultiplier);
+            // Player XP (per plan: enemy.level * 10, with streak & type bonuses)
+            const playerBaseXP = this.enemyPet.level * 10;
+            const totalXP = Math.floor(playerBaseXP * streakMultiplier * typeAdvantageMultiplier);
             const playerLevelUp = addXP(totalXP);
             
             this.addLog(`🎉 Victory! +${totalXP} XP, +${moneyReward} Gold`);
@@ -1647,12 +1649,12 @@ const BattleSystem = {
                 this.addLog(`⬆ Player Level Up! Now level ${PlayerSystem.level}`);
             }
             
-            // Update actual player pet
+            // Update actual player pet with full XP
             const actualPet = PetManager.pets.find(p => String(p.id) === String(this.playerPet.id));
             if (actualPet) {
                 const oldMaxHP = PetManager.calculateMaxHP(PetTypes[actualPet.typeId], actualPet.level, actualPet);
                 const hpPercent = this.playerPet.currentHP / oldMaxHP;
-                PetManager.gainXP(actualPet, xpReward);
+                PetManager.gainXP(actualPet, petXPReward);
                 const newMaxHP = PetManager.calculateMaxHP(PetTypes[actualPet.typeId], actualPet.level, actualPet);
                 actualPet.currentHP = Math.floor(newMaxHP * hpPercent);
             }

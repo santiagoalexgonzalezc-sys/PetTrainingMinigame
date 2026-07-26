@@ -38,6 +38,7 @@ const DataManager = {
             PetManager.pets.forEach(p => {
                 if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+                if (p.levelBonusStats === undefined) p.levelBonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (p.shiny === undefined) p.shiny = false;
                 if (p.shinyBonus === undefined) p.shinyBonus = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (!Array.isArray(p.equipment)) {
@@ -67,6 +68,7 @@ const DataManager = {
             PetManager.storage.forEach(p => {
                 if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+                if (p.levelBonusStats === undefined) p.levelBonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (p.shiny === undefined) p.shiny = false;
                 if (p.shinyBonus === undefined) p.shinyBonus = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (!Array.isArray(p.equipment)) {
@@ -531,6 +533,7 @@ const PetManager = {
             lastTraining: null,
             prestigeLevel: 0,
             bonusStats: { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 },
+            levelBonusStats: { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 },
             shiny: shiny,
             shinyBonus: shinyBonus,
             tier: tier,
@@ -562,10 +565,11 @@ const PetManager = {
     calculateMaxHP(template, level, pet) {
         const base = Math.floor((template.baseStats.hp * 2 * level) / 100) + level + 10;
         const bonus = pet?.bonusStats?.hp || 0;
+        const levelBonus = pet?.levelBonusStats?.hp || 0;
         const shinyBonus = pet?.shinyBonus?.hp || 0;
         const tierBonus = pet?.tierBonus || 0;
         const equipStats = EquipmentSystem.getStats(pet) || { hp: 0 };
-        return base + bonus + shinyBonus + tierBonus + (equipStats.hp || 0);
+        return base + bonus + levelBonus + shinyBonus + tierBonus + (equipStats.hp || 0);
     },
 
     calculateStats(template, level, pet) {
@@ -574,10 +578,11 @@ const PetManager = {
             if (stat === "hp") continue;
             const base = Math.floor((template.baseStats[stat] * 2 * level) / 100) + 5;
             const bonus = pet?.bonusStats?.[stat] || 0;
+            const levelBonus = pet?.levelBonusStats?.[stat] || 0;
             const shinyBonus = pet?.shinyBonus?.[stat] || 0;
             const tierBonus = pet?.tierBonus || 0;
             const equipStats = EquipmentSystem.getStats(pet) || {};
-            stats[stat] = base + bonus + shinyBonus + tierBonus + (equipStats[stat] || 0);
+            stats[stat] = base + bonus + levelBonus + shinyBonus + tierBonus + (equipStats[stat] || 0);
         }
         return stats;
     },
@@ -703,7 +708,8 @@ const PetManager = {
             speed: pet1.prestigeLevel * 5,
             special: pet1.prestigeLevel * 5
         };
-        
+        pet1.levelBonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+
         pet1.stats = PetManager.calculateStats(template, pet1.level, pet1);
         const newMaxHP = PetManager.calculateMaxHP(template, pet1.level, pet1);
         pet1.currentHP = Math.min(pet1.currentHP, newMaxHP);
@@ -842,8 +848,8 @@ function addXP(amount) {
 function applyLevelUpRewards(fromLevel, toLevel) {
     const levelsGained = toLevel - fromLevel;
     PetManager.pets.forEach(pet => {
-        for (const stat in pet.bonusStats) {
-            pet.bonusStats[stat] += levelsGained;
+        for (const stat in pet.levelBonusStats) {
+            pet.levelBonusStats[stat] += levelsGained;
         }
         const template = PetTypes[pet.typeId];
         if (template) {

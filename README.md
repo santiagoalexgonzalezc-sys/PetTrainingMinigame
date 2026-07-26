@@ -2,7 +2,7 @@
 
 A browser-based pet collection and training game inspired by classic monster-taming games. Open `index.html` to play — no server or installation needed.
 
-**33 pet types** across 11 elements, **10 exploration zones**, turn-based battles, prestige fusion, a timing-based training mini-game, and auto-save via `localStorage`.
+**33 pet types** across 11 elements, **10 exploration zones** (each with 200 floors), turn-based battles, prestige fusion, a timing-based training mini-game, auto-save via `localStorage`, and a player leveling system with XP rewards, streak bonuses, and a profile overlay.
 
 ## Pet Types
 
@@ -104,24 +104,28 @@ Choose **one** when starting a new account:
 - 🧚 **Moon Pixie** (Fairy)
 - 🐍 **Venom Asp** (Poison)
 
-Starters begin at **level 5** with **100 gold**.
+Starters begin at **level 1** with **100 gold**.
 
 ## Exploration Zones
 
-10 zones, each with common and rare pet pools. 25% chance of a rare encounter. Wild pet levels scale to your own (brackets of 20; max wild level 1000).
+10 zones, each locked behind a minimum **player level** and containing **200 floors** (each covering a 5-level range, e.g., Floor 1 = Lv 1–5, Floor 200 = Lv 996–1000). 25% chance of a rare encounter. Wild pet levels are determined by the selected floor, not by player level.
 
-| Zone | Emoji | Common Pets | Rare Pets |
-|---|---|---|---|
-| Forest | 🌲 | leafBunny, vineSnake, mossBear, glimmerMoth, fieldDeer | mindCat, dreamOwl, moonPixie, thornHog |
-| Cave | ⛰️ | scaleLizard, sparkDog, crystalSeal, duskBat | drakeWhelp, frostPenguin, shadowWolf, frostBear, crystalWyrm, mindApe |
-| Lake | 💧 | aquaTurtle, mistFrog, waveWhale | shockEel, boltMouse |
-| Mountain | 🏔️ | flameCat, zapBird, scaleLizard, frostBear, cloudSheep, glacierFox | drakeWhelp, cosmicFox, crystalWyrm, voltageOx |
-| Desert | 🏜️ | emberFox, sparkDog, scaleLizard, cinderScorpion, duneLion | flameCat, drakeWhelp |
-| Ocean | 🌊 | waveWhale, shockEel, crystalSeal, tidalCrab | aquaTurtle, frostPenguin |
-| Volcano | 🌋 | flameCat, emberFox, sparkDog | drakeWhelp, scaleLizard, cinderScorpion, cinderHawk |
-| Swamp | 🐊 | mistFrog, vineSnake, mossBear, glimmerMoth, marshCroc, shadowWolf, sunstoneBeetle | waveWhale, dreamOwl, frostBear |
-| Sky | ☁️ | zapBird, boltMouse, dreamOwl, cloudSheep | cosmicFox, shockEel |
-| Toxic Marsh | 🧪 | venomAsp, bogToad, mistFrog, vineSnake | shadowWolf, cosmicFox, moonPixie |
+| Zone | Emoji | Unlock | Common Pets | Rare Pets |
+|---|---|---|---|---|
+| Forest | 🌲 | 1 | leafBunny, vineSnake, mossBear, glimmerMoth, fieldDeer | mindCat, dreamOwl, moonPixie, thornHog |
+| Cave | ⛰️ | 1 | scaleLizard, sparkDog, crystalSeal, duskBat | drakeWhelp, frostPenguin, shadowWolf, frostBear, crystalWyrm, mindApe |
+| Lake | 💧 | 1 | aquaTurtle, mistFrog, waveWhale | shockEel, boltMouse |
+| Mountain | 🏔️ | 5 | flameCat, zapBird, scaleLizard, frostBear, cloudSheep, glacierFox | drakeWhelp, cosmicFox, crystalWyrm, voltageOx |
+| Desert | 🏜️ | 10 | emberFox, sparkDog, scaleLizard, cinderScorpion, duneLion | flameCat, drakeWhelp |
+| Ocean | 🌊 | 15 | waveWhale, shockEel, crystalSeal, tidalCrab | aquaTurtle, frostPenguin |
+| Volcano | 🌋 | 20 | flameCat, emberFox, sparkDog | drakeWhelp, scaleLizard, cinderScorpion, cinderHawk |
+| Swamp | 🐊 | 25 | mistFrog, vineSnake, mossBear, glimmerMoth, marshCroc, shadowWolf, sunstoneBeetle | waveWhale, dreamOwl, frostBear |
+| Sky | ☁️ | 30 | zapBird, boltMouse, dreamOwl, cloudSheep | cosmicFox, shockEel |
+| Toxic Marsh | 🧪 | 35 | venomAsp, bogToad, mistFrog, vineSnake | shadowWolf, cosmicFox, moonPixie |
+
+### Zone Floor Selection
+
+Clicking an unlocked zone opens a **floor overlay** with pagination (10 floors per page). Each floor card shows the floor number, level range, and lock status. Locked floors display the required player level in red. A green border highlights the floor matching the player's current level range.
 
 ## Shop
 
@@ -171,7 +175,7 @@ Each tier adds a flat bonus to **all five stats**:
 
 **Tier stones required**: 1 (D), 2 (C), 3 (B), 4 (A), 5 (S).
 
-Max tier is **S5**. Wild pets roll tiers at catch: 5% A, 20% B, 50% C, 25% D.
+Max tier is **S5**. Wild pets roll tiers at catch: 5% A, 20% B, 50% C, 25% D — but until player level 50, a D-rank is guaranteed.
 
 ## Prestige Fusion
 
@@ -244,11 +248,14 @@ Unlisted matchups default to ×1.
 catchRate = (1 − currentHP/maxHP) × 0.5 + 0.1
 chance = min(0.9, catchRate × ballPower)
 ```
-Balls are consumed best-first (Ultra → Great → Basic). Caught pets go to party if < 6, else storage (max 300 total).
+Balls are consumed best-first (Ultra → Great → Basic). Caught pets go to party if &lt; 6, else storage (max 300 total).
 
 ### Battle Rewards
-- **Win**: XP = enemy.level × 20, Gold = enemy.level × 20. Pet HP preserved as % of old max.
-- **Lose**: No rewards. Pet's current HP is halved.
+
+- **Win**: XP = enemy.level × 10 (with streak multiplier and type advantage bonus). Gold = enemy.level × 20.
+- **Streak bonus**: `1 + min(streak × 0.1, 1.0)` multiplier on XP.
+- **Type advantage**: +20% XP if your pet's type is super-effective against the enemy.
+- **Lose**: No XP or gold. Pet's current HP is halved.
 - **Flee**: Always succeeds. HP preserved.
 
 ## Functional Passives
@@ -279,8 +286,8 @@ Equipment stats are added into both max HP and the four offensive/defensive stat
 
 ## Party & Storage
 
-- **Party cap**: 6 pets
-- **Total cap**: 300 pets (party + storage)
+- **Party cap**: 6 pets (increases by 1 every 5 player levels, max 12)
+- **Total cap**: 300 pets (increases by 1 every 25 player levels, max 300)
 - Cannot deposit your last remaining party member.
 - Sell pets: `level × 25 + prestigeLevel × 1000 + shiny bonus (5,000) + tier sell value`.
 
@@ -293,7 +300,35 @@ Team power = sum of all pet powers (party + storage).
 
 ## Save System
 
-Auto-saves to browser `localStorage` under key `petSimulator` after every meaningful action (battle, training, shop, inventory changes, prestige, tier upgrade, storage changes). Saves pets, storage, money, inventory, selected pet, starter flag, and exploration cooldowns.
+Auto-saves to browser `localStorage` under key `petSimulator` after every meaningful action (battle, training, shop, inventory changes, prestige, tier upgrade, storage changes, and exploration). Saves pets, storage, money, inventory, selected pet, starter flag, exploration cooldowns, and player data (level, XP, streaks, unlocks, activity counters).
+
+## Player Profile
+
+A **red circle** button beside the player level in the top-right corner opens a profile overlay with comprehensive player statistics:
+
+| Stat | Description |
+|---|---|
+| Level | Current player level (XP-based progression) |
+| XP | Current XP / XP needed for next level |
+| Party Pets | Current party count / max party size |
+| Total Pets | Total pets (party + storage) / max total |
+| Total Catches | Lifetime pets caught |
+| Total Battles | Lifetime battles fought |
+| Best Streak | Longest consecutive battle win streak |
+| Total Trainings | Lifetime training sessions completed |
+| Total Explores | Lifetime exploration attempts |
+| Zones Unlocked | Count of unlocked exploration zones |
+| Total Power | Sum of all pet powers (party + storage) |
+| Party Power | Sum of party pet powers only |
+
+### Unlockable Rewards (per level)
+- Every level: +1 to all stats on every owned pet
+- Every 5 levels: +1 team slot (max 12)
+- Every 25 levels: +1 storage slot (max 300)
+- Level 100: Prestige token weekly reward
+- Level 250: Auto-train unlock
+
+Clicking the red circle also updates the displayed level number to match the current player level.
 
 ## Tech Stack
 

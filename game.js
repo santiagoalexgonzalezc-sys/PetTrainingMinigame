@@ -414,15 +414,22 @@ const PetTypes = {
         name: "Shadow Wolf",
         emoji: "🐺",
         type: "dark",
-        baseStats: { hp: 70, attack: 58, defense: 45, speed: 62, special: 50 },
-        passive: "Alpha Hunter - Boosts attack when facing an stronger foe",
-        evolution: ["Shadow Pup", "Umbra Wolf", "Nightfall Alpha"]
+        baseStats: { hp: 70, attack: 65, defense: 45, speed: 62, special: 50 },
+        passive: "Alpha Hunter - Boosts attack when facing an stronger foe. Deals 1.5x damage if foe has higher total power. Bleeding Claw (Ability) - Leaves the enemy bleeding for the rest of the battle.",
+        ability: {
+            name: "Bleeding Claw",
+            type: "normal",
+            cooldown: 3,
+            description: "Deals based on special stat. Leaves the opponent bleeding for the rest of the battle (25% of initial damage per turn).",
+            bleed: true
+        },
+        evolution: ["Shadow Pup", "Alpha Wolf", "Solo hunter"]
     },
     duskBat: {
         name: "Dusk Bat",
         emoji: "🦇",
         type: "dark",
-        baseStats: { hp: 65, attack: 45, defense: 42, speed: 72, special: 55 },
+        baseStats: { hp: 65, attack: 55, defense: 42, speed: 72, special: 55 },
         passive: "Vampiric - Heals from a fraction of damage dealt",
         evolution: ["Dusk Bat", "Night Bat", "Vampire Emperor"]
     },
@@ -1225,13 +1232,23 @@ const EquipmentSystem = {
 
 // ==================== passive SYSTEM ====================
 const PassiveSystem = {
-    getPassiveMultiplier(attacker) {
+    getPassiveMultiplier(attacker, defender) {
         const template = PetTypes[attacker.typeId];
         if (!template || !template.passive) return 1;
         
         const passive = template.passive;
-        const maxHP = PetManager.calculateMaxHP(template, attacker.level, attacker);
-        const hpPercent = (attacker.currentHP / maxHP) * 100;
+        const hpPercent = attacker.currentHP / PetManager.calculateMaxHP(template, attacker.level, attacker) * 100;
+        
+        // Alpha Hunter - Dark type, deals 1.5x damage if defender has higher total power
+        if (attacker.type === "dark" && passive.includes("Alpha Hunter")) {
+            if (defender) {
+                const attackerPower = TeamPowerSystem.calculatePetPower(attacker);
+                const defenderPower = TeamPowerSystem.calculatePetPower(defender);
+                if (defenderPower > attackerPower) {
+                    return 1.5;
+                }
+            }
+        }
         
         // Blaze - Fire type, HP-based damage boost
         if (passive.includes("Blaze") && template.type === "fire") {
@@ -1304,6 +1321,8 @@ const BattleSystem = {
     turnCount: 0,
     playerAbilityCooldown: 0,
     paralyzed: null,
+    bleeding: null,
+    bleedDamage: 0,
 
     typeEffectiveness: {
         fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5, dragon: 0.5, fairy: 2, dark: 1, normal: 1 },
@@ -1334,6 +1353,8 @@ const BattleSystem = {
         this.turnCount = 0;
         this.playerAbilityCooldown = 0;
         this.paralyzed = null;
+        this.bleeding = null;
+        this.bleedDamage = 0;
         
         // Determine who goes first by speed
         const playerSpeed = this.playerPet.stats.speed;
@@ -1426,7 +1447,7 @@ const BattleSystem = {
         damage = Math.floor(damage * (0.85 + Math.random() * 0.15));
         
         // Apply passive multiplier
-        const passiveMultiplier = PassiveSystem.getPassiveMultiplier(attacker);
+        const passiveMultiplier = PassiveSystem.getPassiveMultiplier(attacker, defender);
         damage = Math.floor(damage * passiveMultiplier);
         
         // Reduce all damage by 75% for fairer battles
@@ -1506,9 +1527,30 @@ const BattleSystem = {
         else if (result.typeMult > 1) logText += " (Super effective!)";
         else if (result.typeMult < 1) logText += " (Not very effective)";
         
-        this.addLog(logText);
-        UIManager.updateBattleScreen();
-    },
+this.addLog(logText);
+         UIManager.updateBattleScreen();
+         
+         // Apply bleed damage after each attack
+         this.applyBleedDamage();
+     },
+ 
+     applyBleedDamage() {
+         if (this.bleeding && this.bleedDamage > 0 && this.active) {
+             const bleedDmg = Math.max(1, Math.floor(this.bleedDamage * 0.25));
+             const target = this.bleeding === "enemy" ? this.enemyPet : this.playerPet;
+             const targetName = this.bleeding === "enemy" ? this.getPetName(this.enemyPet) : this.getPetName(this.playerPet);
+             target.currentHP = Math.max(0, target.currentHP - bleedDmg);
+             this.addLog(`🩸 Bleeding deals ${bleedDmg} damage to ${targetName}!`);
+             UIManager.updateBattleScreen();
+             if (target.currentHP <= 0) {
+                 if (this.bleeding === "enemy") {
+                     this.endBattle(true);
+                 } else {
+                     this.endBattle(false);
+                 }
+             }
+         }
+     },
 
     calculateSpecialDamage(attacker, defender, abilityType) {
         const attackerTemplate = PetTypes[attacker.typeId];
@@ -1548,7 +1590,7 @@ const BattleSystem = {
         }
         
         damage = Math.floor(damage * (0.85 + Math.random() * 0.15));
-        const passiveMultiplier = PassiveSystem.getPassiveMultiplier(attacker);
+        const passiveMultiplier = PassiveSystem.getPassiveMultiplier(attacker, defender);
         damage = Math.floor(damage * passiveMultiplier);
         damage = Math.floor(damage * 0.25);
         
@@ -1607,11 +1649,51 @@ const BattleSystem = {
                 return;
             }
             
-            setTimeout(() => this.enemyTurn(), 1000);
-        }
-    },
-
-    addLog(text) {
+setTimeout(() => this.enemyTurn(), 1000);
+         }
+         
+         // Bleeding Claw implementation
+         if (ability.name === "Bleeding Claw" && ability.bleed) {
+             if (this.playerAbilityCooldown > 0) return;
+             
+             const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+             
+             if (result.dodged) {
+                 this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+             } else {
+                 this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                 
+                 // Set bleeding state
+                 this.bleeding = "enemy";
+                 this.bleedDamage = result.damage;
+                 
+                 const attackerName = this.getPetName(this.playerPet);
+                 const defenderName = this.getPetName(this.enemyPet);
+                 
+                 let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                 if (result.isCrit) logText += " (CRITICAL!)";
+                 if (result.typeMult > 1) logText += " (Super effective!)";
+                 else if (result.typeMult < 1) logText += " (Not very effective)";
+                 
+                 this.addLog(logText);
+                 this.addLog(`🩸 ${defenderName} is now bleeding!`);
+                 
+                 if (this.enemyPet.currentHP <= 0) {
+                     UIManager.updateBattleScreen();
+                     this.endBattle(true);
+                     return;
+                 }
+             }
+             
+             this.playerAbilityCooldown = ability.cooldown;
+             this.isPlayerTurn = false;
+             UIManager.updateBattleScreen();
+             
+             setTimeout(() => this.enemyTurn(), 1000);
+         }
+     },
+ 
+     addLog(text) {
         this.battleLog.unshift({ text, time: new Date().toLocaleTimeString() });
         if (this.battleLog.length > 20) this.battleLog.pop();
     },
@@ -2401,9 +2483,9 @@ const UIManager = {
         
         document.getElementById("playerPetSprite").innerText = playerTemplate.emoji;
         document.getElementById("enemyPetSprite").innerText = enemyTemplate.emoji;
-        document.getElementById("playerPetName").innerText = PetManager.getEvolution(player);
+        document.getElementById("playerPetName").innerText = PetManager.getEvolution(player) + (BattleSystem.bleeding === "player" ? " 🩸" : "");
         document.getElementById("playerTier").innerText = `Tier: ${player.tier || "D1"}`;
-        document.getElementById("enemyPetName").innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy);
+        document.getElementById("enemyPetName").innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy) + (BattleSystem.bleeding === "enemy" ? " 🩸" : "");
         document.getElementById("enemyTier").innerText = `Tier: ${enemy.tier || "D1"}` + (enemy.shiny ? " ✨" : "");
         document.getElementById("enemyPetLevel").innerText = `Level ${enemy.level}`;
         

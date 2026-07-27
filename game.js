@@ -34,7 +34,7 @@ lastDailyBonus: PlayerSystem.lastDailyBonus,
             PetManager.pets = data.pets || [];
             PetManager.storage = data.storage || [];
             Economy.money = data.money || 100;
-            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0 };
+            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0 };
             PetManager.pets.forEach(p => {
                 if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
@@ -492,7 +492,7 @@ const PetTypes = {
             cooldown: 2,
             description: "Deals dark-based special damage and heals the user for 25% of the damage dealt.",
             heal: true,
-            healPercent: 0.25
+            healPercent: 0.50
         },
         evolution: ["Dusk Bat", "Night Bat", "Vampire Emperor"]
     },
@@ -853,6 +853,7 @@ const Economy = {
         hyperPotion: { name: "Hyper Potion", price: 200, type: "heal", power: 100 },
         tierStone: { name: "Tier Stone", price: 500, type: "upgrade", power: 1 },
         xpOrb: { name: "XP Orb", price: 250, type: "xp", power: 500 },
+    rareXpOrb: { name: "Rare XP Orb", price: 1000, type: "xp", power: 2000 },
         precisionGuide: { name: "Precision Guide", price: 100, type: "training", power: 1 },
         focusIncense: { name: "Focus Incense", price: 150, type: "training", power: 5 },
         bandOfSwiftness: { name: "Band of Swiftness", price: 4000, type: "equipment", power: 10, stats: { speed: 10 } },
@@ -1341,6 +1342,14 @@ const PassiveSystem = {
             }
         }
         
+        // Sanguine Drain - Dark type, heals 5% of damage dealt; Dark moves amplified at low HP
+        if (passive.includes("Sanguine Drain") && attacker.type === "dark") {
+            // Damage amplification at low HP (below 30%)
+            if (hpPercent <= 30) return 1.30;
+            if (hpPercent <= 60) return 1.15;
+            return 1.0;
+        }
+        
         // Blaze - Fire type, HP-based damage boost
         if (passive.includes("Blaze") && template.type === "fire") {
             if (hpPercent >= 70) return 1.05;
@@ -1665,10 +1674,19 @@ this.addLog(logText);
           // Apply bleed damage after each attack
           this.applyBleedDamage();
           
-          // Apply burn damage after each attack
-          this.applyBurnDamage();
-          
-          // Decrement shield durations after each attack
+// Apply burn damage after each attack
+           this.applyBurnDamage();
+           
+           // Sanguine Drain - heals a portion of damage dealt as HP (dark type passive)
+           if (attackerTemplate.passive && attackerTemplate.passive.includes("Sanguine Drain") && attacker.type === "dark") {
+               const healAmount = Math.floor(result.damage * 0.15);
+               if (healAmount > 0) {
+                   attacker.currentHP = Math.min(PetManager.calculateMaxHP(attackerTemplate, attacker.level, attacker), attacker.currentHP + healAmount);
+                   this.addLog(`🩸 ${this.getPetName(attacker)} heals ${healAmount} HP from Sanguine Drain!`);
+               }
+           }
+           
+           // Decrement shield durations after each attack
           if (this.shield.player.turns > 0) {
               this.shield.player.turns--;
               if (this.shield.player.turns <= 0) {
@@ -2416,6 +2434,12 @@ this.playerAbilityCooldown = ability.cooldown;
                 Economy.inventory.xpOrb = (Economy.inventory.xpOrb || 0) + 1;
                 this.addLog("✨ Found an XP Orb!");
             }
+            
+            // 5% chance to drop a Rare XP Orb when defeating a wild pet over level 30
+            if (this.enemyPet.level > 30 && Math.random() < 0.05) {
+                Economy.inventory.rareXpOrb = (Economy.inventory.rareXpOrb || 0) + 1;
+                this.addLog("✨ Found a Rare XP Orb!");
+            }
         } else {
             PlayerSystem.battleStreak = 0;
             PlayerSystem.totalBattles++;
@@ -2966,10 +2990,14 @@ const UIManager = {
         trainBtn.disabled = !canTrain;
         trainBtn.innerText = canTrain ? "🎯 Train" : `⏳ ${cooldown}s`;
         
-        const useXPOrb = document.getElementById("useXPOrb");
-        if (useXPOrb) {
-            useXPOrb.style.display = (Economy.inventory.xpOrb > 0) ? "inline-block" : "none";
-        }
+const useXPOrb = document.getElementById("useXPOrb");
+if (useXPOrb) {
+useXPOrb.style.display = (Economy.inventory.xpOrb > 0) ? "inline-block" : "none";
+}
+const useRareXpOrb = document.getElementById("useRareXpOrb");
+if (useRareXpOrb) {
+useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" : "none";
+}
         const usePrecision = document.getElementById("usePrecision");
         if (usePrecision) {
             usePrecision.style.display = (Economy.inventory.precisionGuide > 0) ? "inline-block" : "none";

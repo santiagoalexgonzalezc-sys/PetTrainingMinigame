@@ -988,8 +988,8 @@ const Exploration = {
             unlockLevel: 1,
             floorSize: 5,
             maxFloor: 200,
-            commonPets: ["scaleLizard", "sparkDog", "crystalSeal", "duskBat"],
-            rarePets: ["drakeWhelp", "frostPenguin", "shadowWolf", "frostBear", "crystalWyrm", "mindApe"],
+            commonPets: ["scaleLizard", "sparkDog", "shadowWolf", "duskBat"],
+            rarePets: ["drakeWhelp", "frostPenguin", "crystalSeal", "frostBear", "crystalWyrm", "mindApe"],
             encounterRate: 1
         },
         lake: {
@@ -3396,7 +3396,30 @@ const UIManager = {
             alert("Select a pet first!");
             return;
         }
-        if (Economy.useItem(itemId, pet)) {
+
+        const item = Economy.shopItems[itemId];
+        if (!item) {
+            alert("Unknown item!");
+            return;
+        }
+
+        let qty = 1;
+        if (item.type === "xp" || item.type === "heal" || item.type === "training") {
+            const owned = Economy.inventory[itemId] || 0;
+            const input = prompt(`How many ${item.name}(s) to use? (You have ${owned})`, "1");
+            if (input === null) return; // Cancelled
+            qty = parseInt(input, 10);
+            if (isNaN(qty) || qty < 1) {
+                alert("Invalid quantity!");
+                return;
+            }
+            if (qty > owned) {
+                alert(`You only have ${owned} ${item.name}(s)!`);
+                return;
+            }
+        }
+
+        if (Economy.useItem(itemId, pet, qty)) {
             DataManager.save();
             this.updatePetScreen();
             this.renderInventory();

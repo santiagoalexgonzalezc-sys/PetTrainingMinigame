@@ -2748,6 +2748,11 @@ const UIManager = {
             this.renderStorage();
         }
         this.updatePlayerLevelDisplay();
+
+        const footer = document.getElementById("footerNav");
+        if (footer) {
+            footer.classList.toggle("hidden", screenId === "battleScreen");
+        }
     },
 
     updateCurrency() {

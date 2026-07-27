@@ -49,13 +49,14 @@
     </div>
 
     <!-- FOOTER NAVIGATION -->
-    <div class="fixed bottom-0 left-0 right-0 bg-gray-900/95 border-t border-gray-700 p-2 flex flex-wrap justify-center gap-2 z-50">
-        <button onclick="UIManager.showScreen('explorationScreen')" class="border-none rounded-xl px-5 py-3 cursor-pointer text-white bg-blue-800 text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🗺️ Explore</button>
-        <button onclick="UIManager.showScreen('storageScreen')" class="border-none rounded-xl px-5 py-3 cursor-pointer text-white bg-blue-800 text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">📦 Pet Storage</button>
-        <button onclick="UIManager.showScreen('shopScreen')" class="border-none rounded-xl px-5 py-3 cursor-pointer text-white bg-blue-800 text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛒 Shop</button>
-        <button onclick="UIManager.showScreen('inventoryScreen')" class="border-none rounded-xl px-5 py-3 cursor-pointer text-white bg-blue-800 text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🎒 Inventory</button>
-        <button onclick="UIManager.openPrestige()" class="border-none rounded-xl px-5 py-3 cursor-pointer text-white bg-purple-800 text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">✨ Prestige Fusion</button>
-        <button onclick="DataManager.resetAccount()" class="border-none rounded-xl px-5 py-3 cursor-pointer text-white bg-red-500 text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🗑️ Reset Account</button>
+    <div id="footerNav" class="fixed bottom-0 left-0 right-0 bg-gray-900/95 border-t border-gray-700 p-1.5 flex flex-wrap justify-center gap-1.5 z-50">
+        <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-gray-700 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🏠 Home</button>
+        <button onclick="UIManager.showScreen('explorationScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🗺️ Explore</button>
+        <button onclick="UIManager.showScreen('storageScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">📦 Pet Storage</button>
+        <button onclick="UIManager.showScreen('shopScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛒 Shop</button>
+        <button onclick="UIManager.showScreen('inventoryScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🎒 Inventory</button>
+        <button onclick="UIManager.openPrestige()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-purple-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">✨ Prestige Fusion</button>
+        <button onclick="DataManager.resetAccount()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-red-500 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🗑️ Reset Account</button>
     </div>
 
     <!-- PET DETAIL SCREEN -->
@@ -221,7 +222,7 @@
     <!-- SHOP SCREEN -->
     <div id="shopScreen" class="hidden p-5">
         <h2>🛒 Shop</h2>
-        <div id="shopGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-5 my-5"></div>
+        <div id="shopGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto my-5"></div>
         <br>
         <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
     </div>
@@ -229,7 +230,7 @@
     <!-- INVENTORY SCREEN -->
     <div id="inventoryScreen" class="hidden p-5">
         <h2>🎒 Inventory</h2>
-        <div id="inventoryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-w-3xl mx-5 my-5"></div>
+        <div id="inventoryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-w-3xl mx-auto my-5"></div>
         <br>
         <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
     </div>

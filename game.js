@@ -2906,7 +2906,7 @@ const UIManager = {
                                "border-2 border-gray-500";
             
             const card = document.createElement("div");
-            card.className = `flex-1 min-w-[280px] bg-white/10 rounded-2xl p-3.5 mx-2 my-2 ${prestigeBorder} ${shinyBorder} ${tierBorder}`;
+            card.className = `w-[280px] bg-white/10 rounded-2xl p-3.5 mx-2 my-2 ${prestigeBorder} ${shinyBorder} ${tierBorder}`;
             card.innerHTML = `
                 <h3>${template.emoji} ${evolution}${shinySuffix}${prestigeSuffix}</h3>
                 ${tierBadge}

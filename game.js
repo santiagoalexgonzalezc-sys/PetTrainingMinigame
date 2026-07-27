@@ -982,8 +982,8 @@ const Exploration = {
             unlockLevel: 1,
             floorSize: 5,
             maxFloor: 200,
-            commonPets: ["leafBunny", "vineSnake", "mossBear", "glimmerMoth", "fieldDeer"],
-            rarePets: ["mindCat", "dreamOwl", "moonPixie", "thornHog"],
+            commonPets: ["leafBunny", "vineSnake", "mossBear", "glimmerMoth", "moonPixie"],
+            rarePets: ["mindCat", "dreamOwl", "fieldDeer", "thornHog"],
             encounterRate: 1
         },
         cave: {

@@ -494,7 +494,7 @@ const PetTypes = {
             heal: true,
             healPercent: 0.50
         },
-        evolution: ["Dusk Bat", "Night Bat", "Vampire Emperor"]
+        evolution: ["Dusk Bat", "Vampire", "Vampire Emperor"]
     },
 
     // Fairy Types (NEW)

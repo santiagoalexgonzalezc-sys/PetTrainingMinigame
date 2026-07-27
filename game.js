@@ -1111,14 +1111,26 @@ const Exploration = {
         // Tier roll based on zone
         const tier = rollTierForZone(zoneId);
 
-        const wildPet = PetManager.createPet(petType, level, { shiny: isShiny, tier });
+const wildPet = PetManager.createPet(petType, level, { shiny: isShiny, tier });
 
-        if (!wildPet || !wildPet.stats) {
-            console.error("Failed to create valid wild pet:", petType, level, wildPet);
-            return null;
-        }
+         if (!wildPet || !wildPet.stats) {
+             console.error("Failed to create valid wild pet:", petType, level, wildPet);
+             return null;
+         }
 
-        return { pet: wildPet, isRare, isShiny };
+         // C-tier opponent encounter based on player level
+const cTierChance = getCTierChance(PlayerSystem.level);
+         if (cTierChance > 0 && Math.random() * 100 < cTierChance) {
+             const cTire = rollCTire(PlayerSystem.level);
+             const cTierLevelBonus = (cTire - 1) * 3;
+             wildPet.level = wildPet.level + cTierLevelBonus;
+             wildPet.tier = cTire >= 4 ? "C" + cTire : wildPet.tier;
+             wildPet.tierBonus = PetManager.calculateTierBonus(wildPet.tier);
+             wildPet.stats = PetManager.calculateStats(PetTypes[wildPet.typeId], wildPet.level, wildPet);
+             wildPet.currentHP = PetManager.calculateMaxHP(PetTypes[wildPet.typeId], wildPet.level, wildPet);
+         }
+
+         return { pet: wildPet, isRare, isShiny };
     },
 
     getCooldownRemaining(zoneId) {
@@ -1127,6 +1139,32 @@ const Exploration = {
         return Math.max(0, Math.ceil(remaining / 1000));
     }
 };
+
+function getCTierChance(level) {
+    if (level >= 50) return 5;
+    if (level >= 40) return 3;
+    if (level >= 35) return 1;
+    return 0;
+}
+
+function rollCTire(level) {
+    let weights;
+    if (level >= 50) {
+        weights = [70, 15, 10, 5, 0];
+    } else if (level >= 40) {
+        weights = [80, 15, 5, 0, 0];
+    } else {
+        weights = [85, 10, 5, 0, 0];
+    }
+    const total = weights.reduce((a, b) => a + b, 0);
+    const roll = Math.random() * total;
+    let cumulative = 0;
+    for (let i = 0; i < weights.length; i++) {
+        cumulative += weights[i];
+        if (roll < cumulative) return i + 1;
+    }
+    return 1;
+}
 
 // Tier helpers
 function getWildPetLevelForFloor(floorIndex, floorSize) {

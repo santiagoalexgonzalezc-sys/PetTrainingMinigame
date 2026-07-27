@@ -1645,8 +1645,9 @@ enemyTurn() {
         UIManager.updateBattleScreen();
     },
 
-    attack(attacker, defender, isPlayerAttacker) {
-        const defenderTemplate = PetTypes[defender.typeId];
+attack(attacker, defender, isPlayerAttacker) {
+         const attackerTemplate = PetTypes[attacker.typeId];
+         const defenderTemplate = PetTypes[defender.typeId];
         if (defenderTemplate.passive && defenderTemplate.passive.includes("Fast feet")) {
             if (Math.random() < 0.10) {
                 const defenderName = this.getPetName(defender);

@@ -2885,6 +2885,7 @@ const UIManager = {
         list.innerHTML = "";
         
         document.getElementById("partyCount").innerText = PetManager.pets.length;
+        document.getElementById("maxPartySize").innerText = PetManager.maxPartySize;
         
         PetManager.pets.forEach(pet => {
             const template = PetTypes[pet.typeId];

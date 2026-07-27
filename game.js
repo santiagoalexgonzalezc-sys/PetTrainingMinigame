@@ -19,10 +19,10 @@ const DataManager = {
                 totalCatches: PlayerSystem.totalCatches,
                 totalTrainings: PlayerSystem.totalTrainings,
                 totalExplores: PlayerSystem.totalExplores,
-                lastDailyBonus: PlayerSystem.lastDailyBonus,
-                dailyActivities: Array.from(PlayerSystem.dailyActivities)
-            },
-            maxPartySize: PetManager.maxPartySize,
+lastDailyBonus: PlayerSystem.lastDailyBonus,
+                 dailyActivities: Array.from(PlayerSystem.dailyActivities)
+             },
+             maxPartySize: PetManager.maxPartySize,
             maxTotalPets: PetManager.maxTotalPets
         };
         localStorage.setItem("petSimulator", JSON.stringify(data));
@@ -179,7 +179,7 @@ const PetTypes = {
         emoji: "🐶",
         type: "fire",
         baseStats: { hp: 70, attack: 50, defense: 45, speed: 55, special: 50 },
-        passive: "Flash Fire - Immune to Fire, boosts Fire moves",
+        passive: "Kindling Core - Immune to Fire; absorbs Fire moves for a 1.15x Fire power boost",
         evolution: ["Spark Dog", "Fire Hound", "Inferno Wolf"]
     },
     cinderHawk: {
@@ -187,7 +187,7 @@ const PetTypes = {
         emoji: "🦅",
         type: "fire",
         baseStats: { hp: 68, attack: 58, defense: 42, speed: 62, special: 58 },
-        passive: "Blaze - Low HP increases Fire damage",
+        passive: "Meltdown - Fire damage increases by 1.25x when HP drops below 25%",
         evolution: ["Ember Hawk", "Cinder Hawk", "Solar Phoenix"]
     },
 
@@ -197,7 +197,7 @@ const PetTypes = {
         emoji: "🐢",
         type: "water",
         baseStats: { hp: 75, attack: 40, defense: 65, speed: 35, special: 50 },
-        passive: "Rain Dish - Heals in rain",
+        passive: "Tide Pools - Heals 3% max HP each turn; healing doubles in rain",
         evolution: ["Aqua Turtle", "Hydro Turtle", "Ocean Guardian"]
     },
     mistFrog: {
@@ -205,7 +205,7 @@ const PetTypes = {
         emoji: "🐸",
         type: "water",
         baseStats: { hp: 70, attack: 45, defense: 50, speed: 55, special: 55 },
-        passive: "Swift Swim - Speed doubles in rain",
+        passive: "Misty Agility - Speed doubles in rain; Water moves gain 10% accuracy",
         evolution: ["Mist Frog", "Storm Frog", "Tidal King"]
     },
     waveWhale: {
@@ -213,7 +213,7 @@ const PetTypes = {
         emoji: "🐋",
         type: "water",
         baseStats: { hp: 80, attack: 45, defense: 55, speed: 40, special: 60 },
-        passive: "Water Absorb - Heals from Water moves",
+        passive: "Aqua Vein - Absorbs Water moves; converts 50% of absorbed damage into HP",
         evolution: ["Wave Whale", "Tsunami Whale", "Leviathan"]
     },
     tidalCrab: {
@@ -221,7 +221,7 @@ const PetTypes = {
         emoji: "🦀",
         type: "water",
         baseStats: { hp: 70, attack: 55, defense: 60, speed: 38, special: 48 },
-        passive: "Torrent - Low HP increases Water damage",
+        passive: "Riptide - Water damage increases by 50% when HP is below 25%",
         evolution: ["Tide Crab", "Tidal Crab", "Abyssal Crustacean"]
     },
 
@@ -231,7 +231,7 @@ const PetTypes = {
         emoji: "🦀",
         type: "fire",
         baseStats: { hp: 65, attack: 60, defense: 52, speed: 40, special: 50 },
-        passive: "Flame Armor - Deals contact damage to attackers",
+        passive: "Molten Shell - Contact attackers take Fire damage equal to 8% of their max HP",
         evolution: ["Ash Claw", "Cinder Crab", "Magma Guardian"]
     },
     // Grass Types
@@ -240,7 +240,7 @@ const PetTypes = {
         emoji: "🐰",
         type: "grass",
         baseStats: { hp: 65, attack: 50, defense: 45, speed: 70, special: 45 },
-        passive: "Overgrow - Low HP increases Grass damage",
+        passive: "Bloom Burst - Grass damage increases by 40% when HP is below 25%",
         evolution: ["Leaf Bunny", "Forest Bunny", "Nature Spirit"]
     },
     vineSnake: {
@@ -248,7 +248,14 @@ const PetTypes = {
         emoji: "🐍",
         type: "grass",
         baseStats: { hp: 68, attack: 55, defense: 40, speed: 60, special: 50 },
-        passive: "Chlorophyll - Speed doubles in sun",
+        passive: "Photosynthetic Surge - Speed doubles in sunlight; vine lashes slow the enemy",
+        ability: {
+            name: "Vine Lash",
+            type: "grass",
+            cooldown: 2,
+            description: "Deals grass-based special damage and reduces the enemy's speed by 1 stage.",
+            speedDrop: true
+        },
         evolution: ["Vine Snake", "Thorn Snake", "Jungle Serpent"]
     },
     mossBear: {
@@ -256,7 +263,7 @@ const PetTypes = {
         emoji: "🐻",
         type: "grass",
         baseStats: { hp: 80, attack: 55, defense: 50, speed: 35, special: 45 },
-        passive: "Thick Fat - Reduces Fire/Ice damage",
+        passive: "Dense Fur - Reduces Fire and Ice damage by 30%",
         evolution: ["Moss Bear", "Forest Bear", "Earth Guardian"]
     },
     thornHog: {
@@ -330,7 +337,15 @@ const PetTypes = {
         emoji: "🦉",
         type: "psychic",
         baseStats: { hp: 70, attack: 42, defense: 48, speed: 55, special: 65 },
-        passive: "Insomnia - Cannot fall asleep",
+        passive: "Lucid Mind - Cannot be put to sleep or confused; Nightmare causes enemies to skip turns",
+        ability: {
+            name: "Hypnosis",
+            type: "psychic",
+            cooldown: 3,
+            description: "Deals psychic special damage. 50% chance to put the enemy to sleep (skip their next turn).",
+            confuse: true,
+            confuseChance: 0.50
+        },
         evolution: ["Dream Owl", "Night Owl", "Vision Sage"]
     },
     cosmicFox: {
@@ -409,7 +424,7 @@ const PetTypes = {
         emoji: "🦂",
         type: "fire",
         baseStats: { hp: 68, attack: 60, defense: 52, speed: 55, special: 50 },
-        passive: "Flame Body - May burn attackers on contact",
+        passive: "Scorpion Sting - Contact attacks have a 25% chance to inflict burn",
         evolution: ["Spark Tail", "Cinder Scorpion", "Inferno Stinger"]
     },
 
@@ -470,7 +485,15 @@ const PetTypes = {
         emoji: "🦇",
         type: "dark",
         baseStats: { hp: 65, attack: 55, defense: 42, speed: 72, special: 55 },
-        passive: "Vampiric - Heals from a fraction of damage dealt",
+        passive: "Sanguine Drain - Heals a portion of damage dealt back as HP; Dark moves amplify at low HP",
+        ability: {
+            name: "Life Drain",
+            type: "dark",
+            cooldown: 2,
+            description: "Deals dark-based special damage and heals the user for 25% of the damage dealt.",
+            heal: true,
+            healPercent: 0.25
+        },
         evolution: ["Dusk Bat", "Night Bat", "Vampire Emperor"]
     },
 
@@ -514,7 +537,16 @@ const PetTypes = {
         emoji: "🐑",
         type: "normal",
         baseStats: { hp: 82, attack: 42, defense: 58, speed: 38, special: 50 },
-        passive: "Fluffy - Halves contact damage taken",
+        passive: "Cotton Cloud - Contact damage halved; special damage reduced by 25%",
+        ability: {
+            name: "Fluffy Guard",
+            type: "normal",
+            cooldown: 2,
+            description: "Deals normal special damage and shields the user for 1 turn (blocks 50% of incoming damage).",
+            shield: true,
+            shieldDuration: 1,
+            shieldPercent: 0.50
+        },
         evolution: ["Wool Lamb", "Cloud Sheep", "Sky Shepherd"]
     },
     fieldDeer: {
@@ -540,7 +572,15 @@ const PetTypes = {
         emoji: "🐍",
         type: "poison",
         baseStats: { hp: 65, attack: 52, defense: 48, speed: 68, special: 60 },
-        passive: "Corrosion - Melts through enemy defenses",
+        passive: "Acidic Blood - Melts through enemy defenses; Corrosive Bolt poisons the enemy",
+        ability: {
+            name: "Corrosive Bolt",
+            type: "poison",
+            cooldown: 3,
+            description: "Deals poison-based special damage and poisons the enemy (10% max HP damage per turn for 3 turns).",
+            poison: true,
+            poisonDuration: 3
+        },
         evolution: ["Venom Asp", "Toxic Serpent", "Plague Sovereign"]
     },
     bogToad: {
@@ -831,17 +871,20 @@ const Economy = {
         return true;
     },
 
-    useItem(itemId, pet) {
+    useItem(itemId, pet, qty = 1) {
         if (!this.inventory[itemId] || this.inventory[itemId] <= 0) return false;
+        if (qty > this.inventory[itemId]) qty = this.inventory[itemId];
 
         const item = this.shopItems[itemId];
-        this.inventory[itemId]--;
+        this.inventory[itemId] -= qty;
+
+        const totalPower = item.power * qty;
 
         if (item.type === "heal") {
             const maxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
-            pet.currentHP = Math.min(maxHP, pet.currentHP + item.power);
+            pet.currentHP = Math.min(maxHP, pet.currentHP + totalPower);
         } else if (item.type === "xp") {
-            PetManager.gainXP(pet, item.power);
+            PetManager.gainXP(pet, totalPower);
         } else if (item.type === "training") {
             if (itemId === "precisionGuide") {
                 TrainingSystem.guaranteedPerfectNextStop = true;
@@ -948,8 +991,8 @@ const Exploration = {
             unlockLevel: 1,
             floorSize: 5,
             maxFloor: 200,
-            commonPets: ["scaleLizard", "sparkDog", "crystalSeal", "duskBat"],
-            rarePets: ["drakeWhelp", "frostPenguin", "shadowWolf", "frostBear", "crystalWyrm", "mindApe"],
+            commonPets: ["scaleLizard", "sparkDog", "shadowWolf", "duskBat"],
+            rarePets: ["drakeWhelp", "frostPenguin", "crystalSeal", "frostBear", "crystalWyrm", "mindApe"],
             encounterRate: 1
         },
         lake: {
@@ -1376,6 +1419,8 @@ const BattleSystem = {
     confused: null,
     burnDuration: { enemy: 0, player: 0 },
     shield: { enemy: { turns: 0, percent: 0 }, player: { turns: 0, percent: 0 } },
+    poisoned: null,
+    poisonDuration: { enemy: 0, player: 0 },
 
     typeEffectiveness: {
         fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5, dragon: 0.5, fairy: 2, dark: 1, normal: 1 },
@@ -1413,6 +1458,8 @@ const BattleSystem = {
         this.confused = null;
         this.burnDuration = { enemy: 0, player: 0 };
         this.shield = { enemy: { turns: 0, percent: 0 }, player: { turns: 0, percent: 0 } };
+        this.poisoned = null;
+        this.poisonDuration = { enemy: 0, player: 0 };
         
         // Determine who goes first by speed
         const playerSpeed = this.playerPet.stats.speed;
@@ -1634,9 +1681,12 @@ this.addLog(logText);
                   this.shield.enemy = { turns: 0, percent: 0 };
               }
           }
+          
+          // Apply poison damage after each attack
+          this.applyPoisonDamage();
       },
- 
-     applyBleedDamage() {
+  
+      applyBleedDamage() {
          if (this.bleeding && this.bleedDamage > 0 && this.active) {
              const bleedDmg = Math.max(1, Math.floor(this.bleedDamage * 0.25));
              const target = this.bleeding === "enemy" ? this.enemyPet : this.playerPet;
@@ -1676,9 +1726,37 @@ applyBurnDamage() {
                           this.endBattle(false);
                       }
                   }
+          } else {
+              this.burning = null;
+              this.burnDamage = 0;
+          }
+      }
+      },
+
+      applyPoisonDamage() {
+          if (this.poisoned && this.active) {
+              const side = this.poisoned === "enemy" ? "enemy" : "player";
+              const target = this.poisoned === "enemy" ? this.enemyPet : this.playerPet;
+              const targetName = this.poisoned === "enemy" ? this.getPetName(this.enemyPet) : this.getPetName(this.playerPet);
+              if (this.poisonDuration[side] > 0) {
+                  const maxHP = PetManager.calculateMaxHP(PetTypes[target.typeId], target.level, target);
+                  const poisonDmg = Math.max(1, Math.floor(maxHP * 0.10));
+                  target.currentHP = Math.max(0, target.currentHP - poisonDmg);
+                  this.addLog(`☠️ Poison deals ${poisonDmg} damage to ${targetName}!`);
+                  this.poisonDuration[side]--;
+                  if (this.poisonDuration[side] <= 0) {
+                      this.poisoned = null;
+                  }
+                  UIManager.updateBattleScreen();
+                  if (target.currentHP <= 0) {
+                      if (this.poisoned === "enemy") {
+                          this.endBattle(true);
+                      } else {
+                          this.endBattle(false);
+                      }
+                  }
               } else {
-                  this.burning = null;
-                  this.burnDamage = 0;
+                  this.poisoned = null;
               }
           }
       },
@@ -2078,15 +2156,212 @@ setTimeout(() => this.enemyTurn(), 1000);
                   }
               }
               
-              this.playerAbilityCooldown = ability.cooldown;
-              this.isPlayerTurn = false;
-              UIManager.updateBattleScreen();
-              
-              setTimeout(() => this.enemyTurn(), 1000);
-          }
-      },
- 
-     addLog(text) {
+this.playerAbilityCooldown = ability.cooldown;
+               this.isPlayerTurn = false;
+               UIManager.updateBattleScreen();
+               
+               setTimeout(() => this.enemyTurn(), 1000);
+           }
+           
+           // Vine Lash implementation (vineSnake ability)
+           if (ability.name === "Vine Lash" && ability.speedDrop) {
+               if (this.playerAbilityCooldown > 0) return;
+               
+               const specialStat = this.playerPet.stats.special;
+               const baseDamage = specialStat + 2;
+               const defenderTemplate = PetTypes[this.enemyPet.typeId];
+               const typeMult = this.getTypeEffectiveness("grass", defenderTemplate.type);
+               let rawDmg = Math.floor((baseDamage * 40) / Math.max(1, defenderTemplate.stats.defense));
+               rawDmg = Math.floor(rawDmg * typeMult);
+               rawDmg = Math.floor(rawDmg * 0.25);
+               
+               this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - rawDmg);
+               this.enemyStatMods.speed = Math.max(-6, this.enemyStatMods.speed - 1);
+               
+               const attackerName = this.getPetName(this.playerPet);
+               const defenderName = this.getPetName(this.enemyPet);
+               
+               let logText = `${attackerName} used ${ability.name}! Deals ${rawDmg} damage to ${defenderName}`;
+               if (typeMult > 1) logText += " (Super effective!)";
+               else if (typeMult < 1) logText += " (Not very effective)";
+               
+               this.addLog(logText);
+               this.addLog(`${defenderName}'s speed was lowered by 1 stage!`);
+               
+               if (this.enemyPet.currentHP <= 0) {
+                   UIManager.updateBattleScreen();
+                   this.endBattle(true);
+                   return;
+               }
+               
+               this.playerAbilityCooldown = ability.cooldown;
+               this.isPlayerTurn = false;
+               UIManager.updateBattleScreen();
+               
+               setTimeout(() => this.enemyTurn(), 1000);
+           }
+           
+           // Hypnosis implementation (dreamOwl ability)
+           if (ability.name === "Hypnosis" && ability.confuse) {
+               if (this.playerAbilityCooldown > 0) return;
+               
+               const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+               
+               if (result.dodged) {
+                   this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+               } else {
+                   this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                   
+                   const attackerName = this.getPetName(this.playerPet);
+                   const defenderName = this.getPetName(this.enemyPet);
+                   
+                   if (Math.random() < ability.confuseChance) {
+                       this.confused = "enemy";
+                       this.addLog(`🧠 ${defenderName} is now confused and may skip their next turn!`);
+                   }
+                   
+                   let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                   if (result.isCrit) logText += " (CRITICAL!)";
+                   if (result.typeMult > 1) logText += " (Super effective!)";
+                   else if (result.typeMult < 1) logText += " (Not very effective)";
+                   
+                   this.addLog(logText);
+                   
+                   if (this.enemyPet.currentHP <= 0) {
+                       UIManager.updateBattleScreen();
+                       this.endBattle(true);
+                       return;
+                   }
+               }
+               
+               this.playerAbilityCooldown = ability.cooldown;
+               this.isPlayerTurn = false;
+               UIManager.updateBattleScreen();
+               
+               setTimeout(() => this.enemyTurn(), 1000);
+           }
+           
+           // Life Drain implementation (duskBat ability)
+           if (ability.name === "Life Drain" && ability.heal) {
+               if (this.playerAbilityCooldown > 0) return;
+               
+               const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+               
+               if (result.dodged) {
+                   this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+               } else {
+                   this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                   
+                   const healAmount = Math.floor(result.damage * ability.healPercent);
+                   const playerMaxHP = PetManager.calculateMaxHP(PetTypes[this.playerPet.typeId], this.playerPet.level, this.playerPet);
+                   this.playerPet.currentHP = Math.min(playerMaxHP, this.playerPet.currentHP + healAmount);
+                   
+                   const attackerName = this.getPetName(this.playerPet);
+                   const defenderName = this.getPetName(this.enemyPet);
+                   
+                   let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                   if (result.isCrit) logText += " (CRITICAL!)";
+                   if (result.typeMult > 1) logText += " (Super effective!)";
+                   else if (result.typeMult < 1) logText += " (Not very effective)";
+                   
+                   this.addLog(logText);
+                   if (healAmount > 0) {
+                       this.addLog(`💚 ${attackerName} drains ${healAmount} HP!`);
+                   }
+                   
+                   if (this.enemyPet.currentHP <= 0) {
+                       UIManager.updateBattleScreen();
+                       this.endBattle(true);
+                       return;
+                   }
+               }
+               
+               this.playerAbilityCooldown = ability.cooldown;
+               this.isPlayerTurn = false;
+               UIManager.updateBattleScreen();
+               
+               setTimeout(() => this.enemyTurn(), 1000);
+           }
+           
+           // Fluffy Guard implementation (cloudSheep ability)
+           if (ability.name === "Fluffy Guard" && ability.shield) {
+               if (this.playerAbilityCooldown > 0) return;
+               
+               const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+               
+               if (result.dodged) {
+                   this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+               } else {
+                   this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                   
+                   this.shield.player = { turns: ability.shieldDuration, percent: ability.shieldPercent };
+                   
+                   const attackerName = this.getPetName(this.playerPet);
+                   const defenderName = this.getPetName(this.enemyPet);
+                   
+                   let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                   if (result.isCrit) logText += " (CRITICAL!)";
+                   if (result.typeMult > 1) logText += " (Super effective!)";
+                   else if (result.typeMult < 1) logText += " (Not very effective)";
+                   
+                   this.addLog(logText);
+                   this.addLog(`🛡️ ${attackerName} is now shielded for ${ability.shieldDuration} turn(s) (blocks ${Math.floor(ability.shieldPercent * 100)}% damage)!`);
+                   
+                   if (this.enemyPet.currentHP <= 0) {
+                       UIManager.updateBattleScreen();
+                       this.endBattle(true);
+                       return;
+                   }
+               }
+               
+               this.playerAbilityCooldown = ability.cooldown;
+               this.isPlayerTurn = false;
+               UIManager.updateBattleScreen();
+               
+               setTimeout(() => this.enemyTurn(), 1000);
+           }
+           
+           // Corrosive Bolt implementation (venomAsp ability)
+           if (ability.name === "Corrosive Bolt" && ability.poison) {
+               if (this.playerAbilityCooldown > 0) return;
+               
+               const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+               
+               if (result.dodged) {
+                   this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+               } else {
+                   this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                   
+                   this.poisoned = "enemy";
+                   this.poisonDuration.enemy = ability.poisonDuration;
+                   
+                   const attackerName = this.getPetName(this.playerPet);
+                   const defenderName = this.getPetName(this.enemyPet);
+                   
+                   let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                   if (result.isCrit) logText += " (CRITICAL!)";
+                   if (result.typeMult > 1) logText += " (Super effective!)";
+                   else if (result.typeMult < 1) logText += " (Not very effective)";
+                   
+                   this.addLog(logText);
+                   this.addLog(`☠️ ${defenderName} is now poisoned for ${ability.poisonDuration} turns!`);
+                   
+                   if (this.enemyPet.currentHP <= 0) {
+                       UIManager.updateBattleScreen();
+                       this.endBattle(true);
+                       return;
+                   }
+               }
+               
+               this.playerAbilityCooldown = ability.cooldown;
+               this.isPlayerTurn = false;
+               UIManager.updateBattleScreen();
+               
+               setTimeout(() => this.enemyTurn(), 1000);
+           }
+       },
+  
+      addLog(text) {
         this.battleLog.unshift({ text, time: new Date().toLocaleTimeString() });
         if (this.battleLog.length > 20) this.battleLog.pop();
     },
@@ -2876,9 +3151,9 @@ const UIManager = {
         
         document.getElementById("playerPetSprite").innerText = playerTemplate.emoji;
         document.getElementById("enemyPetSprite").innerText = enemyTemplate.emoji;
-        document.getElementById("playerPetName").innerText = PetManager.getEvolution(player) + (BattleSystem.bleeding === "player" ? " 🩸" : "") + (BattleSystem.burning === "player" ? " 🔥" + (BattleSystem.burnDuration.player > 0 && BattleSystem.burnDuration.player < 9999 ? BattleSystem.burnDuration.player : "") : "") + (BattleSystem.confused === "player" ? " 🧠" : "") + (BattleSystem.shield.player.turns > 0 ? " 🛡️" : "");
+        document.getElementById("playerPetName").innerText = PetManager.getEvolution(player) + (BattleSystem.bleeding === "player" ? " 🩸" : "") + (BattleSystem.burning === "player" ? " 🔥" + (BattleSystem.burnDuration.player > 0 && BattleSystem.burnDuration.player < 9999 ? BattleSystem.burnDuration.player : "") : "") + (BattleSystem.confused === "player" ? " 🧠" : "") + (BattleSystem.shield.player.turns > 0 ? " 🛡️" : "") + (BattleSystem.poisoned === "player" ? " ☠️" : "");
         document.getElementById("playerTier").innerText = `Tier: ${player.tier || "D1"}`;
-        document.getElementById("enemyPetName").innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy) + (BattleSystem.bleeding === "enemy" ? " 🩸" : "") + (BattleSystem.burning === "enemy" ? " 🔥" + (BattleSystem.burnDuration.enemy > 0 && BattleSystem.burnDuration.enemy < 9999 ? BattleSystem.burnDuration.enemy : "") : "") + (BattleSystem.confused === "enemy" ? " 🧠" : "") + (BattleSystem.shield.enemy.turns > 0 ? " 🛡️" : "");
+        document.getElementById("enemyPetName").innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy) + (BattleSystem.bleeding === "enemy" ? " 🩸" : "") + (BattleSystem.burning === "enemy" ? " 🔥" + (BattleSystem.burnDuration.enemy > 0 && BattleSystem.burnDuration.enemy < 9999 ? BattleSystem.burnDuration.enemy : "") : "") + (BattleSystem.confused === "enemy" ? " 🧠" : "") + (BattleSystem.shield.enemy.turns > 0 ? " 🛡️" : "") + (BattleSystem.poisoned === "enemy" ? " ☠️" : "");
         document.getElementById("enemyTier").innerText = `Tier: ${enemy.tier || "D1"}` + (enemy.shiny ? " ✨" : "");
         document.getElementById("enemyPetLevel").innerText = `Level ${enemy.level}`;
         
@@ -3124,7 +3399,30 @@ const UIManager = {
             alert("Select a pet first!");
             return;
         }
-        if (Economy.useItem(itemId, pet)) {
+
+        const item = Economy.shopItems[itemId];
+        if (!item) {
+            alert("Unknown item!");
+            return;
+        }
+
+        let qty = 1;
+        if (item.type === "xp" || item.type === "heal" || item.type === "training") {
+            const owned = Economy.inventory[itemId] || 0;
+            const input = prompt(`How many ${item.name}(s) to use? (You have ${owned})`, "1");
+            if (input === null) return; // Cancelled
+            qty = parseInt(input, 10);
+            if (isNaN(qty) || qty < 1) {
+                alert("Invalid quantity!");
+                return;
+            }
+            if (qty > owned) {
+                alert(`You only have ${owned} ${item.name}(s)!`);
+                return;
+            }
+        }
+
+        if (Economy.useItem(itemId, pet, qty)) {
             DataManager.save();
             this.updatePetScreen();
             this.renderInventory();

@@ -871,17 +871,20 @@ const Economy = {
         return true;
     },
 
-    useItem(itemId, pet) {
+    useItem(itemId, pet, qty = 1) {
         if (!this.inventory[itemId] || this.inventory[itemId] <= 0) return false;
+        if (qty > this.inventory[itemId]) qty = this.inventory[itemId];
 
         const item = this.shopItems[itemId];
-        this.inventory[itemId]--;
+        this.inventory[itemId] -= qty;
+
+        const totalPower = item.power * qty;
 
         if (item.type === "heal") {
             const maxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
-            pet.currentHP = Math.min(maxHP, pet.currentHP + item.power);
+            pet.currentHP = Math.min(maxHP, pet.currentHP + totalPower);
         } else if (item.type === "xp") {
-            PetManager.gainXP(pet, item.power);
+            PetManager.gainXP(pet, totalPower);
         } else if (item.type === "training") {
             if (itemId === "precisionGuide") {
                 TrainingSystem.guaranteedPerfectNextStop = true;

@@ -3851,6 +3851,3 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
 // Initialize game when DOM is loaded
 document.addEventListener("DOMContentLoaded", () => Game.init());
-
-
-

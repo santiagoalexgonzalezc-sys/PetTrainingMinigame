@@ -240,7 +240,7 @@ const PetTypes = {
         emoji: "🐰",
         type: "grass",
         baseStats: { hp: 65, attack: 50, defense: 45, speed: 70, special: 45 },
-        passive: "Overgrow - Low HP increases Grass damage",
+        passive: "Bloom Burst - Grass damage increases by 40% when HP is below 25%",
         evolution: ["Leaf Bunny", "Forest Bunny", "Nature Spirit"]
     },
     vineSnake: {
@@ -263,7 +263,7 @@ const PetTypes = {
         emoji: "🐻",
         type: "grass",
         baseStats: { hp: 80, attack: 55, defense: 50, speed: 35, special: 45 },
-        passive: "Thick Fat - Reduces Fire/Ice damage",
+        passive: "Dense Fur - Reduces Fire and Ice damage by 30%",
         evolution: ["Moss Bear", "Forest Bear", "Earth Guardian"]
     },
     thornHog: {

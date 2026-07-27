@@ -852,7 +852,7 @@ const Economy = {
         superPotion: { name: "Super Potion", price: 80, type: "heal", power: 50 },
         hyperPotion: { name: "Hyper Potion", price: 200, type: "heal", power: 100 },
         tierStone: { name: "Tier Stone", price: 500, type: "upgrade", power: 1 },
-        xpOrb: { name: "XP Orb", price: 200, type: "xp", power: 500 },
+        xpOrb: { name: "XP Orb", price: 250, type: "xp", power: 500 },
         precisionGuide: { name: "Precision Guide", price: 100, type: "training", power: 1 },
         focusIncense: { name: "Focus Incense", price: 150, type: "training", power: 5 },
         bandOfSwiftness: { name: "Band of Swiftness", price: 4000, type: "equipment", power: 10, stats: { speed: 10 } },
@@ -2410,6 +2410,12 @@ this.playerAbilityCooldown = ability.cooldown;
             }
             
             Economy.money += moneyReward;
+            
+            // 10% chance to drop an XP Orb when defeating a wild pet
+            if (Math.random() < 0.10) {
+                Economy.inventory.xpOrb = (Economy.inventory.xpOrb || 0) + 1;
+                this.addLog("✨ Found an XP Orb!");
+            }
         } else {
             PlayerSystem.battleStreak = 0;
             PlayerSystem.totalBattles++;

@@ -149,6 +149,13 @@ const PetTypes = {
         type: "fire",
         baseStats: { hp: 65, attack: 52, defense: 43, speed: 65, special: 60 },
         passive: "Blaze - Low HP increases Fire damage",
+        ability: {
+            name: "Fireball",
+            type: "fire",
+            cooldown: 2,
+            description: "Deals based on special + 5 flat. Leaves the opponent burning for the rest of the battle (25% of initial damage per turn).",
+            burn: true
+        },
         evolution: ["Ember Fox", "Inferno Fox", "Phoenix Lord"]
     },
     flameCat: {
@@ -156,7 +163,15 @@ const PetTypes = {
         emoji: "🐱",
         type: "fire",
         baseStats: { hp: 68, attack: 55, defense: 40, speed: 60, special: 55 },
-        passive: "Intimidate - Lowers enemy attack on switch",
+        passive: "Intimidate - Lowers enemy attack by 1 stage on switch in",
+        ability: {
+            name: "Ember Surge",
+            type: "fire",
+            cooldown: 3,
+            description: "Hits with fire power + 3 flat. Burns the enemy (25% of initial dmg/turn for 3 turns).",
+            burn: true,
+            burnDuration: 3
+        },
         evolution: ["Flame Cat", "Blaze Cat", "Magma Tiger"]
     },
     sparkDog: {
@@ -299,7 +314,15 @@ const PetTypes = {
         emoji: "😺",
         type: "psychic",
         baseStats: { hp: 65, attack: 40, defense: 45, speed: 60, special: 70 },
-        passive: "Synchronize - Shares status conditions",
+        passive: "Synchronize - Shares burn/burning/bleeding status with attacker on contact",
+        ability: {
+            name: "Psychic Burst",
+            type: "psychic",
+            cooldown: 2,
+            description: "Deals special-based damage. 30% chance to confuse the enemy (skip their next turn).",
+            confuse: true,
+            confuseChance: 0.30
+        },
         evolution: ["Mind Cat", "Psi Cat", "Telepath Master"]
     },
     dreamOwl: {
@@ -341,7 +364,16 @@ const PetTypes = {
         emoji: "🦭",
         type: "ice",
         baseStats: { hp: 75, attack: 45, defense: 55, speed: 40, special: 50 },
-        passive: "Ice Body - Heals in hail",
+        passive: "Ice Body - Heals 5% max HP each turn",
+        ability: {
+            name: "Aurora Guard",
+            type: "ice",
+            cooldown: 2,
+            description: "Deals ice damage and shields the user for 2 turns (blocks 30% of incoming damage).",
+            shield: true,
+            shieldDuration: 2,
+            shieldPercent: 0.30
+        },
         evolution: ["Crystal Seal", "Diamond Seal", "Frost Guardian"]
     },
     
@@ -359,7 +391,15 @@ const PetTypes = {
         emoji: "🐉",
         type: "dragon",
         baseStats: { hp: 75, attack: 60, defense: 50, speed: 45, special: 55 },
-        passive: "Multiscale - Reduces damage at full HP",
+        passive: "Multiscale - Reduces damage taken by 25% when at full HP",
+        ability: {
+            name: "Dragon Rampage",
+            type: "dragon",
+            cooldown: 3,
+            description: "High-risk/high-reward attack. Deals 2x damage at 50% chance, or 0.5x damage at 50% chance.",
+            rampage: true,
+            critChance: 0.5
+        },
         evolution: ["Drake Whelp", "Storm Drake", "Dragon Emperor"]
     },
 
@@ -414,7 +454,7 @@ const PetTypes = {
         name: "Shadow Wolf",
         emoji: "🐺",
         type: "dark",
-        baseStats: { hp: 70, attack: 65, defense: 45, speed: 62, special: 50 },
+        baseStats: { hp: 70, attack: 55, defense: 45, speed: 62, special: 60 },
         passive: "Alpha Hunter - Boosts attack when facing an stronger foe. Deals 1.5x damage if foe has higher total power. Bleeding Claw (Ability) - Leaves the enemy bleeding for the rest of the battle.",
         ability: {
             name: "Bleeding Claw",
@@ -439,8 +479,16 @@ const PetTypes = {
         name: "Moon Pixie",
         emoji: "🦄",
         type: "fairy",
-        baseStats: { hp: 68, attack: 42, defense: 48, speed: 60, special: 68 },
-        passive: "Cute Charm - May infatuate attackers on contact",
+        baseStats: { hp: 68, attack: 42, defense: 48, speed: 60, special: 75 },
+        passive: "Magic Guard - Only takes direct damage, ignores burn/bleed debuffs",
+        ability: {
+            name: "Moonbeam Heal",
+            type: "fairy",
+            cooldown: 2,
+            description: "Deals fairy damage and heals user for 30% of damage dealt.",
+            heal: true,
+            healPercent: 0.30
+        },
         evolution: ["Star Fawn", "Moon Pixie", "Astral Spirit"]
     },
     glimmerMoth: {
@@ -1323,6 +1371,11 @@ const BattleSystem = {
     paralyzed: null,
     bleeding: null,
     bleedDamage: 0,
+    burning: null,
+    burnDamage: 0,
+    confused: null,
+    burnDuration: { enemy: 0, player: 0 },
+    shield: { enemy: { turns: 0, percent: 0 }, player: { turns: 0, percent: 0 } },
 
     typeEffectiveness: {
         fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5, dragon: 0.5, fairy: 2, dark: 1, normal: 1 },
@@ -1355,6 +1408,11 @@ const BattleSystem = {
         this.paralyzed = null;
         this.bleeding = null;
         this.bleedDamage = 0;
+        this.burning = null;
+        this.burnDamage = 0;
+        this.confused = null;
+        this.burnDuration = { enemy: 0, player: 0 };
+        this.shield = { enemy: { turns: 0, percent: 0 }, player: { turns: 0, percent: 0 } };
         
         // Determine who goes first by speed
         const playerSpeed = this.playerPet.stats.speed;
@@ -1453,18 +1511,35 @@ const BattleSystem = {
         // Reduce all damage by 75% for fairer battles
         damage = Math.floor(damage * 0.25);
         
+        // Apply shield reduction if defender has active shield
+        const defenderIsPlayer = defender === this.playerPet;
+        const defenderShield = defenderIsPlayer ? this.shield.player : this.shield.enemy;
+        if (defenderShield.turns > 0) {
+            damage = Math.floor(damage * (1 - defenderShield.percent));
+        }
+        
         return { damage, isCrit, typeMult };
     },
 
-    playerTurn() {
-        if (!this.active || !this.isPlayerTurn) return;
-        
-        this.turnCount++;
-        if (this.playerAbilityCooldown > 0) {
-            this.playerAbilityCooldown--;
-        }
-        
-        this.attack(this.playerPet, this.enemyPet, true);
+playerTurn() {
+         if (!this.active || !this.isPlayerTurn) return;
+         
+         this.turnCount++;
+         if (this.playerAbilityCooldown > 0) {
+             this.playerAbilityCooldown--;
+         }
+         
+         // Check if player is confused
+         if (this.confused === "player") {
+             this.addLog(`${this.getPetName(this.playerPet)} is confused and can't move!`);
+             this.confused = null;
+             this.isPlayerTurn = false;
+             UIManager.updateBattleScreen();
+             setTimeout(() => this.enemyTurn(), 1000);
+             return;
+         }
+         
+         this.attack(this.playerPet, this.enemyPet, true);
         
         if (this.enemyPet.currentHP <= 0) {
             this.endBattle(true);
@@ -1490,10 +1565,20 @@ const BattleSystem = {
         setTimeout(() => this.enemyTurn(), 1000);
     },
     
-    enemyTurn() {
-        if (!this.active || this.isPlayerTurn) return;
-        
-        this.attack(this.enemyPet, this.playerPet, false);
+enemyTurn() {
+         if (!this.active || this.isPlayerTurn) return;
+         
+         // Check if enemy is confused
+         if (this.confused === "enemy") {
+             this.addLog(`${this.getPetName(this.enemyPet)} is confused and can't move!`);
+             this.confused = null;
+             this.isPlayerTurn = true;
+             UIManager.updateBattleScreen();
+             setTimeout(() => UIManager.updateBattleScreen(), 500);
+             return;
+         }
+         
+         this.attack(this.enemyPet, this.playerPet, false);
         
         if (this.playerPet.currentHP <= 0) {
             this.endBattle(false);
@@ -1528,11 +1613,28 @@ const BattleSystem = {
         else if (result.typeMult < 1) logText += " (Not very effective)";
         
 this.addLog(logText);
-         UIManager.updateBattleScreen();
-         
-         // Apply bleed damage after each attack
-         this.applyBleedDamage();
-     },
+          UIManager.updateBattleScreen();
+          
+          // Apply bleed damage after each attack
+          this.applyBleedDamage();
+          
+          // Apply burn damage after each attack
+          this.applyBurnDamage();
+          
+          // Decrement shield durations after each attack
+          if (this.shield.player.turns > 0) {
+              this.shield.player.turns--;
+              if (this.shield.player.turns <= 0) {
+                  this.shield.player = { turns: 0, percent: 0 };
+              }
+          }
+          if (this.shield.enemy.turns > 0) {
+              this.shield.enemy.turns--;
+              if (this.shield.enemy.turns <= 0) {
+                  this.shield.enemy = { turns: 0, percent: 0 };
+              }
+          }
+      },
  
      applyBleedDamage() {
          if (this.bleeding && this.bleedDamage > 0 && this.active) {
@@ -1551,6 +1653,35 @@ this.addLog(logText);
              }
          }
      },
+
+applyBurnDamage() {
+          if (this.burning && this.burnDamage > 0 && this.active) {
+              const target = this.burning === "enemy" ? this.enemyPet : this.playerPet;
+              const targetName = this.burning === "enemy" ? this.getPetName(this.enemyPet) : this.getPetName(this.playerPet);
+              const side = this.burning === "enemy" ? "enemy" : "player";
+              if (this.burnDuration[side] > 0) {
+                  const burnDmg = Math.max(1, Math.floor(this.burnDamage * 0.25));
+                  target.currentHP = Math.max(0, target.currentHP - burnDmg);
+                  this.addLog(`🔥 Burning deals ${burnDmg} damage to ${targetName}!`);
+                  this.burnDuration[side]--;
+                  if (this.burnDuration[side] <= 0) {
+                      this.burning = null;
+                      this.burnDamage = 0;
+                  }
+                  UIManager.updateBattleScreen();
+                  if (target.currentHP <= 0) {
+                      if (this.burning === "enemy") {
+                          this.endBattle(true);
+                      } else {
+                          this.endBattle(false);
+                      }
+                  }
+              } else {
+                  this.burning = null;
+                  this.burnDamage = 0;
+              }
+          }
+      },
 
     calculateSpecialDamage(attacker, defender, abilityType) {
         const attackerTemplate = PetTypes[attacker.typeId];
@@ -1593,6 +1724,13 @@ this.addLog(logText);
         const passiveMultiplier = PassiveSystem.getPassiveMultiplier(attacker, defender);
         damage = Math.floor(damage * passiveMultiplier);
         damage = Math.floor(damage * 0.25);
+        
+        // Apply shield reduction if defender has active shield
+        const defenderIsPlayer = defender === this.playerPet;
+        const defenderShield = defenderIsPlayer ? this.shield.player : this.shield.enemy;
+        if (defenderShield.turns > 0) {
+            damage = Math.floor(damage * (1 - defenderShield.percent));
+        }
         
         return { damage, isCrit, typeMult };
     },
@@ -1691,7 +1829,262 @@ setTimeout(() => this.enemyTurn(), 1000);
              
              setTimeout(() => this.enemyTurn(), 1000);
          }
-     },
+         
+// Fireball implementation (Ember Fox ability)
+          if (ability.name === "Fireball" && ability.burn) {
+              if (this.playerAbilityCooldown > 0) return;
+              
+              // Fireball damage: special stat + 5 flat
+              const specialStat = this.playerPet.stats.special;
+              const baseDamage = specialStat + 5;
+              
+              const defenderTemplate = PetTypes[this.enemyPet.typeId];
+              const typeMult = this.getTypeEffectiveness("fire", defenderTemplate.type);
+              
+              let rawDmg = Math.floor((baseDamage * 40) / Math.max(1, defenderTemplate.stats.defense));
+              rawDmg = Math.floor(rawDmg * typeMult);
+              rawDmg = Math.floor(rawDmg * 0.25); // Global damage reduction
+              
+              this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - rawDmg);
+              
+              // Set burning state (permanent burn for Ember Fox)
+              this.burning = "enemy";
+              this.burnDamage = rawDmg;
+              this.burnDuration.enemy = 9999;
+              
+              const attackerName = this.getPetName(this.playerPet);
+              const defenderName = this.getPetName(this.enemyPet);
+              
+              let logText = `${attackerName} used ${ability.name}! Deals ${rawDmg} damage to ${defenderName}`;
+              if (typeMult > 1) logText += " (Super effective!)";
+              else if (typeMult < 1) logText += " (Not very effective)";
+              
+              this.addLog(logText);
+              this.addLog(`🔥 ${defenderName} is now burning!`);
+              
+              if (this.enemyPet.currentHP <= 0) {
+                  UIManager.updateBattleScreen();
+                  this.endBattle(true);
+                  return;
+              }
+              
+              this.playerAbilityCooldown = ability.cooldown;
+              this.isPlayerTurn = false;
+              UIManager.updateBattleScreen();
+              
+              setTimeout(() => this.enemyTurn(), 1000);
+          }
+          
+          // Ember Surge implementation (flameCat ability)
+          if (ability.name === "Ember Surge" && ability.burn) {
+              if (this.playerAbilityCooldown > 0) return;
+              
+              const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+              
+              if (result.dodged) {
+                  this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+              } else {
+                  this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                  
+                  // Set burning state for 3 turns
+                  this.burning = "enemy";
+                  this.burnDamage = result.damage;
+                  this.burnDuration.enemy = 3;
+                  
+                  const attackerName = this.getPetName(this.playerPet);
+                  const defenderName = this.getPetName(this.enemyPet);
+                  
+                  let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                  if (result.isCrit) logText += " (CRITICAL!)";
+                  if (result.typeMult > 1) logText += " (Super effective!)";
+                  else if (result.typeMult < 1) logText += " (Not very effective)";
+                  
+                  this.addLog(logText);
+                  this.addLog(`🔥 ${defenderName} is now burning for 3 turns!`);
+                  
+                  if (this.enemyPet.currentHP <= 0) {
+                      UIManager.updateBattleScreen();
+                      this.endBattle(true);
+                      return;
+                  }
+              }
+              
+              this.playerAbilityCooldown = ability.cooldown;
+              this.isPlayerTurn = false;
+              UIManager.updateBattleScreen();
+              
+              setTimeout(() => this.enemyTurn(), 1000);
+          }
+          
+          // Psychic Burst implementation (mindCat ability)
+          if (ability.name === "Psychic Burst" && ability.confuse) {
+              if (this.playerAbilityCooldown > 0) return;
+              
+              const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+              
+              if (result.dodged) {
+                  this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+              } else {
+                  this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                  
+                  const attackerName = this.getPetName(this.playerPet);
+                  const defenderName = this.getPetName(this.enemyPet);
+                  
+                  // 30% chance to confuse
+                  if (Math.random() < ability.confuseChance) {
+                      this.confused = "enemy";
+                      this.addLog(`🧠 ${defenderName} is now confused and may skip their next turn!`);
+                  }
+                  
+                  let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                  if (result.isCrit) logText += " (CRITICAL!)";
+                  if (result.typeMult > 1) logText += " (Super effective!)";
+                  else if (result.typeMult < 1) logText += " (Not very effective)";
+                  
+                  this.addLog(logText);
+                  
+                  if (this.enemyPet.currentHP <= 0) {
+                      UIManager.updateBattleScreen();
+                      this.endBattle(true);
+                      return;
+                  }
+              }
+              
+              this.playerAbilityCooldown = ability.cooldown;
+              this.isPlayerTurn = false;
+              UIManager.updateBattleScreen();
+              
+              setTimeout(() => this.enemyTurn(), 1000);
+          }
+          
+          // Moonbeam Heal implementation (moonPixie ability)
+          if (ability.name === "Moonbeam Heal" && ability.heal) {
+              if (this.playerAbilityCooldown > 0) return;
+              
+              const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+              
+              if (result.dodged) {
+                  this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+              } else {
+                  this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                  
+                  // Heal user for 30% of damage dealt
+                  const healAmount = Math.floor(result.damage * ability.healPercent);
+                  const maxHP = PetManager.calculateMaxHP(PetTypes[this.playerPet.typeId], this.playerPet.level, this.playerPet);
+                  this.playerPet.currentHP = Math.min(maxHP, this.playerPet.currentHP + healAmount);
+                  
+                  const attackerName = this.getPetName(this.playerPet);
+                  const defenderName = this.getPetName(this.enemyPet);
+                  
+                  let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                  if (result.isCrit) logText += " (CRITICAL!)";
+                  if (result.typeMult > 1) logText += " (Super effective!)";
+                  else if (result.typeMult < 1) logText += " (Not very effective)";
+                  
+                  this.addLog(logText);
+                  if (healAmount > 0) {
+                      this.addLog(`💚 ${attackerName} heals for ${healAmount} HP!`);
+                  }
+                  
+                  if (this.enemyPet.currentHP <= 0) {
+                      UIManager.updateBattleScreen();
+                      this.endBattle(true);
+                      return;
+                  }
+              }
+              
+              this.playerAbilityCooldown = ability.cooldown;
+              this.isPlayerTurn = false;
+              UIManager.updateBattleScreen();
+              
+              setTimeout(() => this.enemyTurn(), 1000);
+          }
+          
+          // Dragon Rampage implementation (drakeWhelp ability)
+          if (ability.name === "Dragon Rampage" && ability.rampage) {
+              if (this.playerAbilityCooldown > 0) return;
+              
+              const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+              
+              if (result.dodged) {
+                  this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+              } else {
+                  // 50% chance double damage, 50% chance half damage
+                  const rampageRoll = Math.random();
+                  let finalDmg = result.damage;
+                  if (rampageRoll < ability.critChance) {
+                      finalDmg = Math.floor(result.damage * 2);
+                      this.addLog(`${this.getPetName(this.playerPet)} used ${ability.name}! It's a critical hit!`);
+                  } else {
+                      finalDmg = Math.floor(result.damage * 0.5);
+                      this.addLog(`${this.getPetName(this.playerPet)} used ${ability.name}! It's not very effective...`);
+                  }
+                  
+                  this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - finalDmg);
+                  
+                  const attackerName = this.getPetName(this.playerPet);
+                  const defenderName = this.getPetName(this.enemyPet);
+                  
+                  let logText = `${attackerName} used ${ability.name}! Deals ${finalDmg} damage to ${defenderName}`;
+                  if (result.isCrit) logText += " (CRITICAL!)";
+                  if (result.typeMult > 1) logText += " (Super effective!)";
+                  else if (result.typeMult < 1) logText += " (Not very effective)";
+                  
+                  this.addLog(logText);
+                  
+                  if (this.enemyPet.currentHP <= 0) {
+                      UIManager.updateBattleScreen();
+                      this.endBattle(true);
+                      return;
+                  }
+              }
+              
+              this.playerAbilityCooldown = ability.cooldown;
+              this.isPlayerTurn = false;
+              UIManager.updateBattleScreen();
+              
+              setTimeout(() => this.enemyTurn(), 1000);
+          }
+          
+          // Aurora Guard implementation (crystalSeal ability)
+          if (ability.name === "Aurora Guard" && ability.shield) {
+              if (this.playerAbilityCooldown > 0) return;
+              
+              const result = this.calculateSpecialDamage(this.playerPet, this.enemyPet, ability.type);
+              
+              if (result.dodged) {
+                  this.addLog(`${result.dodgerName} dodged ${ability.name}!`);
+              } else {
+                  this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
+                  
+                  // Apply shield to player
+                  this.shield.player = { turns: ability.shieldDuration, percent: ability.shieldPercent };
+                  
+                  const attackerName = this.getPetName(this.playerPet);
+                  const defenderName = this.getPetName(this.enemyPet);
+                  
+                  let logText = `${attackerName} used ${ability.name}! Deals ${result.damage} damage to ${defenderName}`;
+                  if (result.isCrit) logText += " (CRITICAL!)";
+                  if (result.typeMult > 1) logText += " (Super effective!)";
+                  else if (result.typeMult < 1) logText += " (Not very effective)";
+                  
+                  this.addLog(logText);
+                  this.addLog(`🛡️ ${attackerName} is now shielded for ${ability.shieldDuration} turns (blocks ${Math.floor(ability.shieldPercent * 100)}% damage)!`);
+                  
+                  if (this.enemyPet.currentHP <= 0) {
+                      UIManager.updateBattleScreen();
+                      this.endBattle(true);
+                      return;
+                  }
+              }
+              
+              this.playerAbilityCooldown = ability.cooldown;
+              this.isPlayerTurn = false;
+              UIManager.updateBattleScreen();
+              
+              setTimeout(() => this.enemyTurn(), 1000);
+          }
+      },
  
      addLog(text) {
         this.battleLog.unshift({ text, time: new Date().toLocaleTimeString() });
@@ -2483,9 +2876,9 @@ const UIManager = {
         
         document.getElementById("playerPetSprite").innerText = playerTemplate.emoji;
         document.getElementById("enemyPetSprite").innerText = enemyTemplate.emoji;
-        document.getElementById("playerPetName").innerText = PetManager.getEvolution(player) + (BattleSystem.bleeding === "player" ? " 🩸" : "");
+        document.getElementById("playerPetName").innerText = PetManager.getEvolution(player) + (BattleSystem.bleeding === "player" ? " 🩸" : "") + (BattleSystem.burning === "player" ? " 🔥" + (BattleSystem.burnDuration.player > 0 && BattleSystem.burnDuration.player < 9999 ? BattleSystem.burnDuration.player : "") : "") + (BattleSystem.confused === "player" ? " 🧠" : "") + (BattleSystem.shield.player.turns > 0 ? " 🛡️" : "");
         document.getElementById("playerTier").innerText = `Tier: ${player.tier || "D1"}`;
-        document.getElementById("enemyPetName").innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy) + (BattleSystem.bleeding === "enemy" ? " 🩸" : "");
+        document.getElementById("enemyPetName").innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy) + (BattleSystem.bleeding === "enemy" ? " 🩸" : "") + (BattleSystem.burning === "enemy" ? " 🔥" + (BattleSystem.burnDuration.enemy > 0 && BattleSystem.burnDuration.enemy < 9999 ? BattleSystem.burnDuration.enemy : "") : "") + (BattleSystem.confused === "enemy" ? " 🧠" : "") + (BattleSystem.shield.enemy.turns > 0 ? " 🛡️" : "");
         document.getElementById("enemyTier").innerText = `Tier: ${enemy.tier || "D1"}` + (enemy.shiny ? " ✨" : "");
         document.getElementById("enemyPetLevel").innerText = `Level ${enemy.level}`;
         

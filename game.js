@@ -1678,8 +1678,8 @@ this.addLog(logText);
 // Apply burn damage after each attack
            this.applyBurnDamage();
            
-           // Sanguine Drain - heals a portion of damage dealt as HP (dark type passive)
-           if (attackerTemplate.passive && attackerTemplate.passive.includes("Sanguine Drain") && attacker.type === "dark") {
+// Sanguine Drain - heals a portion of damage dealt as HP (dark type passive)
+            if (attackerTemplate.passive && attackerTemplate.passive.includes("Sanguine Drain") && attackerTemplate.type === "dark") {
                const healAmount = Math.floor(result.damage * 0.15);
                if (healAmount > 0) {
                    attacker.currentHP = Math.min(PetManager.calculateMaxHP(attackerTemplate, attacker.level, attacker), attacker.currentHP + healAmount);

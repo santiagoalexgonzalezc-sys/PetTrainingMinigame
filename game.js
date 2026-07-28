@@ -34,7 +34,7 @@ lastDailyBonus: PlayerSystem.lastDailyBonus,
             PetManager.pets = data.pets || [];
             PetManager.storage = data.storage || [];
             Economy.money = data.money || 100;
-            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0, woodStick: 0, rock: 0, gem: 0 };
+            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0, woodStick: 0, rock: 0, leather: 0, ore: 0, herbs: 0, crystal: 0, darkRock: 0, gem: 0 };
             PetManager.pets.forEach(p => {
                 if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
@@ -105,7 +105,7 @@ lastDailyBonus: PlayerSystem.lastDailyBonus,
                 PlayerSystem.xp = data.player.xp || 0;
                 PlayerSystem.battleStreak = data.player.battleStreak || 0;
                 PlayerSystem.bestStreak = data.player.bestStreak || 0;
-                PlayerSystem.unlockedZones = data.player.unlockedZones || ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh"];
+                PlayerSystem.unlockedZones = data.player.unlockedZones || ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh", "darkforest"];
                 PlayerSystem.totalBattles = data.player.totalBattles || 0;
                 PlayerSystem.totalCatches = data.player.totalCatches || 0;
                 PlayerSystem.totalTrainings = data.player.totalTrainings || 0;
@@ -117,7 +117,7 @@ lastDailyBonus: PlayerSystem.lastDailyBonus,
                 PlayerSystem.xp = 0;
                 PlayerSystem.battleStreak = 0;
                 PlayerSystem.bestStreak = 0;
-                PlayerSystem.unlockedZones = ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh"];
+                PlayerSystem.unlockedZones = ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh", "darkforest"];
                 PlayerSystem.totalBattles = 0;
                 PlayerSystem.totalCatches = 0;
                 PlayerSystem.totalTrainings = 0;
@@ -845,11 +845,17 @@ const Economy = {
         toughCollar: 0,
         focusBand: 0,
         lifeBangle: 0,
-        attackSunglasses: 0
+        attackSunglasses: 0,
+        woodStick: 0,
+        rock: 0,
+        leather: 0,
+        ore: 0,
+        herbs: 0,
+        crystal: 0,
+        darkRock: 0,
+        gem: 0
     },
-
     shopItems: {
-        basicBall: { name: "Basic Ball", price: 50, type: "catch", power: 1 },
         greatBall: { name: "Great Ball", price: 150, type: "catch", power: 2 },
         ultraBall: { name: "Ultra Ball", price: 400, type: "catch", power: 3 },
         potion: { name: "Potion", price: 30, type: "heal", power: 20 },
@@ -858,6 +864,13 @@ const Economy = {
         tierStone: { name: "Tier Stone", price: 500, type: "upgrade", power: 1 },
         xpOrb: { name: "XP Orb", price: 250, type: "xp", power: 500 },
         rareXpOrb: { name: "Rare XP Orb", price: 1000, type: "xp", power: 2000 },
+        woodStick: { name: "Wood Stick", price: 0, type: "resource", power: 1 },
+        rock: { name: "Rock", price: 0, type: "resource", power: 1 },
+        leather: { name: "Leather", price: 0, type: "resource", power: 1 },
+        ore: { name: "Ore", price: 0, type: "resource", power: 1 },
+        herbs: { name: "Herbs", price: 0, type: "resource", power: 1 },
+        crystal: { name: "Crystal", price: 0, type: "resource", power: 1 },
+        darkRock: { name: "Dark Rock", price: 0, type: "resource", power: 1 },
         gem: { name: "Gem", price: 200, type: "currency", power: 1 },
         precisionGuide: { name: "Precision Guide", price: 100, type: "training", power: 1 },
         focusIncense: { name: "Focus Incense", price: 150, type: "training", power: 5 },
@@ -921,7 +934,7 @@ const PlayerSystem = {
     xp: 0,
     battleStreak: 0,
     bestStreak: 0,
-    unlockedZones: ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh"],
+    unlockedZones: ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh", "darkforest"],
     totalBattles: 0,
     totalCatches: 0,
     totalTrainings: 0,
@@ -997,7 +1010,7 @@ const Exploration = {
             unlockLevel: 1,
             floorSize: 5,
             maxFloor: 200,
-            commonPets: ["scaleLizard", "sparkDog", "shadowWolf", "duskBat"],
+            commonPets: ["scaleLizard", "sparkDog"],
             rarePets: ["drakeWhelp", "frostPenguin", "crystalSeal", "frostBear", "crystalWyrm", "mindApe"],
             encounterRate: 1
         },
@@ -1057,7 +1070,7 @@ const Exploration = {
             unlockLevel: 25,
             floorSize: 5,
             maxFloor: 200,
-            commonPets: ["mistFrog", "vineSnake", "mossBear", "glimmerMoth", "marshCroc", "shadowWolf", "sunstoneBeetle"],
+            commonPets: ["mistFrog", "vineSnake", "mossBear", "glimmerMoth", "marshCroc", "sunstoneBeetle"],
             rarePets: ["waveWhale", "dreamOwl", "frostBear"],
             encounterRate: 1
         },
@@ -1078,7 +1091,17 @@ const Exploration = {
             floorSize: 5,
             maxFloor: 200,
             commonPets: ["venomAsp", "bogToad", "mistFrog", "vineSnake"],
-            rarePets: ["shadowWolf", "cosmicFox", "moonPixie"],
+            rarePets: ["cosmicFox", "moonPixie"],
+            encounterRate: 1
+        },
+        darkforest: {
+            name: "Dark Forest",
+            emoji: "🌑",
+            unlockLevel: 20,
+            floorSize: 5,
+            maxFloor: 200,
+            commonPets: ["shadowWolf", "duskBat"],
+            rarePets: [],
             encounterRate: 1
         }
     },
@@ -2473,32 +2496,61 @@ this.playerAbilityCooldown = ability.cooldown;
             
             Economy.money += moneyReward;
             
+            const enemyElement = PetTypes[this.enemyPet.typeId]?.type;
+            const zoneId = Exploration.currentFloor?.zoneId;
+            const enemyLevel = this.enemyPet.level;
+            
             // 20% chance to drop an XP Orb when defeating a wild pet
             if (Math.random() < 0.20) {
                 Economy.inventory.xpOrb = (Economy.inventory.xpOrb || 0) + 1;
                 this.addLog("✨ Found an XP Orb!");
             }
             
-            // 25% chance to drop a Wood Stick
+            const elementToResource = {
+                grass: "woodStick", ice: "rock", normal: "leather",
+                electric: "ore", poison: "herbs", fairy: "crystal", dark: "darkRock"
+            };
+            const resourceNames = {
+                woodStick: "Wood Stick", rock: "Rock", leather: "Leather",
+                ore: "Ore", herbs: "Herbs", crystal: "Crystal", darkRock: "Dark Rock"
+            };
+            const resourceEmojis = {
+                woodStick: "🪵", rock: "🪨", leather: "🥾", ore: "⛏️",
+                herbs: "🌿", crystal: "💎", darkRock: "🟣"
+            };
+            
+            // Primary resource drop based on enemy element (25% chance, 1-2 qty)
             if (Math.random() < 0.25) {
-                Economy.inventory.woodStick = (Economy.inventory.woodStick || 0) + 1;
-                this.addLog("🪵 Found a Wood Stick!");
+                const resource = elementToResource[enemyElement];
+                const qty = Math.random() < 0.3 ? 2 : 1;
+                if (resource) {
+                    Economy.inventory[resource] = (Economy.inventory[resource] || 0) + qty;
+                    this.addLog(`${resourceEmojis[resource]} Found ${qty}x ${resourceNames[resource]}!`);
+                }
             }
             
-            // 25% chance to drop a Rock
-            if (Math.random() < 0.25) {
-                Economy.inventory.rock = (Economy.inventory.rock || 0) + 1;
-                this.addLog("🪨 Found a Rock!");
+            // Zone secondary resource drop (15% chance, 1 qty)
+            const zoneSecondary = {
+                forest: "herbs", cave: "ore", lake: "leather", mountain: "crystal",
+                desert: "leather", ocean: "crystal", volcano: "darkRock", swamp: "herbs",
+                sky: "crystal", toxicMarsh: "herbs"
+            };
+            if (Math.random() < 0.15) {
+                const resource = zoneId ? zoneSecondary[zoneId] : null;
+                if (resource) {
+                    Economy.inventory[resource] = (Economy.inventory[resource] || 0) + 1;
+                    this.addLog(`${resourceEmojis[resource]} Found 1x ${resourceNames[resource]}!`);
+                }
             }
             
-            // 10% chance to drop 2 Gems when defeating a wild pet
-            if (Math.random() < 0.10) {
+            // 5% chance to drop 2 Gems when defeating a wild pet over level 20
+            if (enemyLevel > 20 && Math.random() < 0.05) {
                 Economy.inventory.gem = (Economy.inventory.gem || 0) + 2;
                 this.addLog("💎 Found 2 Gems!");
             }
             
             // 5% chance to drop a Rare XP Orb when defeating a wild pet over level 30
-            if (this.enemyPet.level > 30 && Math.random() < 0.05) {
+            if (enemyLevel > 30 && Math.random() < 0.05) {
                 Economy.inventory.rareXpOrb = (Economy.inventory.rareXpOrb || 0) + 1;
                 this.addLog("✨ Found a Rare XP Orb!");
             }
@@ -2746,6 +2798,42 @@ const TeamPowerSystem = {
     }
 };
 
+// ==================== CRAFTING SYSTEM ====================
+const CraftingSystem = {
+    recipes: {
+        basicBall:    { name: "Basic Ball",    outputQty: 1, cost: { woodStick: 5, rock: 2 } },
+        greatBall:    { name: "Great Ball",    outputQty: 1, cost: { woodStick: 8, ore: 4, rock: 3 } },
+        ultraBall:    { name: "Ultra Ball",    outputQty: 1, cost: { woodStick: 10, ore: 6, rock: 4 } },
+        potion:       { name: "Potion",        outputQty: 1, cost: { herbs: 3, woodStick: 2 } },
+        superPotion:  { name: "Super Potion",  outputQty: 1, cost: { herbs: 8, leather: 4, ore: 3 } },
+        hyperPotion:  { name: "Hyper Potion",  outputQty: 1, cost: { herbs: 15, leather: 8, crystal: 3 } },
+        xpOrb:        { name: "XP Orb",        outputQty: 1, cost: { herbs: 5, crystal: 3 } },
+        rareXpOrb:    { name: "Rare XP Orb",   outputQty: 1, cost: { crystal: 8, darkRock: 5 } },
+        tierStone:    { name: "Tier Stone",    outputQty: 1, cost: { rock: 3, darkRock: 2 } },
+        focusIncense: { name: "Focus Incense", outputQty: 1, cost: { ore: 4, darkRock: 2, crystal: 1 } },
+        precisionGuide: { name: "Precision Guide", outputQty: 1, cost: { herbs: 5, crystal: 2 } }
+    },
+
+    canCraft(recipeId) {
+        const recipe = this.recipes[recipeId];
+        if (!recipe) return false;
+        for (const [itemId, qty] of Object.entries(recipe.cost)) {
+            if ((Economy.inventory[itemId] || 0) < qty) return false;
+        }
+        return true;
+    },
+
+    craft(recipeId) {
+        const recipe = this.recipes[recipeId];
+        if (!recipe || !this.canCraft(recipeId)) return false;
+        for (const [itemId, qty] of Object.entries(recipe.cost)) {
+            Economy.inventory[itemId] -= qty;
+        }
+        Economy.inventory[recipeId] = (Economy.inventory[recipeId] || 0) + recipe.outputQty;
+        return true;
+    }
+};
+
 // ==================== UI MANAGER ====================
 const UIManager = {
     init() {
@@ -2766,6 +2854,9 @@ const UIManager = {
         }
         if (screenId === "inventoryScreen") {
             this.renderInventory();
+        }
+        if (screenId === "craftingScreen") {
+            this.renderCrafting();
         }
         if (screenId === "storageScreen") {
             this.renderStorage();
@@ -3402,10 +3493,13 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             upgrade: "Upgrade Item",
             xp: "Training Item",
             training: "Training Item",
-            equipment: "Equipment"
+            equipment: "Equipment",
+            resource: "Resource",
+            currency: "Currency"
         };
         
         for (const [itemId, item] of Object.entries(Economy.shopItems)) {
+            if (item.type === "resource") continue;
             const card = document.createElement("div");
             card.className = "bg-white/10 rounded-xl p-4 text-center";
             card.innerHTML = `
@@ -3875,6 +3969,62 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         this.prestigePetId = null;
         this.prestigeMaterialId = null;
         this.prestigeStep = 1;
+    },
+
+    renderCrafting() {
+        const resourceGrid = document.getElementById("craftingResources");
+        resourceGrid.innerHTML = "";
+        const resourceItems = ["woodStick", "rock", "leather", "ore", "herbs", "crystal", "darkRock"];
+        const resourceEmojis = {
+            woodStick: "🪵", rock: "🪨", leather: "🥾", ore: "⛏️",
+            herbs: "🌿", crystal: "💎", darkRock: "🟣"
+        };
+        resourceItems.forEach(itemId => {
+            const item = Economy.shopItems[itemId];
+            if (!item) return;
+            const count = Economy.inventory[itemId] || 0;
+            const card = document.createElement("div");
+            card.className = "bg-white/10 rounded-xl p-2.5 text-center";
+            card.innerHTML = `
+                <div class="text-2xl">${resourceEmojis[itemId]}</div>
+                <div class="text-xs mt-1">${item.name}</div>
+                <div class="text-yellow-400 font-bold text-sm">${count}</div>
+            `;
+            resourceGrid.appendChild(card);
+        });
+
+        const recipeGrid = document.getElementById("craftingRecipes");
+        recipeGrid.innerHTML = "";
+        for (const [recipeId, recipe] of Object.entries(CraftingSystem.recipes)) {
+            const canCraft = CraftingSystem.canCraft(recipeId);
+            const costText = Object.entries(recipe.cost).map(([itemId, qty]) => {
+                const rItem = Economy.shopItems[itemId];
+                const owned = Economy.inventory[itemId] || 0;
+                const has = owned >= qty;
+                const emojis = { woodStick: "🪵", rock: "🪨", leather: "🥾", ore: "⛏️", herbs: "🌿", crystal: "💎", darkRock: "🟣" };
+                return `<span class="${has ? "text-green-400" : "text-red-400"}">${emojis[itemId] || ""} ${qty}/${owned}</span>`;
+            }).join(" ");
+
+            const card = document.createElement("div");
+            card.className = "bg-white/10 rounded-xl p-4 text-center";
+            card.innerHTML = `
+                <h4>${recipe.name}</h4>
+                <div class="text-xs my-2 opacity-80">${costText}</div>
+                <button onclick="UIManager.craftItem('${recipeId}')" ${canCraft ? "" : "disabled"} class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white m-1 transition-all duration-150 text-sm hover:-translate-y-0.5 ${canCraft ? "bg-yellow-800" : "bg-gray-600 opacity-50 cursor-not-allowed"}">Craft</button>
+            `;
+            recipeGrid.appendChild(card);
+        }
+    },
+
+    craftItem(recipeId) {
+        if (!CraftingSystem.canCraft(recipeId)) {
+            alert("Not enough resources!");
+            return;
+        }
+        CraftingSystem.craft(recipeId);
+        DataManager.save();
+        this.renderCrafting();
+        this.updateCurrency();
     }
 };
 

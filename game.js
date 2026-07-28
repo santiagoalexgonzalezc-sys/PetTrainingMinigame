@@ -34,7 +34,7 @@ lastDailyBonus: PlayerSystem.lastDailyBonus,
             PetManager.pets = data.pets || [];
             PetManager.storage = data.storage || [];
             Economy.money = data.money || 100;
-            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0 };
+            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0, woodStick: 0, rock: 0 };
             PetManager.pets.forEach(p => {
                 if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
@@ -853,7 +853,7 @@ const Economy = {
         hyperPotion: { name: "Hyper Potion", price: 200, type: "heal", power: 100 },
         tierStone: { name: "Tier Stone", price: 500, type: "upgrade", power: 1 },
         xpOrb: { name: "XP Orb", price: 250, type: "xp", power: 500 },
-    rareXpOrb: { name: "Rare XP Orb", price: 1000, type: "xp", power: 2000 },
+        rareXpOrb: { name: "Rare XP Orb", price: 1000, type: "xp", power: 2000 },
         precisionGuide: { name: "Precision Guide", price: 100, type: "training", power: 1 },
         focusIncense: { name: "Focus Incense", price: 150, type: "training", power: 5 },
         bandOfSwiftness: { name: "Band of Swiftness", price: 4000, type: "equipment", power: 10, stats: { speed: 10 } },
@@ -2468,10 +2468,22 @@ this.playerAbilityCooldown = ability.cooldown;
             
             Economy.money += moneyReward;
             
-            // 10% chance to drop an XP Orb when defeating a wild pet
-            if (Math.random() < 0.10) {
+            // 20% chance to drop an XP Orb when defeating a wild pet
+            if (Math.random() < 0.20) {
                 Economy.inventory.xpOrb = (Economy.inventory.xpOrb || 0) + 1;
                 this.addLog("✨ Found an XP Orb!");
+            }
+            
+            // 25% chance to drop a Wood Stick
+            if (Math.random() < 0.25) {
+                Economy.inventory.woodStick = (Economy.inventory.woodStick || 0) + 1;
+                this.addLog("🪵 Found a Wood Stick!");
+            }
+            
+            // 25% chance to drop a Rock
+            if (Math.random() < 0.25) {
+                Economy.inventory.rock = (Economy.inventory.rock || 0) + 1;
+                this.addLog("🪨 Found a Rock!");
             }
             
             // 5% chance to drop a Rare XP Orb when defeating a wild pet over level 30

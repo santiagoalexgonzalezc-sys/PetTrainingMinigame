@@ -34,7 +34,7 @@ lastDailyBonus: PlayerSystem.lastDailyBonus,
             PetManager.pets = data.pets || [];
             PetManager.storage = data.storage || [];
             Economy.money = data.money || 100;
-            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0, woodStick: 0, rock: 0 };
+            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0, woodStick: 0, rock: 0, gem: 0 };
             PetManager.pets.forEach(p => {
                 if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
@@ -773,6 +773,7 @@ const PetManager = {
         if (pet1.prestigeLevel !== pet2.prestigeLevel) return { valid: false, reason: "Prestige levels must match!" };
         if (pet1.prestigeLevel >= 100) return { valid: false, reason: "Max prestige level reached!" };
         if (pet1.currentHP <= 0) return { valid: false, reason: "Primary pet must have HP above 0!" };
+        if ((Economy.inventory.gem || 0) < 5) return { valid: false, reason: "Need 5 Gems to prestige fuse!" };
         
         return { valid: true };
     },
@@ -787,6 +788,9 @@ const PetManager = {
                      this.storage.find(p => String(p.id) === String(pet2Id));
         
         if (!pet1 || !pet2) return { success: false, reason: "Pet not found!" };
+        
+        // Deduct 5 gems for prestige fusion
+        Economy.inventory.gem = (Economy.inventory.gem || 0) - 5;
         
         if (Array.isArray(pet2.equipment)) {
             pet2.equipment.forEach(itemId => {
@@ -854,6 +858,7 @@ const Economy = {
         tierStone: { name: "Tier Stone", price: 500, type: "upgrade", power: 1 },
         xpOrb: { name: "XP Orb", price: 250, type: "xp", power: 500 },
         rareXpOrb: { name: "Rare XP Orb", price: 1000, type: "xp", power: 2000 },
+        gem: { name: "Gem", price: 200, type: "currency", power: 1 },
         precisionGuide: { name: "Precision Guide", price: 100, type: "training", power: 1 },
         focusIncense: { name: "Focus Incense", price: 150, type: "training", power: 5 },
         bandOfSwiftness: { name: "Band of Swiftness", price: 4000, type: "equipment", power: 10, stats: { speed: 10 } },
@@ -2484,6 +2489,12 @@ this.playerAbilityCooldown = ability.cooldown;
             if (Math.random() < 0.25) {
                 Economy.inventory.rock = (Economy.inventory.rock || 0) + 1;
                 this.addLog("🪨 Found a Rock!");
+            }
+            
+            // 10% chance to drop 2 Gems when defeating a wild pet
+            if (Math.random() < 0.10) {
+                Economy.inventory.gem = (Economy.inventory.gem || 0) + 2;
+                this.addLog("💎 Found 2 Gems!");
             }
             
             // 5% chance to drop a Rare XP Orb when defeating a wild pet over level 30

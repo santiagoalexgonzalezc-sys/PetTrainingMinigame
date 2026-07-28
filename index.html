@@ -55,6 +55,7 @@
         <button onclick="UIManager.showScreen('storageScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">📦 Pet Storage</button>
         <button onclick="UIManager.showScreen('shopScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛒 Shop</button>
         <button onclick="UIManager.showScreen('inventoryScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🎒 Inventory</button>
+        <button onclick="UIManager.showScreen('craftingScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-yellow-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛠️ Crafting</button>
         <button onclick="UIManager.openPrestige()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-purple-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">✨ Prestige Fusion</button>
         <button onclick="DataManager.resetAccount()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-red-500 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🗑️ Reset Account</button>
     </div>
@@ -231,6 +232,18 @@
     <div id="inventoryScreen" class="hidden p-5">
         <h2>🎒 Inventory</h2>
         <div id="inventoryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 max-w-3xl mx-auto my-5"></div>
+        <br>
+        <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
+    </div>
+
+    <!-- CRAFTING SCREEN -->
+    <div id="craftingScreen" class="hidden p-5">
+        <h2>🛠️ Crafting</h2>
+        <p class="my-2 opacity-80">Combine resources at the crafting bench</p>
+        <h3 class="mt-4 mb-2">📦 Resources Available</h3>
+        <div id="craftingResources" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5 max-w-5xl mx-auto my-2"></div>
+        <h3 class="mt-4 mb-2">📋 Recipes</h3>
+        <div id="craftingRecipes" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto my-5"></div>
         <br>
         <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
     </div>

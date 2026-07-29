@@ -1138,10 +1138,11 @@ const Exploration = {
             petType = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
         }
 
-        // Generate wild pet level from floor index
-        const level = getWildPetLevelForFloor(floorIndex, zone.floorSize);
+         // Generate wild pet level from floor index
+         const level = getWildPetLevelForFloor(floorIndex, zone.floorSize);
+         const floorMax = floorIndex * zone.floorSize;
 
-        // Shiny roll: 1 in 500
+         // Shiny roll: 1 in 500
         const isShiny = Math.random() < 0.002;
 
         // Tier roll based on zone
@@ -1154,17 +1155,17 @@ const wildPet = PetManager.createPet(petType, level, { shiny: isShiny, tier });
              return null;
          }
 
-         // C-tier opponent encounter based on player level
-const cTierChance = getCTierChance(PlayerSystem.level);
-         if (cTierChance > 0 && Math.random() * 100 < cTierChance) {
-             const cTire = rollCTire(PlayerSystem.level);
-             const cTierLevelBonus = (cTire - 1) * 3;
-             wildPet.level = wildPet.level + cTierLevelBonus;
-             wildPet.tier = cTire >= 4 ? "C" + cTire : wildPet.tier;
-             wildPet.tierBonus = PetManager.calculateTierBonus(wildPet.tier);
-             wildPet.stats = PetManager.calculateStats(PetTypes[wildPet.typeId], wildPet.level, wildPet);
-             wildPet.currentHP = PetManager.calculateMaxHP(PetTypes[wildPet.typeId], wildPet.level, wildPet);
-         }
+          // C-tier opponent encounter based on player level
+ const cTierChance = getCTierChance(PlayerSystem.level);
+          if (cTierChance > 0 && Math.random() * 100 < cTierChance) {
+              const cTire = rollCTire(PlayerSystem.level);
+              const cTierLevelBonus = Math.min((cTire - 1) * 3, floorMax - wildPet.level);
+              wildPet.level = wildPet.level + cTierLevelBonus;
+              wildPet.tier = cTire >= 4 ? "C" + cTire : wildPet.tier;
+              wildPet.tierBonus = PetManager.calculateTierBonus(wildPet.tier);
+              wildPet.stats = PetManager.calculateStats(PetTypes[wildPet.typeId], wildPet.level, wildPet);
+              wildPet.currentHP = PetManager.calculateMaxHP(PetTypes[wildPet.typeId], wildPet.level, wildPet);
+          }
 
          return { pet: wildPet, isRare, isShiny };
     },
@@ -1223,11 +1224,7 @@ function getWildPetLevelForFloor(floorIndex, floorSize) {
 function rollTierForZone(zoneId) {
     const tierRoll = Math.random();
     let tier;
-    if (PlayerSystem.level < 50) {
-        tier = randomTier("D");
-    } else if (tierRoll < 0.05) tier = randomTier("A");
-    else if (tierRoll < 0.10) tier = randomTier("B");
-    else if (tierRoll < 0.50) tier = randomTier("C");
+    if (tierRoll < 0.30) tier = randomTier("C");
     else tier = randomTier("D");
     return tier;
 }

@@ -1165,6 +1165,13 @@ const cTierChance = getCTierChance(PlayerSystem.level);
         if (!this.cooldowns[zoneId]) return 0;
         const remaining = this.cooldowns[zoneId] - Date.now();
         return Math.max(0, Math.ceil(remaining / 1000));
+    },
+    autoExplore: {
+        active: false,
+        zoneId: null,
+        floorIndex: null,
+        petId: null,
+        floorPage: 0
     }
 };
 
@@ -1520,6 +1527,18 @@ const BattleSystem = {
             return;
         }
         
+        if (Exploration.autoExplore.active) {
+            const autoPet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
+            if (!autoPet || autoPet.currentHP <= 0) {
+                Exploration.autoExplore.active = false;
+                BattleSystem.autoExploreActive = false;
+                BattleSystem.autoExplorePetId = null;
+                alert("Auto-explore pet not found or fainted!");
+                UIManager.showScreen("mainScreen");
+                return;
+            }
+        }
+        
         this.active = true;
         this.playerPet = { ...playerPet };
         this.enemyPet = { ...enemyPet };
@@ -1538,6 +1557,8 @@ const BattleSystem = {
         this.shield = { enemy: { turns: 0, percent: 0 }, player: { turns: 0, percent: 0 } };
         this.poisoned = null;
         this.poisonDuration = { enemy: 0, player: 0 };
+        this.autoExploreActive = Exploration.autoExplore.active;
+        this.autoExplorePetId = Exploration.autoExplore.petId;
         
         // Determine who goes first by speed
         const playerSpeed = this.playerPet.stats.speed;
@@ -1551,8 +1572,10 @@ const BattleSystem = {
         
         UIManager.updateBattleScreen();
         
-        // If enemy goes first, execute their attack
-        if (!this.isPlayerTurn) {
+        // If player goes first and auto-explore is on, play immediately
+        if (this.isPlayerTurn && this.autoExploreActive) {
+            setTimeout(() => this.autoPlayTurn(), 1000);
+        } else if (!this.isPlayerTurn) {
             setTimeout(() => this.enemyTurn(), 1000);
         }
     },
@@ -1712,9 +1735,23 @@ enemyTurn() {
         
         this.isPlayerTurn = true;
         UIManager.updateBattleScreen();
+        
+        if (this.autoExploreActive) {
+            setTimeout(() => this.autoPlayTurn(), 1000);
+        }
     },
 
-attack(attacker, defender, isPlayerAttacker) {
+    autoPlayTurn() {
+        if (!this.active || !this.isPlayerTurn) return;
+        const template = PetTypes[this.playerPet.typeId];
+        if (template && template.ability && this.playerAbilityCooldown === 0) {
+            this.useAbility();
+        } else {
+            this.playerAttack();
+        }
+    },
+
+    attack(attacker, defender, isPlayerAttacker) {
          const attackerTemplate = PetTypes[attacker.typeId];
          const defenderTemplate = PetTypes[defender.typeId];
         if (defenderTemplate.passive && defenderTemplate.passive.includes("Fast feet")) {
@@ -2573,11 +2610,20 @@ this.playerAbilityCooldown = ability.cooldown;
         UIManager.updateBattleScreen();
         
         setTimeout(() => {
-            UIManager.showScreen("mainScreen");
-            UIManager.renderPets();
-            UIManager.updateCurrency();
-            UIManager.updateTeamPower();
-            UIManager.updatePlayerLevelDisplay();
+            if (Exploration.autoExplore.active && playerWon) {
+                UIManager.startNextAutoExplore();
+            } else {
+                if (Exploration.autoExplore.active && !playerWon) {
+                    Exploration.autoExplore.active = false;
+                    BattleSystem.autoExploreActive = false;
+                    BattleSystem.autoExplorePetId = null;
+                }
+                UIManager.showScreen("mainScreen");
+                UIManager.renderPets();
+                UIManager.updateCurrency();
+                UIManager.updateTeamPower();
+                UIManager.updatePlayerLevelDisplay();
+            }
         }, 500);
     },
 
@@ -2888,11 +2934,15 @@ const UIManager = {
         const xpBarDisplay = document.getElementById("playerXpBar");
         const xpTextDisplay = document.getElementById("playerXpText");
         const profileBtn = document.getElementById("profileBtn");
+        const autoBtn = document.getElementById("autoExploreFooterBtn");
         if (levelDisplay) {
             levelDisplay.innerText = `Lv ${PlayerSystem.level}`;
         }
         if (profileBtn) {
             profileBtn.innerText = PlayerSystem.level;
+        }
+        if (autoBtn) {
+            autoBtn.classList.toggle("hidden", PlayerSystem.level < 50);
         }
         if (xpBarDisplay) {
             const needed = xpNeeded(PlayerSystem.level);
@@ -3328,6 +3378,8 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             BattleSystem.playerPet = { ...PetManager.selectedPet };
             BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
             this.showScreen("battleScreen");
+        } else if (Exploration.autoExplore.active) {
+            setTimeout(() => this.startNextAutoExplore(), 1000);
         } else {
             alert("Nothing found this time...");
         }
@@ -3375,23 +3427,36 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         const abilityBtn = document.getElementById("abilityBtn");
         const switchBtn = document.getElementById("switchBtn");
         const catchBtn = document.getElementById("catchBtn");
+        const autoStopBtn = document.getElementById("autoExploreStopBtn");
         
-        const hasAbility = playerTemplate && playerTemplate.ability;
-        const abilityOnCooldown = BattleSystem.playerAbilityCooldown > 0;
-        
-        if (hasAbility && !abilityOnCooldown) {
-            abilityBtn.style.display = BattleSystem.isPlayerTurn ? "inline-block" : "none";
-            abilityBtn.disabled = !BattleSystem.isPlayerTurn;
-            abilityBtn.innerText = abilityOnCooldown ? `⏳ ${BattleSystem.playerAbilityCooldown}` : `✨ ${playerTemplate.ability.name}`;
-        } else {
+        if (Exploration.autoExplore.active) {
+            attackBtn.disabled = true;
+            attackBtn.style.opacity = "0.5";
+            abilityBtn.disabled = true;
             abilityBtn.style.display = "none";
+            switchBtn.disabled = true;
+            switchBtn.style.opacity = "0.5";
+            catchBtn.style.display = "none";
+            autoStopBtn.classList.remove("hidden");
+        } else {
+            const hasAbility = playerTemplate && playerTemplate.ability;
+            const abilityOnCooldown = BattleSystem.playerAbilityCooldown > 0;
+            
+            if (hasAbility && !abilityOnCooldown) {
+                abilityBtn.style.display = BattleSystem.isPlayerTurn ? "inline-block" : "none";
+                abilityBtn.disabled = !BattleSystem.isPlayerTurn;
+                abilityBtn.innerText = abilityOnCooldown ? `⏳ ${BattleSystem.playerAbilityCooldown}` : `✨ ${playerTemplate.ability.name}`;
+            } else {
+                abilityBtn.style.display = "none";
+            }
+            
+            attackBtn.disabled = !BattleSystem.isPlayerTurn;
+            attackBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
+            switchBtn.disabled = !BattleSystem.isPlayerTurn;
+            switchBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
+            catchBtn.style.display = BattleSystem.active ? "inline-block" : "none";
+            autoStopBtn.classList.add("hidden");
         }
-        
-        attackBtn.disabled = !BattleSystem.isPlayerTurn;
-        attackBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
-        switchBtn.disabled = !BattleSystem.isPlayerTurn;
-        switchBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
-        catchBtn.style.display = BattleSystem.active ? "inline-block" : "none";
     },
 
     playerAttack() {
@@ -4028,6 +4093,174 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         DataManager.save();
         this.renderCrafting();
         this.updateCurrency();
+    },
+
+    openAutoExploreSetup() {
+        if (PlayerSystem.level < 50) {
+            alert("Reach player level 50 to unlock Auto Explore!");
+            return;
+        }
+        Exploration.autoExplore.active = false;
+        Exploration.autoExplore.zoneId = null;
+        Exploration.autoExplore.floorIndex = null;
+        Exploration.autoExplore.petId = null;
+        document.getElementById("autoExploreOverlay").classList.remove("hidden");
+        this.renderAutoExploreZones();
+        document.getElementById("autoExploreInfo").innerHTML = "<p class='text-center opacity-80'>Step 1: Select a zone</p>";
+    },
+
+    renderAutoExploreZones() {
+        const grid = document.getElementById("autoExploreZoneGrid");
+        grid.innerHTML = "";
+        for (const [zoneId, zone] of Object.entries(Exploration.zones)) {
+            const isLocked = PlayerSystem.level < zone.unlockLevel;
+            const card = document.createElement("div");
+            card.className = `bg-white/10 rounded-xl p-4 text-center cursor-pointer transition-all duration-150 ${isLocked ? "opacity-50 cursor-not-allowed" : "hover:bg-white/12 hover:-translate-y-0.5"}`;
+            card.innerHTML = `
+                <div class="text-3xl">${zone.emoji}</div>
+                <h4>${zone.name}</h4>
+                <p class="text-xs opacity-70">Floors 1-${zone.maxFloor}</p>
+                ${isLocked ? `<p class="text-red-400 text-xs">🔒 Lv ${zone.unlockLevel}</p>` : ""}
+            `;
+            if (!isLocked) {
+                card.onclick = () => {
+                    Exploration.autoExplore.zoneId = zoneId;
+                    this.renderAutoExploreFloors(zoneId);
+                    document.getElementById("autoExploreInfo").innerHTML = `<p class='text-center opacity-80'>Step 2: Select a floor in ${zone.emoji} ${zone.name}</p>`;
+                };
+            }
+            grid.appendChild(card);
+        }
+    },
+
+    renderAutoExploreFloors(zoneId) {
+        const zone = Exploration.zones[zoneId];
+        const grid = document.getElementById("autoExploreFloorGrid");
+        grid.innerHTML = "";
+        const floorsPerPage = 10;
+        const totalPages = Math.ceil(zone.maxFloor / floorsPerPage);
+        const startFloor = 1;
+        const endFloor = Math.min(floorsPerPage, zone.maxFloor);
+        for (let i = startFloor; i <= endFloor; i++) {
+            const floorMin = (i - 1) * zone.floorSize + 1;
+            const floorMax = i * zone.floorSize;
+            const isLocked = PlayerSystem.level < floorMin;
+            const isRecommended = PlayerSystem.level >= floorMin && PlayerSystem.level <= floorMax;
+            const card = document.createElement("div");
+            card.className = `bg-white/10 rounded-xl p-3 text-center cursor-pointer transition-all duration-150 ${isLocked ? "opacity-40 cursor-not-allowed" : "hover:bg-white/12 hover:-translate-y-0.5"} ${isRecommended ? "border-2 border-green-400" : ""}`;
+            card.innerHTML = `
+                <div class="font-bold">Floor ${i}</div>
+                <div class="text-xs opacity-70">Lv ${floorMin}-${floorMax}</div>
+                ${isLocked ? `<div class="text-red-400 text-xs">🔒 Lv ${floorMin}</div>` : ""}
+                ${isRecommended ? `<div class="text-green-400 text-xs">⭐ Recommended</div>` : ""}
+            `;
+            if (!isLocked) {
+                card.onclick = () => {
+                    Exploration.autoExplore.floorIndex = i;
+                    this.renderAutoExplorePets();
+                    document.getElementById("autoExploreInfo").innerHTML = `<p class='text-center opacity-80'>Step 3: Select a pet for ${zone.emoji} ${zone.name} Floor ${i} (Lv ${floorMin}-${floorMax})</p>`;
+                };
+            }
+            grid.appendChild(card);
+        }
+        document.getElementById("autoExploreFloorNav").classList.remove("hidden");
+        document.getElementById("autoExploreFloorPrev").disabled = true;
+        document.getElementById("autoExploreFloorNext").disabled = totalPages <= 1;
+        document.getElementById("autoExploreFloorInfo").innerText = `Page 1/${totalPages}`;
+        Exploration.autoExploreFloorPage = 0;
+    },
+
+    renderAutoExplorePets() {
+        const grid = document.getElementById("autoExplorePetGrid");
+        grid.innerHTML = "";
+        PetManager.pets.forEach(pet => {
+            if (pet.currentHP <= 0) return;
+            const template = PetTypes[pet.typeId];
+            const evolution = PetManager.getEvolution(pet);
+            const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
+            const hpPercent = (pet.currentHP / maxHP) * 100;
+            const prestigeSuffix = pet.prestigeLevel > 0 ? (pet.prestigeLevel >= 10 ? ` [P${pet.prestigeLevel}]` : ` ${this.toRoman(pet.prestigeLevel)}`) : "";
+            const tierBadge = `<span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTierColorClass(pet.tier)}">${pet.tier}</span>`;
+            const card = document.createElement("div");
+            card.className = "bg-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/20 transition-all";
+            card.innerHTML = `
+                <h4>${template.emoji} ${evolution}${prestigeSuffix}</h4>
+                ${tierBadge}
+                <div class="text-sm">Level ${pet.level}</div>
+                <div class="w-full h-3 bg-gray-800 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-red-400 to-red-500" style="width: ${hpPercent}%"></div>
+                </div>
+                <div class="text-xs opacity-80">HP ${pet.currentHP}/${maxHP}</div>
+            `;
+            card.onclick = () => {
+                Exploration.autoExplore.petId = pet.id;
+                document.getElementById("autoExploreStartBtn").disabled = false;
+                document.getElementById("autoExplorePetInfo").innerHTML = `<p class='text-center'>Selected: ${template.emoji} ${evolution}${prestigeSuffix} (Lv ${pet.level})</p>`;
+            };
+            grid.appendChild(card);
+        });
+    },
+
+    startAutoExplore() {
+        if (!Exploration.autoExplore.zoneId || !Exploration.autoExplore.floorIndex || !Exploration.autoExplore.petId) {
+            alert("Please select zone, floor, and pet!");
+            return;
+        }
+        const pet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
+        if (!pet || pet.currentHP <= 0) {
+            alert("Selected pet not found or has no HP!");
+            return;
+        }
+        Exploration.autoExplore.active = true;
+        document.getElementById("autoExploreOverlay").classList.add("hidden");
+        this.doExploreWithFloor(Exploration.autoExplore.zoneId, Exploration.autoExplore.floorIndex);
+    },
+
+    startNextAutoExplore() {
+        if (!Exploration.autoExplore.active) return;
+        const zone = Exploration.zones[Exploration.autoExplore.zoneId];
+        if (!zone) {
+            this.stopAutoExplore("Zone not found");
+            return;
+        }
+        let nextFloor = (Exploration.autoExplore.floorIndex || 1) + 1;
+        if (nextFloor > zone.maxFloor) nextFloor = 1;
+        Exploration.autoExplore.floorIndex = nextFloor;
+        setTimeout(() => {
+            this.doExploreWithFloor(Exploration.autoExplore.zoneId, nextFloor);
+        }, 1000);
+    },
+
+    autoExploreFloorPrev() {
+        const zoneId = Exploration.autoExplore.zoneId;
+        const zone = Exploration.zones[zoneId];
+        if (!zone) return;
+        const floorsPerPage = 10;
+        const totalPages = Math.ceil(zone.maxFloor / floorsPerPage);
+        if (Exploration.autoExploreFloorPage > 0) {
+            Exploration.autoExploreFloorPage--;
+            this.renderAutoExploreFloors(zoneId);
+        }
+    },
+
+    autoExploreFloorNext() {
+        const zoneId = Exploration.autoExplore.zoneId;
+        const zone = Exploration.zones[zoneId];
+        if (!zone) return;
+        const floorsPerPage = 10;
+        const totalPages = Math.ceil(zone.maxFloor / floorsPerPage);
+        if (Exploration.autoExploreFloorPage < totalPages - 1) {
+            Exploration.autoExploreFloorPage++;
+            this.renderAutoExploreFloors(zoneId);
+        }
+    },
+
+    stopAutoExplore(reason) {
+        Exploration.autoExplore.active = false;
+        BattleSystem.autoExploreActive = false;
+        BattleSystem.autoExplorePetId = null;
+        this.showScreen("mainScreen");
+        if (reason) alert(reason || "Auto-explore stopped.");
     }
 };
 

@@ -56,6 +56,7 @@
         <button onclick="UIManager.showScreen('shopScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛒 Shop</button>
         <button onclick="UIManager.showScreen('inventoryScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🎒 Inventory</button>
         <button onclick="UIManager.showScreen('craftingScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-yellow-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛠️ Crafting</button>
+        <button id="autoExploreFooterBtn" onclick="UIManager.openAutoExploreSetup()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-green-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5 hidden">🔄 Auto Explore</button>
         <button onclick="UIManager.openPrestige()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-purple-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">✨ Prestige Fusion</button>
         <button onclick="DataManager.resetAccount()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-red-500 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🗑️ Reset Account</button>
     </div>
@@ -187,6 +188,33 @@
         <button id="switchBtn" onclick="UIManager.openSwitchOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🔄 Switch</button>
         <button id="catchBtn" onclick="UIManager.tryCatch()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎱 Catch</button>
         <button onclick="UIManager.fleeBattle()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🏃 Flee</button>
+        <button id="autoExploreStopBtn" onclick="UIManager.stopAutoExplore('Auto-explore stopped')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5 hidden">⏹ Stop Auto</button>
+    </div>
+
+    <!-- AUTO EXPLORE OVERLAY -->
+    <div id="autoExploreOverlay" class="hidden fixed inset-0 bg-black/90 z-50 p-5 overflow-y-auto">
+        <div class="max-w-4xl mx-auto my-5">
+            <h2>🔄 Auto Explore</h2>
+            <p id="autoExploreInfo" class="text-left max-w-md mx-auto mb-4">Step 1: Select a zone</p>
+            <h3 class="mt-4 mb-2">Select Zone</h3>
+            <div id="autoExploreZoneGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-5xl mx-auto my-5"></div>
+            <div class="hidden" id="autoExploreFloorNav">
+                <h3 class="mt-4 mb-2">Select Floor</h3>
+                <div class="flex items-center justify-center gap-4 my-4">
+                    <button id="autoExploreFloorPrev" onclick="UIManager.autoExploreFloorPrev()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">◀ Prev</button>
+                    <span id="autoExploreFloorInfo" class="text-sm opacity-80">Page 1/1</span>
+                    <button id="autoExploreFloorNext" onclick="UIManager.autoExploreFloorNext()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Next ▶</button>
+                </div>
+            </div>
+            <div id="autoExploreFloorGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-5xl mx-auto my-5"></div>
+            <h3 class="mt-4 mb-2">Select Pet</h3>
+            <p id="autoExplorePetInfo" class="text-center opacity-80 mb-4"></p>
+            <div id="autoExplorePetGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-5xl mx-auto my-5"></div>
+            <div class="flex items-center justify-center gap-4 my-4">
+                <button id="autoExploreStartBtn" onclick="UIManager.startAutoExplore()" disabled class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">▶ Start Auto Explore</button>
+                <button onclick="document.getElementById('autoExploreOverlay').classList.add('hidden')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <!-- PRESTIGE FUSION OVERLAY -->

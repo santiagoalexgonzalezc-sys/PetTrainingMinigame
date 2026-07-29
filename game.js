@@ -1185,9 +1185,9 @@ const wildPet = PetManager.createPet(petType, level, { shiny: isShiny, tier });
 };
 
 function getCTierChance(level) {
-    if (level > 80) return 26;
-    if (level > 70) return 24;
-    if (level > 60) return 22;
+    if (level > 80) return 35;
+    if (level > 70) return 30;
+    if (level > 60) return 25;
     if (level > 50) return 20;
     if (level > 40) return 10;
     if (level >= 35) return 1;
@@ -2556,7 +2556,7 @@ this.playerAbilityCooldown = ability.cooldown;
             const enemyLevel = this.enemyPet.level;
             
             // 20% chance to drop an XP Orb when defeating a wild pet
-            if (Math.random() < 0.20) {
+            if (Math.random() < 0.30) {
                 Economy.inventory.xpOrb = (Economy.inventory.xpOrb || 0) + 1;
                 this.addLog("✨ Found an XP Orb!");
             }
@@ -2575,7 +2575,7 @@ this.playerAbilityCooldown = ability.cooldown;
             };
             
             // Primary resource drop based on enemy element (25% chance, 1-2 qty)
-            if (Math.random() < 0.25) {
+            if (Math.random() < 0.60) {
                 const resource = elementToResource[enemyElement];
                 const qty = Math.random() < 0.3 ? 2 : 1;
                 if (resource) {
@@ -2584,13 +2584,13 @@ this.playerAbilityCooldown = ability.cooldown;
                 }
             }
             
-            // Zone secondary resource drop (15% chance, 1 qty)
+            // Zone secondary resource drop (40% chance, 1 qty)
             const zoneSecondary = {
                 forest: "herbs", cave: "ore", lake: "leather", mountain: "crystal",
                 desert: "leather", ocean: "crystal", volcano: "darkRock", swamp: "herbs",
                 sky: "crystal", toxicMarsh: "herbs"
             };
-            if (Math.random() < 0.15) {
+            if (Math.random() < 0.40) {
                 const resource = zoneId ? zoneSecondary[zoneId] : null;
                 if (resource) {
                     Economy.inventory[resource] = (Economy.inventory[resource] || 0) + 1;
@@ -2599,13 +2599,13 @@ this.playerAbilityCooldown = ability.cooldown;
             }
             
             // 5% chance to drop 2 Gems when defeating a wild pet over level 20
-            if (enemyLevel > 20 && Math.random() < 0.05) {
+            if (enemyLevel > 20 && Math.random() < 0.30) {
                 Economy.inventory.gem = (Economy.inventory.gem || 0) + 2;
                 this.addLog("💎 Found 2 Gems!");
             }
             
-            // 5% chance to drop a Rare XP Orb when defeating a wild pet over level 30
-            if (enemyLevel > 30 && Math.random() < 0.05) {
+            // 10% chance to drop a Rare XP Orb when defeating a wild pet over level 30
+            if (enemyLevel > 30 && Math.random() < 0.10) {
                 Economy.inventory.rareXpOrb = (Economy.inventory.rareXpOrb || 0) + 1;
                 this.addLog("✨ Found a Rare XP Orb!");
             }

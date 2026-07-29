@@ -1169,8 +1169,11 @@ const cTierChance = getCTierChance(PlayerSystem.level);
 };
 
 function getCTierChance(level) {
-    if (level >= 50) return 5;
-    if (level >= 40) return 3;
+    if (level > 80) return 26;
+    if (level > 70) return 24;
+    if (level > 60) return 22;
+    if (level > 50) return 20;
+    if (level > 40) return 10;
     if (level >= 35) return 1;
     return 0;
 }

@@ -508,9 +508,9 @@ const PetTypes = {
             name: "Moonbeam Heal",
             type: "fairy",
             cooldown: 2,
-            description: "Deals fairy damage and heals user for 30% of damage dealt.",
+            description: "Deals fairy damage and heals user for 50% of damage dealt.",
             heal: true,
-            healPercent: 0.30
+            healPercent: 0.50
         },
         evolution: ["Star Fawn", "Moon Pixie", "Astral Spirit"]
     },

@@ -1180,8 +1180,7 @@ const wildPet = PetManager.createPet(petType, level, { shiny: isShiny, tier });
         zoneId: null,
         floorIndex: null,
         petId: null,
-        floorPage: 0,
-        levelStep: 1
+        floorPage: 0
     }
 };
 
@@ -4319,10 +4318,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             this.stopAutoExplore("Zone not found");
             return;
         }
-        const step = Exploration.autoExplore.levelStep || 1;
-        let nextFloor = (Exploration.autoExplore.floorIndex || 1) + step;
-        if (nextFloor > zone.maxFloor) nextFloor = 1;
-        Exploration.autoExplore.floorIndex = nextFloor;
+        const nextFloor = Exploration.autoExplore.floorIndex || 1;
         setTimeout(() => {
             this.doExploreWithFloor(Exploration.autoExplore.zoneId, nextFloor);
         }, 1000);

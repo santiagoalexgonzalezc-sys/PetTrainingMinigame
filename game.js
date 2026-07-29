@@ -1128,7 +1128,7 @@ const Exploration = {
         // Determine pet rarity
         const isRare = Math.random() < 0.25;
         const petPool = isRare ? zone.rarePets : zone.commonPets;
-        const petType = petPool[Math.floor(Math.random() * petPool.length)];
+        let petType = petPool[Math.floor(Math.random() * petPool.length)];
         if (!petType) {
             const fallbackPool = zone.commonPets;
             if (fallbackPool.length === 0) {
@@ -1138,10 +1138,11 @@ const Exploration = {
             petType = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
         }
 
-        // Generate wild pet level from floor index
-        const level = getWildPetLevelForFloor(floorIndex, zone.floorSize);
+         // Generate wild pet level from floor index
+         const level = getWildPetLevelForFloor(floorIndex, zone.floorSize);
+         const floorMax = floorIndex * zone.floorSize;
 
-        // Shiny roll: 1 in 500
+         // Shiny roll: 1 in 500
         const isShiny = Math.random() < 0.002;
 
         // Tier roll based on zone
@@ -1154,17 +1155,17 @@ const wildPet = PetManager.createPet(petType, level, { shiny: isShiny, tier });
              return null;
          }
 
-         // C-tier opponent encounter based on player level
-const cTierChance = getCTierChance(PlayerSystem.level);
-         if (cTierChance > 0 && Math.random() * 100 < cTierChance) {
-             const cTire = rollCTire(PlayerSystem.level);
-             const cTierLevelBonus = (cTire - 1) * 3;
-             wildPet.level = wildPet.level + cTierLevelBonus;
-             wildPet.tier = cTire >= 4 ? "C" + cTire : wildPet.tier;
-             wildPet.tierBonus = PetManager.calculateTierBonus(wildPet.tier);
-             wildPet.stats = PetManager.calculateStats(PetTypes[wildPet.typeId], wildPet.level, wildPet);
-             wildPet.currentHP = PetManager.calculateMaxHP(PetTypes[wildPet.typeId], wildPet.level, wildPet);
-         }
+          // C-tier opponent encounter based on player level
+ const cTierChance = getCTierChance(PlayerSystem.level);
+          if (cTierChance > 0 && Math.random() * 100 < cTierChance) {
+              const cTire = rollCTire(PlayerSystem.level);
+              const cTierLevelBonus = Math.min((cTire - 1) * 3, floorMax - wildPet.level);
+              wildPet.level = wildPet.level + cTierLevelBonus;
+              wildPet.tier = cTire >= 4 ? "C" + cTire : wildPet.tier;
+              wildPet.tierBonus = PetManager.calculateTierBonus(wildPet.tier);
+              wildPet.stats = PetManager.calculateStats(PetTypes[wildPet.typeId], wildPet.level, wildPet);
+              wildPet.currentHP = PetManager.calculateMaxHP(PetTypes[wildPet.typeId], wildPet.level, wildPet);
+          }
 
          return { pet: wildPet, isRare, isShiny };
     },
@@ -1179,7 +1180,8 @@ const cTierChance = getCTierChance(PlayerSystem.level);
         zoneId: null,
         floorIndex: null,
         petId: null,
-        floorPage: 0
+        floorPage: 0,
+        levelStep: 1
     }
 };
 
@@ -1222,11 +1224,7 @@ function getWildPetLevelForFloor(floorIndex, floorSize) {
 function rollTierForZone(zoneId) {
     const tierRoll = Math.random();
     let tier;
-    if (PlayerSystem.level < 50) {
-        tier = randomTier("D");
-    } else if (tierRoll < 0.05) tier = randomTier("A");
-    else if (tierRoll < 0.10) tier = randomTier("B");
-    else if (tierRoll < 0.50) tier = randomTier("C");
+    if (tierRoll < 0.30) tier = randomTier("C");
     else tier = randomTier("D");
     return tier;
 }
@@ -2629,13 +2627,19 @@ this.playerAbilityCooldown = ability.cooldown;
         
         setTimeout(() => {
             if (Exploration.autoExplore.active && playerWon) {
+                UIManager.showAutoExploreNotification(`Victory! +${petXPReward} pet XP, +${moneyReward} gold`, "success");
                 UIManager.startNextAutoExplore();
+            } else if (Exploration.autoExplore.active && !playerWon) {
+                UIManager.showAutoExploreNotification("Defeat! Auto-explore stopped.", "error");
+                Exploration.autoExplore.active = false;
+                BattleSystem.autoExploreActive = false;
+                BattleSystem.autoExplorePetId = null;
+                UIManager.showScreen("mainScreen");
+                UIManager.renderPets();
+                UIManager.updateCurrency();
+                UIManager.updateTeamPower();
+                UIManager.updatePlayerLevelDisplay();
             } else {
-                if (Exploration.autoExplore.active && !playerWon) {
-                    Exploration.autoExplore.active = false;
-                    BattleSystem.autoExploreActive = false;
-                    BattleSystem.autoExplorePetId = null;
-                }
                 UIManager.showScreen("mainScreen");
                 UIManager.renderPets();
                 UIManager.updateCurrency();
@@ -3400,12 +3404,36 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 BattleSystem.playerPet = { ...PetManager.selectedPet };
             }
             BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
-            this.showScreen("battleScreen");
+            if (!Exploration.autoExplore.active) {
+                this.showScreen("battleScreen");
+            }
         } else if (Exploration.autoExplore.active) {
             setTimeout(() => this.startNextAutoExplore(), 1000);
         } else {
             alert("Nothing found this time...");
         }
+    },
+
+    showAutoExploreNotification(message, type = "info") {
+        const container = document.getElementById("autoExploreNotifications");
+        if (!container) return;
+        const colors = {
+            info: "bg-blue-800",
+            success: "bg-green-800",
+            error: "bg-red-800",
+            warning: "bg-yellow-800"
+        };
+        const div = document.createElement("div");
+        div.className = `${colors[type] || colors.info} text-white rounded-xl px-4 py-3 text-sm shadow-lg transition-all duration-300 opacity-0 translate-x-4`;
+        div.innerText = message;
+        container.appendChild(div);
+        requestAnimationFrame(() => {
+            div.classList.remove("opacity-0", "translate-x-4");
+        });
+        setTimeout(() => {
+            div.classList.add("opacity-0", "translate-x-4");
+            setTimeout(() => div.remove(), 300);
+        }, 3000);
     },
 
     // Battle Screen
@@ -3420,65 +3448,81 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         const playerMaxHP = PetManager.calculateMaxHP(playerTemplate, player.level, player);
         const enemyMaxHP = PetManager.calculateMaxHP(enemyTemplate, enemy.level, enemy);
         
-        document.getElementById("playerPetSprite").innerText = playerTemplate.emoji;
-        document.getElementById("enemyPetSprite").innerText = enemyTemplate.emoji;
-        document.getElementById("playerPetName").innerText = PetManager.getEvolution(player) + (BattleSystem.bleeding === "player" ? " 🩸" : "") + (BattleSystem.burning === "player" ? " 🔥" + (BattleSystem.burnDuration.player > 0 && BattleSystem.burnDuration.player < 9999 ? BattleSystem.burnDuration.player : "") : "") + (BattleSystem.confused === "player" ? " 🧠" : "") + (BattleSystem.shield.player.turns > 0 ? " 🛡️" : "") + (BattleSystem.poisoned === "player" ? " ☠️" : "");
-        document.getElementById("playerTier").innerText = `Tier: ${player.tier || "D1"}`;
-        document.getElementById("enemyPetName").innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy) + (BattleSystem.bleeding === "enemy" ? " 🩸" : "") + (BattleSystem.burning === "enemy" ? " 🔥" + (BattleSystem.burnDuration.enemy > 0 && BattleSystem.burnDuration.enemy < 9999 ? BattleSystem.burnDuration.enemy : "") : "") + (BattleSystem.confused === "enemy" ? " 🧠" : "") + (BattleSystem.shield.enemy.turns > 0 ? " 🛡️" : "") + (BattleSystem.poisoned === "enemy" ? " ☠️" : "");
-        document.getElementById("enemyTier").innerText = `Tier: ${enemy.tier || "D1"}` + (enemy.shiny ? " ✨" : "");
-        document.getElementById("enemyPetLevel").innerText = `Level ${enemy.level}`;
-        
-        if (enemy.shiny) {
-            document.getElementById("enemyPetSprite").className = "text-6xl my-2.5 animate-pulse";
-        } else {
-            document.getElementById("enemyPetSprite").className = "text-6xl my-2.5";
-        }
-        
-        document.getElementById("playerHPFill").style.width = (player.currentHP / playerMaxHP) * 100 + "%";
-        document.getElementById("enemyHPFill").style.width = (enemy.currentHP / enemyMaxHP) * 100 + "%";
-        document.getElementById("playerHPText").innerText = `${player.currentHP}/${playerMaxHP}`;
-        document.getElementById("enemyHPText").innerText = `${enemy.currentHP}/${enemyMaxHP}`;
-        
-        // Update battle log
+        const playerSprite = document.getElementById("playerPetSprite");
+        const enemySprite = document.getElementById("enemyPetSprite");
+        const playerName = document.getElementById("playerPetName");
+        const enemyName = document.getElementById("enemyPetName");
+        const playerTier = document.getElementById("playerTier");
+        const enemyTier = document.getElementById("enemyTier");
+        const enemyLevel = document.getElementById("enemyPetLevel");
+        const playerHPFill = document.getElementById("playerHPFill");
+        const enemyHPFill = document.getElementById("enemyHPFill");
+        const playerHPText = document.getElementById("playerHPText");
+        const enemyHPText = document.getElementById("enemyHPText");
         const log = document.getElementById("battleLog");
-        log.innerHTML = BattleSystem.battleLog.map(entry => 
-            `<div class="py-1 border-b border-white/10">${entry.text}</div>`
-        ).join("");
-        
-        // Update buttons based on turn
         const attackBtn = document.getElementById("attackBtn");
         const abilityBtn = document.getElementById("abilityBtn");
         const switchBtn = document.getElementById("switchBtn");
         const catchBtn = document.getElementById("catchBtn");
         const autoStopBtn = document.getElementById("autoExploreStopBtn");
         
-        if (Exploration.autoExplore.active) {
-            attackBtn.disabled = true;
-            attackBtn.style.opacity = "0.5";
-            abilityBtn.disabled = true;
-            abilityBtn.style.display = "none";
-            switchBtn.disabled = true;
-            switchBtn.style.opacity = "0.5";
-            catchBtn.style.display = "none";
-            autoStopBtn.classList.remove("hidden");
-        } else {
+        if (playerSprite) playerSprite.innerText = playerTemplate.emoji;
+        if (enemySprite) enemySprite.innerText = enemyTemplate.emoji;
+        if (playerName) playerName.innerText = PetManager.getEvolution(player) + (BattleSystem.bleeding === "player" ? " 🩸" : "") + (BattleSystem.burning === "player" ? " 🔥" + (BattleSystem.burnDuration.player > 0 && BattleSystem.burnDuration.player < 9999 ? BattleSystem.burnDuration.player : "") : "") + (BattleSystem.confused === "player" ? " 🧠" : "") + (BattleSystem.shield.player.turns > 0 ? " 🛡️" : "") + (BattleSystem.poisoned === "player" ? " ☠️" : "");
+        if (playerTier) playerTier.innerText = `Tier: ${player.tier || "D1"}`;
+        if (enemyName) enemyName.innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy) + (BattleSystem.bleeding === "enemy" ? " 🩸" : "") + (BattleSystem.burning === "enemy" ? " 🔥" + (BattleSystem.burnDuration.enemy > 0 && BattleSystem.burnDuration.enemy < 9999 ? BattleSystem.burnDuration.enemy : "") : "") + (BattleSystem.confused === "enemy" ? " 🧠" : "") + (BattleSystem.shield.enemy.turns > 0 ? " 🛡️" : "") + (BattleSystem.poisoned === "enemy" ? " ☠️" : "");
+        if (enemyTier) enemyTier.innerText = `Tier: ${enemy.tier || "D1"}` + (enemy.shiny ? " ✨" : "");
+        if (enemyLevel) enemyLevel.innerText = `Level ${enemy.level}`;
+        
+        if (enemySprite) {
+            if (enemy.shiny) {
+                enemySprite.className = "text-6xl my-2.5 animate-pulse";
+            } else {
+                enemySprite.className = "text-6xl my-2.5";
+            }
+        }
+        
+        if (playerHPFill) playerHPFill.style.width = (player.currentHP / playerMaxHP) * 100 + "%";
+        if (enemyHPFill) enemyHPFill.style.width = (enemy.currentHP / enemyMaxHP) * 100 + "%";
+        if (playerHPText) playerHPText.innerText = `${player.currentHP}/${playerMaxHP}`;
+        if (enemyHPText) enemyHPText.innerText = `${enemy.currentHP}/${enemyMaxHP}`;
+        
+        // Update battle log
+        if (log) {
+            log.innerHTML = BattleSystem.battleLog.map(entry => 
+                `<div class="py-1 border-b border-white/10">${entry.text}</div>`
+            ).join("");
+        }
+        
+        // Update buttons based on turn
+        if (!Exploration.autoExplore.active) {
             const hasAbility = playerTemplate && playerTemplate.ability;
             const abilityOnCooldown = BattleSystem.playerAbilityCooldown > 0;
             
-            if (hasAbility && !abilityOnCooldown) {
-                abilityBtn.style.display = BattleSystem.isPlayerTurn ? "inline-block" : "none";
-                abilityBtn.disabled = !BattleSystem.isPlayerTurn;
-                abilityBtn.innerText = abilityOnCooldown ? `⏳ ${BattleSystem.playerAbilityCooldown}` : `✨ ${playerTemplate.ability.name}`;
-            } else {
-                abilityBtn.style.display = "none";
+            if (abilityBtn) {
+                if (hasAbility && !abilityOnCooldown) {
+                    abilityBtn.style.display = BattleSystem.isPlayerTurn ? "inline-block" : "none";
+                    abilityBtn.disabled = !BattleSystem.isPlayerTurn;
+                    abilityBtn.innerText = abilityOnCooldown ? `⏳ ${BattleSystem.playerAbilityCooldown}` : `✨ ${playerTemplate.ability.name}`;
+                } else {
+                    abilityBtn.style.display = "none";
+                }
             }
             
-            attackBtn.disabled = !BattleSystem.isPlayerTurn;
-            attackBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
-            switchBtn.disabled = !BattleSystem.isPlayerTurn;
-            switchBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
-            catchBtn.style.display = BattleSystem.active ? "inline-block" : "none";
-            autoStopBtn.classList.add("hidden");
+            if (attackBtn) {
+                attackBtn.disabled = !BattleSystem.isPlayerTurn;
+                attackBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
+            }
+            if (switchBtn) {
+                switchBtn.disabled = !BattleSystem.isPlayerTurn;
+                switchBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
+            }
+            if (catchBtn) {
+                catchBtn.style.display = BattleSystem.active ? "inline-block" : "none";
+            }
+            if (autoStopBtn) {
+                autoStopBtn.classList.add("hidden");
+            }
         }
     },
 
@@ -4236,6 +4280,8 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         }
         Exploration.autoExplore.active = true;
         document.getElementById("autoExploreOverlay").classList.add("hidden");
+        const floatingBtn = document.getElementById("autoExploreFloatingStop");
+        if (floatingBtn) floatingBtn.classList.remove("hidden");
         this.doExploreWithFloor(Exploration.autoExplore.zoneId, Exploration.autoExplore.floorIndex);
     },
 
@@ -4246,7 +4292,8 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             this.stopAutoExplore("Zone not found");
             return;
         }
-        let nextFloor = (Exploration.autoExplore.floorIndex || 1) + 1;
+        const step = Exploration.autoExplore.levelStep || 1;
+        let nextFloor = (Exploration.autoExplore.floorIndex || 1) + step;
         if (nextFloor > zone.maxFloor) nextFloor = 1;
         Exploration.autoExplore.floorIndex = nextFloor;
         setTimeout(() => {
@@ -4282,7 +4329,10 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         Exploration.autoExplore.active = false;
         BattleSystem.autoExploreActive = false;
         BattleSystem.autoExplorePetId = null;
-        this.showScreen("mainScreen");
+        const floatingBtn = document.getElementById("autoExploreFloatingStop");
+        if (floatingBtn) floatingBtn.classList.add("hidden");
+        const notifContainer = document.getElementById("autoExploreNotifications");
+        if (notifContainer) notifContainer.classList.add("hidden");
         if (reason) alert(reason || "Auto-explore stopped.");
     }
 };

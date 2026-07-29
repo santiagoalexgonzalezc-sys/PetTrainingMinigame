@@ -2916,6 +2916,16 @@ const UIManager = {
         document.querySelectorAll("[id$=Screen]").forEach(s => s.classList.add("hidden"));
         document.getElementById(screenId).classList.remove("hidden");
         
+        if (Exploration.autoExplore.active && screenId !== "battleScreen") {
+            Exploration.autoExplore.active = false;
+            BattleSystem.autoExploreActive = false;
+            BattleSystem.autoExplorePetId = null;
+            const floatingBtn = document.getElementById("autoExploreFloatingStop");
+            if (floatingBtn) floatingBtn.classList.add("hidden");
+            const notifContainer = document.getElementById("autoExploreNotifications");
+            if (notifContainer) notifContainer.classList.add("hidden");
+        }
+        
         // Render content when showing specific screens
         if (screenId === "shopScreen") {
             this.renderShop();
@@ -3404,9 +3414,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 BattleSystem.playerPet = { ...PetManager.selectedPet };
             }
             BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
-            if (!Exploration.autoExplore.active) {
-                this.showScreen("battleScreen");
-            }
+            this.showScreen("battleScreen");
         } else if (Exploration.autoExplore.active) {
             setTimeout(() => this.startNextAutoExplore(), 1000);
         } else {
@@ -3522,6 +3530,25 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             }
             if (autoStopBtn) {
                 autoStopBtn.classList.add("hidden");
+            }
+        } else {
+            if (attackBtn) {
+                attackBtn.disabled = true;
+                attackBtn.style.opacity = "0.5";
+            }
+            if (abilityBtn) {
+                abilityBtn.disabled = true;
+                abilityBtn.style.display = "none";
+            }
+            if (switchBtn) {
+                switchBtn.disabled = true;
+                switchBtn.style.opacity = "0.5";
+            }
+            if (catchBtn) {
+                catchBtn.style.display = "none";
+            }
+            if (autoStopBtn) {
+                autoStopBtn.classList.remove("hidden");
             }
         }
     },
@@ -4333,6 +4360,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         if (floatingBtn) floatingBtn.classList.add("hidden");
         const notifContainer = document.getElementById("autoExploreNotifications");
         if (notifContainer) notifContainer.classList.add("hidden");
+        this.showScreen("mainScreen");
         if (reason) alert(reason || "Auto-explore stopped.");
     }
 };

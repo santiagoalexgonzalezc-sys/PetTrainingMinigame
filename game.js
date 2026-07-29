@@ -1129,6 +1129,14 @@ const Exploration = {
         const isRare = Math.random() < 0.25;
         const petPool = isRare ? zone.rarePets : zone.commonPets;
         const petType = petPool[Math.floor(Math.random() * petPool.length)];
+        if (!petType) {
+            const fallbackPool = zone.commonPets;
+            if (fallbackPool.length === 0) {
+                console.error("No valid pets in zone:", zoneId);
+                return null;
+            }
+            petType = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
+        }
 
         // Generate wild pet level from floor index
         const level = getWildPetLevelForFloor(floorIndex, zone.floorSize);
@@ -1677,79 +1685,89 @@ playerTurn() {
              this.playerAbilityCooldown--;
          }
          
-         // Check if player is confused
-         if (this.confused === "player") {
-             this.addLog(`${this.getPetName(this.playerPet)} is confused and can't move!`);
-             this.confused = null;
-             this.isPlayerTurn = false;
-             UIManager.updateBattleScreen();
-             setTimeout(() => this.enemyTurn(), 1000);
+          // Check if player is confused
+          if (this.confused === "player") {
+              this.addLog(`${this.getPetName(this.playerPet)} is confused and can't move!`);
+              this.confused = null;
+              this.isPlayerTurn = false;
+              UIManager.updateBattleScreen();
+              setTimeout(() => this.enemyTurn(), 1000);
+              return;
+          }
+          
+          this.attack(this.playerPet, this.enemyPet, true);
+         
+         if (this.enemyPet.currentHP <= 0) {
+             this.endBattle(true);
              return;
          }
          
-         this.attack(this.playerPet, this.enemyPet, true);
-        
-        if (this.enemyPet.currentHP <= 0) {
-            this.endBattle(true);
-            return;
-        }
-        
-        this.isPlayerTurn = false;
-        UIManager.updateBattleScreen();
-        
-        // Check if enemy is paralyzed
-        if (this.paralyzed) {
-            this.addLog(`${this.getPetName(this.enemyPet)} is paralyzed! It can't move!`);
-            this.paralyzed = false;
-            UIManager.updateBattleScreen();
-            
-            // Player gets another turn
-            this.isPlayerTurn = true;
-            setTimeout(() => UIManager.updateBattleScreen(), 500);
-            return;
-        }
-        
-        // Enemy attacks after delay
-        setTimeout(() => this.enemyTurn(), 1000);
-    },
-    
-enemyTurn() {
-         if (!this.active || this.isPlayerTurn) return;
+         this.isPlayerTurn = false;
+         UIManager.updateBattleScreen();
          
-         // Check if enemy is confused
-         if (this.confused === "enemy") {
-             this.addLog(`${this.getPetName(this.enemyPet)} is confused and can't move!`);
-             this.confused = null;
+         // Check if enemy is paralyzed
+         if (this.paralyzed) {
+             this.addLog(`${this.getPetName(this.enemyPet)} is paralyzed! It can't move!`);
+             this.paralyzed = false;
+             UIManager.updateBattleScreen();
+             
+             // Player gets another turn
              this.isPlayerTurn = true;
-             UIManager.updateBattleScreen();
-             setTimeout(() => UIManager.updateBattleScreen(), 500);
+             setTimeout(() => {
+                 UIManager.updateBattleScreen();
+                 if (this.autoExploreActive) {
+                     this.autoPlayTurn();
+                 }
+             }, 500);
              return;
          }
          
-         this.attack(this.enemyPet, this.playerPet, false);
-        
-        if (this.playerPet.currentHP <= 0) {
-            this.endBattle(false);
-            return;
-        }
-        
-        this.isPlayerTurn = true;
-        UIManager.updateBattleScreen();
-        
-        if (this.autoExploreActive) {
-            setTimeout(() => this.autoPlayTurn(), 1000);
-        }
-    },
+         // Enemy attacks after delay
+         setTimeout(() => this.enemyTurn(), 1000);
+     },
+     
+ enemyTurn() {
+          if (!this.active || this.isPlayerTurn) return;
+          
+          // Check if enemy is confused
+          if (this.confused === "enemy") {
+              this.addLog(`${this.getPetName(this.enemyPet)} is confused and can't move!`);
+              this.confused = null;
+              this.isPlayerTurn = true;
+              UIManager.updateBattleScreen();
+              setTimeout(() => {
+                  UIManager.updateBattleScreen();
+                  if (this.autoExploreActive) {
+                      this.autoPlayTurn();
+                  }
+              }, 500);
+              return;
+          }
+          
+          this.attack(this.enemyPet, this.playerPet, false);
+         
+         if (this.playerPet.currentHP <= 0) {
+             this.endBattle(false);
+             return;
+         }
+         
+         this.isPlayerTurn = true;
+         UIManager.updateBattleScreen();
+         
+         if (this.autoExploreActive) {
+             setTimeout(() => this.autoPlayTurn(), 1000);
+         }
+     },
 
-    autoPlayTurn() {
-        if (!this.active || !this.isPlayerTurn) return;
-        const template = PetTypes[this.playerPet.typeId];
-        if (template && template.ability && this.playerAbilityCooldown === 0) {
-            this.useAbility();
-        } else {
-            this.playerAttack();
-        }
-    },
+autoPlayTurn() {
+    if (!this.active || !this.isPlayerTurn) return;
+    const template = PetTypes[this.playerPet.typeId];
+    if (template && template.ability && this.playerAbilityCooldown === 0) {
+        this.useAbility();
+    } else {
+        this.playerTurn();
+    }
+},
 
     attack(attacker, defender, isPlayerAttacker) {
          const attackerTemplate = PetTypes[attacker.typeId];
@@ -3375,7 +3393,12 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         
         if (result && result.pet && result.pet.stats) {
             BattleSystem.enemyPet = result.pet;
-            BattleSystem.playerPet = { ...PetManager.selectedPet };
+            if (Exploration.autoExplore.active && Exploration.autoExplore.petId) {
+                const autoPet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
+                BattleSystem.playerPet = autoPet ? { ...autoPet } : { ...PetManager.selectedPet };
+            } else {
+                BattleSystem.playerPet = { ...PetManager.selectedPet };
+            }
             BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
             this.showScreen("battleScreen");
         } else if (Exploration.autoExplore.active) {
@@ -4139,8 +4162,9 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         grid.innerHTML = "";
         const floorsPerPage = 10;
         const totalPages = Math.ceil(zone.maxFloor / floorsPerPage);
-        const startFloor = 1;
-        const endFloor = Math.min(floorsPerPage, zone.maxFloor);
+        const page = Exploration.autoExploreFloorPage || 0;
+        const startFloor = page * floorsPerPage + 1;
+        const endFloor = Math.min(startFloor + floorsPerPage - 1, zone.maxFloor);
         for (let i = startFloor; i <= endFloor; i++) {
             const floorMin = (i - 1) * zone.floorSize + 1;
             const floorMax = i * zone.floorSize;
@@ -4164,10 +4188,9 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             grid.appendChild(card);
         }
         document.getElementById("autoExploreFloorNav").classList.remove("hidden");
-        document.getElementById("autoExploreFloorPrev").disabled = true;
-        document.getElementById("autoExploreFloorNext").disabled = totalPages <= 1;
-        document.getElementById("autoExploreFloorInfo").innerText = `Page 1/${totalPages}`;
-        Exploration.autoExploreFloorPage = 0;
+        document.getElementById("autoExploreFloorPrev").disabled = page === 0;
+        document.getElementById("autoExploreFloorNext").disabled = page >= totalPages - 1;
+        document.getElementById("autoExploreFloorInfo").innerText = `Page ${page + 1}/${totalPages}`;
     },
 
     renderAutoExplorePets() {

@@ -5,12 +5,12 @@
 - Shiny/hex color variants — Shiny pets already exist but add a visible sparkle animation and a "shiny checker" tooltip
 - Pet training mini-games — Instead of just XP, add a quick reflex minigame (click targets) for bonus training points
 - Auto-heal toggle — During auto-explore, option to auto-use potions when HP drops below 50%
-- Battle replay — Save last few battle logs so you can review them after closing
-- Weather effects in battles — Rain boosts water types, sun boosts fire types, etc.
 - Combo system — Consecutive successful moves build up combo meter for bonus damage
 - Pet personality traits — Random traits that affect stats/behavior (aggressive, defensive, playful)
 - Battle arena selection — Choose different arenas with terrain bonuses
 - Evolution stones — Special items required for certain pet evolutions
+- Weather effects in battles — Rain boosts water types, sun boosts fire types, etc.
+- Battle replay — Save last few battle logs so you can review them after closing
 
 ## 📈 Progression Systems
 - Season/rebirth system — After reaching max level, reset XP but keep pets/prestige for a permanent bonus multiplier
@@ -96,3 +96,7 @@
 - Screen shake effects — Impact effects during critical hits
 - Victory/defeat cinematics — Special animations for battle end
 - Weather visuals — Rain, snow, fog effects in appropriate zones
+- Save/load presets — Save party configurations and load them instantly
+- Title system — Earn titles (e.g., "Dragon Tamer", "Grass Guardian") for display on profile
+- Achievement tiers — Bronze/Silver/Gold/Platinum achievement levels with escalating rewards
+- Daily quests — "Defeat 5 grass-type pets", "Craft 3 potions", etc. with small rewards

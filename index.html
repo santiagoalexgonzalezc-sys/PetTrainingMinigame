@@ -47,7 +47,11 @@
 
         <input type="text" id="petSearchInput" placeholder="Search pets by name or type..." class="w-full max-w-md mx-auto p-2 rounded-lg bg-gray-800 border border-gray-600 text-white mb-4" oninput="UIManager.filterPets()">
 
-        <button onclick="UIManager.openCompareOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-purple-700 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">📊 Compare Pets</button>
+        <div class="flex flex-wrap gap-2 justify-center mb-4">
+            <button onclick="UIManager.openCompareOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-purple-700 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">📊 Compare Pets</button>
+            <button onclick="UIManager.openPresetOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-700 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">💾 Party Presets</button>
+            <button onclick="UIManager.openQuestOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-700 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">🎯 Daily Quests</button>
+        </div>
 
         <div id="petList" class="flex flex-wrap gap-2 justify-center"></div>
     </div>
@@ -159,6 +163,9 @@
             <div class="mt-4 pt-4 border-t border-white/10">
                 <h3 class="text-sm font-bold mb-2">🏆 Achievements</h3>
                 <div id="profileAchievements" class="flex flex-wrap justify-center"></div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/10">
+                <div id="profileTitles" class="flex flex-wrap justify-center"></div>
             </div>
         </div>
     </div>
@@ -321,6 +328,33 @@
 
     <!-- WEATHER CONTAINER -->
     <div id="weatherContainer" class="weather-container hidden"></div>
+
+    <!-- PARTY PRESET OVERLAY -->
+    <div id="presetOverlay" class="hidden fixed inset-0 bg-black/90 z-50 p-5 overflow-y-auto">
+        <div class="max-w-4xl mx-auto my-5">
+            <h2>💾 Party Presets</h2>
+            <div class="mb-4">
+                <input type="text" id="presetNameInput" placeholder="Preset name..." class="p-2 rounded-lg bg-gray-800 border border-gray-600 text-white">
+                <button onclick="UIManager.savePreset()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-700 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Save Current Party</button>
+            </div>
+            <div id="presetList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 my-5"></div>
+            <div class="text-center">
+                <button onclick="UIManager.closePresetOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DAILY QUESTS OVERLAY -->
+    <div id="questOverlay" class="hidden fixed inset-0 bg-black/90 z-50 p-5 overflow-y-auto">
+        <div class="max-w-4xl mx-auto my-5">
+            <h2>🎯 Daily Quests</h2>
+            <p class="text-sm opacity-70 mb-4">Quests reset daily at midnight</p>
+            <div id="questList" class="space-y-4 my-5"></div>
+            <div class="text-center">
+                <button onclick="UIManager.closeQuestOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- PET COMPARISON OVERLAY -->
     <div id="compareOverlay" class="hidden fixed inset-0 bg-black/90 z-50 p-5 overflow-y-auto">

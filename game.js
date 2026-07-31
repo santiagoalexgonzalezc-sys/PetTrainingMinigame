@@ -25,7 +25,11 @@ const DataManager = {
                 loginStreak: PlayerSystem.loginStreak,
                 lastLoginDate: PlayerSystem.lastLoginDate,
                 dailyActivities: Array.from(PlayerSystem.dailyActivities),
-                achievements: Array.from(PlayerSystem.achievements)
+                achievements: Array.from(PlayerSystem.achievements),
+                partyPresets: PlayerSystem.partyPresets,
+                selectedTitle: PlayerSystem.selectedTitle,
+                dailyQuests: PlayerSystem.dailyQuests,
+                lastQuestReset: PlayerSystem.lastQuestReset
             },
              maxPartySize: PetManager.maxPartySize,
             maxTotalPets: PetManager.maxTotalPets
@@ -122,6 +126,10 @@ const DataManager = {
                 PlayerSystem.lastLoginDate = data.player.lastLoginDate || null;
                 PlayerSystem.dailyActivities = new Set(Array.isArray(data.player.dailyActivities) ? data.player.dailyActivities : []);
                 PlayerSystem.achievements = new Set(Array.isArray(data.player.achievements) ? data.player.achievements : []);
+                PlayerSystem.partyPresets = data.player.partyPresets || {};
+                PlayerSystem.selectedTitle = data.player.selectedTitle || null;
+                PlayerSystem.dailyQuests = data.player.dailyQuests || [];
+                PlayerSystem.lastQuestReset = data.player.lastQuestReset || null;
             } else {
                 PlayerSystem.level = 1;
                 PlayerSystem.xp = 0;
@@ -139,6 +147,10 @@ const DataManager = {
                 PlayerSystem.lastLoginDate = null;
                 PlayerSystem.dailyActivities = new Set();
                 PlayerSystem.achievements = new Set();
+                PlayerSystem.partyPresets = {};
+                PlayerSystem.selectedTitle = null;
+                PlayerSystem.dailyQuests = [];
+                PlayerSystem.lastQuestReset = null;
             }
             
             // Migration: restore maxPartySize and maxTotalPets from save or defaults
@@ -147,7 +159,55 @@ const DataManager = {
 
             // Check daily login rewards
             this.checkDailyLogin();
+
+            // Check daily quests reset
+            this.checkDailyQuests();
         }
+    },
+
+    checkDailyQuests() {
+        const today = new Date().toDateString();
+        if (PlayerSystem.lastQuestReset !== today) {
+            this.generateDailyQuests();
+            PlayerSystem.lastQuestReset = today;
+            DataManager.save();
+        }
+    },
+
+    generateDailyQuests() {
+        const questTemplates = [
+            { type: "defeat", target: "grass", count: 5, reward: 200, description: "Defeat 5 grass-type pets" },
+            { type: "defeat", target: "fire", count: 5, reward: 200, description: "Defeat 5 fire-type pets" },
+            { type: "defeat", target: "water", count: 5, reward: 200, description: "Defeat 5 water-type pets" },
+            { type: "craft", target: "potion", count: 3, reward: 150, description: "Craft 3 potions" },
+            { type: "craft", target: "xpOrb", count: 2, reward: 200, description: "Craft 2 XP Orbs" },
+            { type: "explore", target: "any", count: 3, reward: 150, description: "Explore 3 times" },
+            { type: "train", target: "any", count: 5, reward: 150, description: "Train 5 times" },
+            { type: "catch", target: "any", count: 3, reward: 200, description: "Catch 3 pets" }
+        ];
+
+        const shuffled = questTemplates.sort(() => Math.random() - 0.5);
+        PlayerSystem.dailyQuests = shuffled.slice(0, 3).map((template, index) => ({
+            id: `quest_${Date.now()}_${index}`,
+            ...template,
+            progress: 0,
+            completed: false
+        }));
+    },
+
+    updateQuestProgress(type, target, amount = 1) {
+        PlayerSystem.dailyQuests.forEach(quest => {
+            if (quest.completed) return;
+            if (quest.type === type && (quest.target === target || quest.target === "any")) {
+                quest.progress = Math.min(quest.progress + amount, quest.count);
+                if (quest.progress >= quest.count && !quest.completed) {
+                    quest.completed = true;
+                    Economy.money += quest.reward;
+                    UIManager.showToast(`🎯 Quest Complete: ${quest.description} (+${quest.reward}💰)`);
+                    DataManager.save();
+                }
+            }
+        });
     },
 
     checkDailyLogin() {
@@ -997,29 +1057,42 @@ const PlayerSystem = {
     loginStreak: 0,
     lastLoginDate: null,
     dailyActivities: new Set(),
-    achievements: new Set()
+    achievements: new Set(),
+    partyPresets: {},
+    selectedTitle: null,
+    dailyQuests: [],
+    lastQuestReset: null
 };
 
 // ==================== ACHIEVEMENT SYSTEM ====================
 const AchievementSystem = {
     achievements: {
-        firstCatch: { id: "firstCatch", name: "First Catch", description: "Catch your first pet", icon: "🎱", reward: 100 },
-        defeat10: { id: "defeat10", name: "Novice Trainer", description: "Defeat 10 pets in battle", icon: "⚔️", reward: 200 },
-        defeat50: { id: "defeat50", name: "Skilled Trainer", description: "Defeat 50 pets in battle", icon: "🗡️", reward: 500 },
-        defeat100: { id: "defeat100", name: "Master Trainer", description: "Defeat 100 pets in battle", icon: "🏆", reward: 1000 },
-        catch10: { id: "catch10", name: "Collector", description: "Catch 10 different pets", icon: "📦", reward: 300 },
-        catch25: { id: "catch25", name: "Hoarder", description: "Catch 25 different Pets", icon: "🎁", reward: 750 },
-        shiny: { id: "shiny", name: "Lucky Find", description: "Find a shiny pet", icon: "✨", reward: 2000 },
-        craft10: { id: "craft10", name: "Craftsman", description: "Craft 10 items", icon: "🔨", reward: 300 },
-        craft50: { id: "craft50", name: "Master Craftsman", description: "Craft 50 items", icon: "⚒️", reward: 1000 },
-        level10: { id: "level10", name: "Rising Star", description: "Reach player level 10", icon: "⭐", reward: 500 },
-        level25: { id: "level25", name: "Veteran", description: "Reach player level 25", icon: "🌟", reward: 1500 },
-        level50: { id: "level50", name: "Legend", description: "Reach player level 50", icon: "👑", reward: 5000 },
-        streak5: { id: "streak5", name: "On Fire", description: "Achieve a 5-win battle streak", icon: "🔥", reward: 400 },
-        streak10: { id: "streak10", name: "Unstoppable", description: "Achieve a 10-win battle streak", icon: "💥", reward: 1000 },
-        prestige1: { id: "prestige1", name: "Prestige Beginner", description: "Perform your first prestige fusion", icon: "✨", reward: 1000 },
-        explore10: { id: "explore10", name: "Explorer", description: "Complete 10 explorations", icon: "🗺️", reward: 300 },
-        explore50: { id: "explore50", name: "Adventurer", description: "Complete 50 explorations", icon: "🧭", reward: 1000 }
+        firstCatch: { id: "firstCatch", name: "First Catch", description: "Catch your first pet", icon: "🎱", reward: 100, tier: "bronze" },
+        defeat10: { id: "defeat10", name: "Novice Trainer", description: "Defeat 10 pets in battle", icon: "⚔️", reward: 200, tier: "bronze" },
+        defeat50: { id: "defeat50", name: "Skilled Trainer", description: "Defeat 50 pets in battle", icon: "🗡️", reward: 500, tier: "silver" },
+        defeat100: { id: "defeat100", name: "Master Trainer", description: "Defeat 100 pets in battle", icon: "🏆", reward: 1000, tier: "gold" },
+        catch10: { id: "catch10", name: "Collector", description: "Catch 10 different pets", icon: "📦", reward: 300, tier: "bronze" },
+        catch25: { id: "catch25", name: "Hoarder", description: "Catch 25 different pets", icon: "📦", reward: 500, tier: "silver" },
+        catch50: { id: "catch50", name: "Archivist", description: "Catch 50 different pets", icon: "📚", reward: 1000, tier: "gold" },
+        train10: { id: "train10", name: "Disciplined", description: "Train 10 times", icon: "💪", reward: 300, tier: "bronze" },
+        train50: { id: "train50", name: "Dedicated", description: "Train 50 times", icon: "💪", reward: 800, tier: "silver" },
+        explore10: { id: "explore10", name: "Explorer", description: "Explore 10 times", icon: "🗺️", reward: 300, tier: "bronze" },
+        explore50: { id: "explore50", name: "Adventurer", description: "Explore 50 times", icon: "🗺️", reward: 800, tier: "silver" },
+        craft10: { id: "craft10", name: "Craftsman", description: "Craft 10 items", icon: "🔨", reward: 300, tier: "bronze" },
+        craft50: { id: "craft50", name: "Artisan", description: "Craft 50 items", icon: "🔨", reward: 800, tier: "silver" },
+        streak5: { id: "streak5", name: "On Fire", description: "Achieve 5 battle streak", icon: "🔥", reward: 500, tier: "bronze" },
+        streak10: { id: "streak10", name: "Unstoppable", description: "Achieve 10 battle streak", icon: "⚡", reward: 1000, tier: "gold" },
+        prestige1: { id: "prestige1", name: "First Fusion", description: "Perform your first prestige fusion", icon: "✨", reward: 1000, tier: "gold" }
+    },
+
+    getTierMultiplier(tier) {
+        switch (tier) {
+            case "platinum": return 4;
+            case "gold": return 2;
+            case "silver": return 1.5;
+            case "bronze": return 1;
+            default: return 1;
+        }
     },
 
     checkAchievement(achievementId) {
@@ -1086,8 +1159,10 @@ const AchievementSystem = {
 
         if (unlocked) {
             PlayerSystem.achievements.add(achievementId);
-            Economy.money += achievement.reward;
-            UIManager.showToast(`🏆 Achievement Unlocked: ${achievement.icon} ${achievement.name} (+${achievement.reward}💰)`);
+            const tierMultiplier = this.getTierMultiplier(achievement.tier || "bronze");
+            const finalReward = Math.floor(achievement.reward * tierMultiplier);
+            Economy.money += finalReward;
+            UIManager.showToast(`🏆 Achievement Unlocked: ${achievement.icon} ${achievement.name} (+${finalReward}💰)`);
             DataManager.save();
             return true;
         }
@@ -1111,6 +1186,62 @@ const AchievementSystem = {
         for (const achievementId of Object.keys(this.achievements)) {
             this.checkAchievement(achievementId);
         }
+    }
+};
+
+// ==================== TITLE SYSTEM ====================
+const TitleSystem = {
+    titles: {
+        noviceTrainer: { id: "noviceTrainer", name: "Novice Trainer", description: "Defeat 10 pets", requirement: () => PlayerSystem.totalBattles >= 10 },
+        skilledTrainer: { id: "skilledTrainer", name: "Skilled Trainer", description: "Defeat 50 pets", requirement: () => PlayerSystem.totalBattles >= 50 },
+        masterTrainer: { id: "masterTrainer", name: "Master Trainer", description: "Defeat 100 pets", requirement: () => PlayerSystem.totalBattles >= 100 },
+        collector: { id: "collector", name: "Collector", description: "Catch 10 different pets", requirement: () => AchievementSystem.getUniquePetCount() >= 10 },
+        hoarder: { id: "hoarder", name: "Hoarder", description: "Catch 25 different pets", requirement: () => AchievementSystem.getUniquePetCount() >= 25 },
+        explorer: { id: "explorer", name: "Explorer", description: "Explore 10 times", requirement: () => PlayerSystem.totalExplores >= 10 },
+        adventurer: { id: "adventurer", name: "Adventurer", description: "Explore 50 times", requirement: () => PlayerSystem.totalExplores >= 50 },
+        craftsman: { id: "craftsman", name: "Craftsman", description: "Craft 10 items", requirement: () => PlayerSystem.totalCrafts >= 10 },
+        artisan: { id: "artisan", name: "Artisan", description: "Craft 50 items", requirement: () => PlayerSystem.totalCrafts >= 50 },
+        onFire: { id: "onFire", name: "On Fire", description: "Achieve 5 battle streak", requirement: () => PlayerSystem.bestStreak >= 5 },
+        unstoppable: { id: "unstoppable", name: "Unstoppable", description: "Achieve 10 battle streak", requirement: () => PlayerSystem.bestStreak >= 10 },
+        dragonTamer: { id: "dragonTamer", name: "Dragon Tamer", description: "Own 5 dragon-type pets", requirement: () => this.countPetType("dragon") >= 5 },
+        grassGuardian: { id: "grassGuardian", name: "Grass Guardian", description: "Own 5 grass-type pets", requirement: () => this.countPetType("grass") >= 5 },
+        waterMaster: { id: "waterMaster", name: "Water Master", description: "Own 5 water-type pets", requirement: () => this.countPetType("water") >= 5 },
+        fireLord: { id: "fireLord", name: "Fire Lord", description: "Own 5 fire-type pets", requirement: () => this.countPetType("fire") >= 5 }
+    },
+
+    countPetType(type) {
+        const allPets = [...PetManager.pets, ...PetManager.storage];
+        return allPets.filter(pet => PetTypes[pet.typeId]?.type === type).length;
+    },
+
+    getUnlockedTitles() {
+        const unlocked = [];
+        for (const [id, title] of Object.entries(this.titles)) {
+            if (title.requirement()) {
+                unlocked.push(title);
+            }
+        }
+        return unlocked;
+    },
+
+    selectTitle(titleId) {
+        if (titleId && this.titles[titleId] && this.titles[titleId].requirement()) {
+            PlayerSystem.selectedTitle = titleId;
+            DataManager.save();
+            return true;
+        } else if (!titleId) {
+            PlayerSystem.selectedTitle = null;
+            DataManager.save();
+            return true;
+        }
+        return false;
+    },
+
+    getSelectedTitle() {
+        if (PlayerSystem.selectedTitle && this.titles[PlayerSystem.selectedTitle]) {
+            return this.titles[PlayerSystem.selectedTitle];
+        }
+        return null;
     }
 };
 
@@ -1165,6 +1296,8 @@ function getPlayerLevelBonus() {
 
 function getExploreExplore() {
     PlayerSystem.totalExplores++;
+    // Update quest progress for exploration
+    DataManager.updateQuestProgress("explore", "any");
     AchievementSystem.checkAchievement("explore10");
     AchievementSystem.checkAchievement("explore50");
 }
@@ -2719,6 +2852,11 @@ this.playerAbilityCooldown = ability.cooldown;
             if (PlayerSystem.battleStreak > PlayerSystem.bestStreak) {
                 PlayerSystem.bestStreak = PlayerSystem.battleStreak;
             }
+            // Update quest progress for defeating pets
+            const enemyType = PetTypes[this.enemyPet.typeId]?.type;
+            if (enemyType) {
+                DataManager.updateQuestProgress("defeat", enemyType);
+            }
 
             // Check achievements
             AchievementSystem.checkAchievement("defeat10");
@@ -2879,6 +3017,8 @@ this.playerAbilityCooldown = ability.cooldown;
         if (success && PetManager.pets.length < PetManager.maxPartySize) {
             PetManager.pets.push(wildPet);
             PlayerSystem.totalCatches++;
+            // Update quest progress for catching
+            DataManager.updateQuestProgress("catch", "any");
             AchievementSystem.checkAchievement("firstCatch");
             AchievementSystem.checkAchievement("catch10");
             AchievementSystem.checkAchievement("catch25");
@@ -2890,6 +3030,8 @@ this.playerAbilityCooldown = ability.cooldown;
         } else if (success && PetManager.pets.length + PetManager.storage.length < PetManager.maxTotalPets) {
             PetManager.storage.push(wildPet);
             PlayerSystem.totalCatches++;
+            // Update quest progress for catching
+            DataManager.updateQuestProgress("catch", "any");
             AchievementSystem.checkAchievement("firstCatch");
             AchievementSystem.checkAchievement("catch10");
             AchievementSystem.checkAchievement("catch25");
@@ -3008,7 +3150,9 @@ const TrainingSystem = {
         }
         
         PlayerSystem.totalTrainings++;
-        
+        // Update quest progress for training
+        DataManager.updateQuestProgress("train", "any");
+
         DataManager.save();
         
         setTimeout(() => {
@@ -3264,10 +3408,12 @@ const UIManager = {
         const zonesUnlocked = PlayerSystem.unlockedZones.length;
         const achievementsUnlocked = PlayerSystem.achievements.size;
         const totalAchievements = Object.keys(AchievementSystem.achievements).length;
+        const selectedTitle = TitleSystem.getSelectedTitle();
 
         const stats = [
             { label: "Level", value: PlayerSystem.level, color: "" },
             { label: "XP", value: `${PlayerSystem.xp} / ${xpNeeded(PlayerSystem.level)}`, color: "" },
+            { label: "Title", value: selectedTitle ? selectedTitle.name : "None", color: "text-yellow-400" },
             { label: "Party Pets", value: `${partyCount} / ${PetManager.maxPartySize}`, color: "" },
             { label: "Total Pets", value: `${totalCount} / ${PetManager.maxTotalPets}`, color: "" },
             { label: "Total Catches", value: PlayerSystem.totalCatches, color: "" },
@@ -3285,18 +3431,53 @@ const UIManager = {
             .map(s => `<div class="flex justify-between"><span>${s.label}</span><span class="${s.color} font-bold">${s.value}</span></div>`)
             .join("");
 
-        // Render achievements
+        // Render achievements with tier colors
         const achievementsContainer = document.getElementById("profileAchievements");
         if (achievementsContainer) {
             achievementsContainer.innerHTML = "";
             for (const [id, achievement] of Object.entries(AchievementSystem.achievements)) {
                 const isUnlocked = PlayerSystem.achievements.has(id);
+                const tier = achievement.tier || "bronze";
+                const tierColors = {
+                    bronze: "border-amber-600 bg-amber-900/30",
+                    silver: "border-gray-400 bg-gray-700/30",
+                    gold: "border-yellow-400 bg-yellow-600/30",
+                    platinum: "border-cyan-400 bg-cyan-700/30"
+                };
                 const badge = document.createElement("div");
-                badge.className = `inline-block m-1 p-2 rounded-lg text-center ${isUnlocked ? "bg-purple-600/50 border-2 border-purple-400" : "bg-gray-700/50 border-2 border-gray-600 opacity-50"}`;
-                badge.title = `${achievement.name}: ${achievement.description}${isUnlocked ? ` (+${achievement.reward}💰)` : ""}`;
+                badge.className = `inline-block m-1 p-2 rounded-lg text-center border-2 ${isUnlocked ? tierColors[tier] : "bg-gray-700/50 border-gray-600 opacity-50"}`;
+                badge.title = `${achievement.name} (${tier.charAt(0).toUpperCase() + tier.slice(1)}): ${achievement.description}${isUnlocked ? ` (+${Math.floor(achievement.reward * AchievementSystem.getTierMultiplier(tier))}💰)` : ""}`;
                 badge.innerHTML = `<div class="text-2xl">${achievement.icon}</div>`;
                 achievementsContainer.appendChild(badge);
             }
+        }
+
+        // Render title selector
+        const titleContainer = document.getElementById("profileTitles");
+        if (titleContainer) {
+            const unlockedTitles = TitleSystem.getUnlockedTitles();
+            titleContainer.innerHTML = `<h3>🏅 Titles</h3>`;
+            const noneBtn = document.createElement("button");
+            noneBtn.className = `m-1 p-2 rounded-lg border-2 ${!selectedTitle ? "bg-yellow-600/50 border-yellow-400" : "bg-gray-700/50 border-gray-600"}`;
+            noneBtn.innerText = "None";
+            noneBtn.onclick = () => {
+                TitleSystem.selectTitle(null);
+                this.updateProfileStats();
+            };
+            titleContainer.appendChild(noneBtn);
+
+            unlockedTitles.forEach(title => {
+                const btn = document.createElement("button");
+                const isSelected = selectedTitle && selectedTitle.id === title.id;
+                btn.className = `m-1 p-2 rounded-lg border-2 ${isSelected ? "bg-yellow-600/50 border-yellow-400" : "bg-gray-700/50 border-gray-600"}`;
+                btn.title = title.description;
+                btn.innerText = title.name;
+                btn.onclick = () => {
+                    TitleSystem.selectTitle(title.id);
+                    this.updateProfileStats();
+                };
+                titleContainer.appendChild(btn);
+            });
         }
     },
 
@@ -3449,6 +3630,160 @@ const UIManager = {
             createLayer();
         }
         this.weatherInterval = setInterval(createLayer, 5000);
+    },
+
+    // Party Preset System
+    openPresetOverlay() {
+        this.renderPresets();
+        document.getElementById("presetOverlay").classList.remove("hidden");
+    },
+
+    closePresetOverlay() {
+        document.getElementById("presetOverlay").classList.add("hidden");
+    },
+
+    savePreset() {
+        const nameInput = document.getElementById("presetNameInput");
+        const name = nameInput.value.trim();
+
+        if (!name) {
+            this.showToast("Please enter a preset name!");
+            return;
+        }
+
+        if (PetManager.pets.length === 0) {
+            this.showToast("No pets in party to save!");
+            return;
+        }
+
+        const preset = {
+            name: name,
+            petIds: PetManager.pets.map(p => p.id),
+            timestamp: Date.now()
+        };
+
+        PlayerSystem.partyPresets[name] = preset;
+        DataManager.save();
+        nameInput.value = "";
+        this.renderPresets();
+        this.showToast(`Preset "${name}" saved!`);
+    },
+
+    loadPreset(name) {
+        const preset = PlayerSystem.partyPresets[name];
+        if (!preset) {
+            this.showToast("Preset not found!");
+            return;
+        }
+
+        // Move current party to storage
+        PetManager.pets.forEach(pet => {
+            if (PetManager.storage.length < PetManager.maxTotalPets) {
+                PetManager.storage.push(pet);
+            }
+        });
+
+        // Load preset pets from storage
+        PetManager.pets = [];
+        preset.petIds.forEach(petId => {
+            const pet = PetManager.storage.find(p => String(p.id) === String(petId));
+            if (pet) {
+                PetManager.pets.push(pet);
+                PetManager.storage = PetManager.storage.filter(p => String(p.id) !== String(petId));
+            }
+        });
+
+        DataManager.save();
+        this.renderPresets();
+        this.renderPets();
+        this.updateTeamPower();
+        this.showToast(`Preset "${name}" loaded!`);
+    },
+
+    deletePreset(name) {
+        if (confirm(`Delete preset "${name}"?`)) {
+            delete PlayerSystem.partyPresets[name];
+            DataManager.save();
+            this.renderPresets();
+            this.showToast(`Preset "${name}" deleted!`);
+        }
+    },
+
+    renderPresets() {
+        const list = document.getElementById("presetList");
+        list.innerHTML = "";
+
+        const presetNames = Object.keys(PlayerSystem.partyPresets);
+
+        if (presetNames.length === 0) {
+            list.innerHTML = "<p>No saved presets yet.</p>";
+            return;
+        }
+
+        presetNames.forEach(name => {
+            const preset = PlayerSystem.partyPresets[name];
+            const card = document.createElement("div");
+            card.className = "bg-white/10 rounded-xl p-4 text-center";
+
+            const petCount = preset.petIds.length;
+            const date = new Date(preset.timestamp).toLocaleDateString();
+
+            card.innerHTML = `
+                <h3>${name}</h3>
+                <p class="text-sm opacity-80">${petCount} pets</p>
+                <p class="text-xs opacity-60">Saved: ${date}</p>
+                <div class="mt-2">
+                    <button onclick="UIManager.loadPreset('${name}')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-green-700 text-xs">Load</button>
+                    <button onclick="UIManager.deletePreset('${name}')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-red-500 text-xs">Delete</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    },
+
+    // Daily Quests System
+    openQuestOverlay() {
+        this.renderQuests();
+        document.getElementById("questOverlay").classList.remove("hidden");
+    },
+
+    closeQuestOverlay() {
+        document.getElementById("questOverlay").classList.add("hidden");
+    },
+
+    renderQuests() {
+        const list = document.getElementById("questList");
+        list.innerHTML = "";
+
+        if (PlayerSystem.dailyQuests.length === 0) {
+            list.innerHTML = "<p>No quests available today.</p>";
+            return;
+        }
+
+        PlayerSystem.dailyQuests.forEach(quest => {
+            const card = document.createElement("div");
+            card.className = `bg-white/10 rounded-xl p-4 ${quest.completed ? "opacity-50" : ""}`;
+
+            const progressPercent = (quest.progress / quest.count) * 100;
+            const completedText = quest.completed ? '<p class="text-green-400">✓ Complete</p>' : '';
+
+            card.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="${quest.completed ? "line-through" : ""}">${quest.description}</h3>
+                        <p class="text-sm opacity-70">Reward: ${quest.reward}💰</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold">${quest.progress}/${quest.count}</p>
+                        ${completedText}
+                    </div>
+                </div>
+                <div class="w-full h-2 bg-gray-800 rounded-full mt-2">
+                    <div class="h-full bg-green-500 rounded-full transition-all" style="width: ${progressPercent}%"></div>
+                </div>
+            `;
+            list.appendChild(card);
+        });
     },
 
     // Pet Comparison Tool
@@ -4990,6 +5325,8 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         }
         CraftingSystem.craft(recipeId);
         PlayerSystem.totalCrafts++;
+        // Update quest progress for crafting
+        DataManager.updateQuestProgress("craft", recipeId);
         AchievementSystem.checkAchievement("craft10");
         AchievementSystem.checkAchievement("craft50");
         DataManager.save();

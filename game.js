@@ -1720,7 +1720,7 @@ const BattleSystem = {
             console.error("Invalid battle state - missing pet or stats:", playerPet, enemyPet);
             return;
         }
-        
+
         if (Exploration.autoExplore.active) {
             const autoPet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
             if (!autoPet || autoPet.currentHP <= 0) {
@@ -1732,7 +1732,7 @@ const BattleSystem = {
                 return;
             }
         }
-        
+
         this.active = true;
         this.playerPet = { ...playerPet };
         this.enemyPet = { ...enemyPet };
@@ -1745,6 +1745,9 @@ const BattleSystem = {
         this.bleeding = null;
         this.bleedDamage = 0;
         this.burning = null;
+
+        // Set battle background
+        UIManager.setZoneBackground("battle");
         this.burnDamage = 0;
         this.confused = null;
         this.burnDuration = { enemy: 0, player: 0 };
@@ -1841,6 +1844,7 @@ const BattleSystem = {
         const isCrit = Math.random() < critChance;
         if (isCrit) {
             damage = Math.floor(damage * 1.5);
+            UIManager.triggerScreenShake();
         }
         
         // Random variance (0.85-1.0)
@@ -2697,10 +2701,17 @@ this.playerAbilityCooldown = ability.cooldown;
 
     endBattle(playerWon) {
         this.active = false;
-        
+
+        // Trigger victory/defeat cinematics
+        if (playerWon) {
+            UIManager.triggerVictoryCinematic();
+        } else {
+            UIManager.triggerDefeatCinematic();
+        }
+
         const petXPReward = this.enemyPet.level * 20;
         const moneyReward = this.enemyPet.level * 20;
-        
+
         if (playerWon) {
             this.petsDefeated = this.petsDefeated + 1;
             PlayerSystem.totalBattles++;
@@ -2715,21 +2726,21 @@ this.playerAbilityCooldown = ability.cooldown;
             AchievementSystem.checkAchievement("defeat100");
             AchievementSystem.checkAchievement("streak5");
             AchievementSystem.checkAchievement("streak10");
-            
+
             // Win streak bonus multiplier (player XP only) - increased to 10x+ cap
             const streakMultiplier = 1 + Math.min(PlayerSystem.battleStreak * 0.15, 9.0);
-            
+
             // Type advantage bonus (player XP only)
             const playerTemplate = PetTypes[this.playerPet.typeId];
             const enemyTemplate = PetTypes[this.enemyPet.typeId];
             const typeMult = this.getTypeEffectiveness(playerTemplate.type, enemyTemplate.type);
             const typeAdvantageMultiplier = typeMult > 1 ? 1.2 : 1;
-            
+
             // Player XP (per plan: enemy.level * 10, with streak & type bonuses)
             const playerBaseXP = this.enemyPet.level * 10;
             const totalXP = Math.floor(playerBaseXP * streakMultiplier * typeAdvantageMultiplier);
             const playerLevelUp = addXP(totalXP);
-            
+
             const streakText = PlayerSystem.battleStreak > 0 ? ` [Streak: ${PlayerSystem.battleStreak}x${streakMultiplier.toFixed(1)}]` : "";
             this.addLog(`🎉 Victory! +${totalXP} XP, +${moneyReward} Gold${streakText}`);
             if (playerLevelUp) {
@@ -3123,15 +3134,20 @@ const UIManager = {
     },
 
     showScreen(screenId) {
-        const screens = document.querySelectorAll("[id$=Screen]");
-        const currentScreen = Array.from(screens).find(s => !s.classList.contains("hidden"));
+        // Hide all screens
+        const screens = document.querySelectorAll('.screen');
+        screens.forEach(screen => {
+            screen.classList.remove('active');
+            screen.classList.add('hidden');
+        });
 
-        // Apply fade-out to current screen
-        if (currentScreen && currentScreen.id !== screenId) {
-            currentScreen.classList.add("screen-transition-out");
+        // Apply fade-out to current screen if any
+        const currentScreen = document.querySelector('.screen:not(.hidden)');
+        if (currentScreen) {
+            currentScreen.classList.add('screen-transition-out');
             setTimeout(() => {
-                currentScreen.classList.add("hidden");
-                currentScreen.classList.remove("screen-transition-out");
+                currentScreen.classList.add('hidden');
+                currentScreen.classList.remove('screen-transition-out');
             }, 200);
         }
 
@@ -3141,18 +3157,12 @@ const UIManager = {
             if (newScreen) {
                 newScreen.classList.remove("hidden");
                 newScreen.classList.add("screen-transition");
-                setTimeout(() => {
-                    newScreen.classList.remove("screen-transition");
-                }, 300);
+                setTimeout(() => newScreen.classList.remove("screen-transition"), 300);
             }
-        }, currentScreen && currentScreen.id !== screenId ? 200 : 0);
+        }, 200);
 
-        // Remove ambient color when leaving exploration
-        if (screenId !== "explorationScreen") {
-            this.removeZoneAmbientColor();
-        }
-        
-        if (Exploration.autoExplore.active && screenId !== "battleScreen") {
+        // Stop auto-explore when leaving battle screen
+        if (screenId !== "battleScreen") {
             Exploration.autoExplore.active = false;
             BattleSystem.autoExploreActive = false;
             BattleSystem.autoExplorePetId = null;
@@ -3161,25 +3171,31 @@ const UIManager = {
             const notifContainer = document.getElementById("autoExploreNotifications");
             if (notifContainer) notifContainer.classList.add("hidden");
         }
-        
-        // Render content when showing specific screens
-        if (screenId === "shopScreen") {
-            this.renderShop();
+
+        // Reset visuals when leaving battle or exploration
+        if (screenId !== "battleScreen" && screenId !== "explorationScreen") {
+            this.resetBackground();
+            this.clearWeather();
         }
-        if (screenId === "explorationScreen") {
-            this.renderExploration();
-        }
-        if (screenId === "inventoryScreen") {
-            this.renderInventory();
-        }
-        if (screenId === "craftingScreen") {
-            this.renderCrafting();
+
+        // Render screen-specific content
+        if (screenId === "mainScreen") {
+            this.renderPets();
         }
         if (screenId === "storageScreen") {
             this.renderStorage();
         }
         if (screenId === "collectionScreen") {
             this.renderCollection();
+        }
+        if (screenId === "shopScreen") {
+            this.renderShop();
+        }
+        if (screenId === "inventoryScreen") {
+            this.renderInventory();
+        }
+        if (screenId === "craftingScreen") {
+            this.renderCrafting();
         }
         this.updatePlayerLevelDisplay();
 
@@ -3317,6 +3333,122 @@ const UIManager = {
         if (!searchInput) return;
         const searchTerm = searchInput.value.toLowerCase();
         this.renderStorage(searchTerm);
+    },
+
+    // Dynamic Backgrounds
+    setZoneBackground(zoneId) {
+        document.body.className = "";
+        if (zoneId) {
+            document.body.classList.add(`zone-${zoneId}`);
+        }
+    },
+
+    resetBackground() {
+        document.body.className = "";
+    },
+
+    // Screen Shake Effect
+    triggerScreenShake() {
+        document.body.classList.add("screen-shake");
+        setTimeout(() => {
+            document.body.classList.remove("screen-shake");
+        }, 500);
+    },
+
+    // Victory/Defeat Cinematics
+    triggerVictoryCinematic() {
+        const battleScreen = document.getElementById("battleScreen");
+        if (battleScreen) {
+            battleScreen.classList.add("victory-cinematic");
+            setTimeout(() => {
+                battleScreen.classList.remove("victory-cinematic");
+            }, 6000);
+        }
+    },
+
+    triggerDefeatCinematic() {
+        const battleScreen = document.getElementById("battleScreen");
+        if (battleScreen) {
+            battleScreen.classList.add("defeat-cinematic");
+            setTimeout(() => {
+                battleScreen.classList.remove("defeat-cinematic");
+            }, 1500);
+        }
+    },
+
+    // Weather Effects
+    weatherInterval: null,
+
+    setWeather(weatherType) {
+        this.clearWeather();
+        const container = document.getElementById("weatherContainer");
+        if (!container) return;
+
+        container.classList.remove("hidden");
+
+        if (weatherType === "rain") {
+            this.createRain(container);
+        } else if (weatherType === "snow") {
+            this.createSnow(container);
+        } else if (weatherType === "fog") {
+            this.createFog(container);
+        }
+    },
+
+    clearWeather() {
+        const container = document.getElementById("weatherContainer");
+        if (container) {
+            container.innerHTML = "";
+            container.classList.add("hidden");
+        }
+        if (this.weatherInterval) {
+            clearInterval(this.weatherInterval);
+            this.weatherInterval = null;
+        }
+    },
+
+    createRain(container) {
+        const createDrop = () => {
+            const drop = document.createElement("div");
+            drop.className = "rain-drop";
+            drop.style.left = Math.random() * 100 + "%";
+            drop.style.animationDuration = (Math.random() * 0.5 + 0.5) + "s";
+            container.appendChild(drop);
+            setTimeout(() => drop.remove(), 1000);
+        };
+
+        this.weatherInterval = setInterval(createDrop, 50);
+    },
+
+    createSnow(container) {
+        const createFlake = () => {
+            const flake = document.createElement("div");
+            flake.className = "snow-flake";
+            flake.style.left = Math.random() * 100 + "%";
+            flake.style.animationDuration = (Math.random() * 3 + 2) + "s";
+            flake.style.width = (Math.random() * 6 + 4) + "px";
+            flake.style.height = flake.style.width;
+            container.appendChild(flake);
+            setTimeout(() => flake.remove(), 5000);
+        };
+
+        this.weatherInterval = setInterval(createFlake, 200);
+    },
+
+    createFog(container) {
+        const createLayer = () => {
+            const layer = document.createElement("div");
+            layer.className = "fog-layer";
+            layer.style.top = Math.random() * 100 + "%";
+            layer.style.animationDuration = (Math.random() * 10 + 10) + "s";
+            container.appendChild(layer);
+            setTimeout(() => layer.remove(), 20000);
+        };
+
+        for (let i = 0; i < 3; i++) {
+            createLayer();
+        }
+        this.weatherInterval = setInterval(createLayer, 5000);
     },
 
     // Pet Comparison Tool
@@ -3800,25 +3932,42 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     showFloorOverlay(zoneId) {
         Exploration.selectedZoneId = zoneId;
         Exploration.floorPage = 0;
-        this.applyZoneAmbientColor(zoneId);
+        this.applyZoneVisuals(zoneId);
         this.renderFloorOverlay();
         document.getElementById("floorOverlay").classList.remove("hidden");
     },
 
-    applyZoneAmbientColor(zoneId) {
-        const zone = Exploration.zones[zoneId];
-        if (zone && zone.ambientColor) {
-            document.body.style.background = `linear-gradient(180deg, ${zone.ambientColor}, #0b0d18)`;
+    applyZoneVisuals(zoneId) {
+        // Set dynamic background
+        UIManager.setZoneBackground(zoneId);
+
+        // Set weather effects based on zone
+        const zoneWeather = {
+            lake: "rain",
+            ocean: "rain",
+            swamp: "fog",
+            darkforest: "fog",
+            sky: "rain",
+            cave: "fog",
+            mountain: "snow"
+        };
+
+        const weather = zoneWeather[zoneId];
+        if (weather) {
+            UIManager.setWeather(weather);
+        } else {
+            UIManager.clearWeather();
         }
     },
 
-    removeZoneAmbientColor() {
-        document.body.style.background = "linear-gradient(180deg, #131827, #0b0d18)";
+    removeZoneVisuals() {
+        UIManager.resetBackground();
+        UIManager.clearWeather();
     },
 
     closeFloorOverlay() {
         document.getElementById("floorOverlay").classList.add("hidden");
-        this.removeZoneAmbientColor();
+        this.removeZoneVisuals();
     },
 
     // Collection Book Screen

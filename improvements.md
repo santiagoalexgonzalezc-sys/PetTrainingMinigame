@@ -75,10 +75,6 @@
 - Sound effects — Battle sounds (hit, ability, victory, defeat) using Web Audio API
 - Particle effects — Sparkles on shiny pets, fire on fire-types
 - Pet portrait portraits — Larger, styled portraits for pets in battle instead of emoji + name
-- Dynamic backgrounds — Background changes based on current zone/arena
-- Screen shake effects — Impact effects during critical hits
-- Victory/defeat cinematics — Special animations for battle end
-- Weather visuals — Rain, snow, fog effects in appropriate zones
 - Music system — Background music with volume control
 
 ---
@@ -96,3 +92,7 @@
 - Daily login rewards — Streak bonuses with consecutive day tracking
 - Export/import save data — Backup and transfer progress via JSON files
 - Pet comparison tool — Side-by-side stat comparison between two pets
+- Dynamic backgrounds — Background changes based on current zone/arena
+- Screen shake effects — Impact effects during critical hits
+- Victory/defeat cinematics — Special animations for battle end
+- Weather visuals — Rain, snow, fog effects in appropriate zones

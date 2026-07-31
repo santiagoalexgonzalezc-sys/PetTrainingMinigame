@@ -331,3 +331,119 @@ button:disabled:hover { transform: none; }
 .screen-transition-out {
     animation: fade-out 0.2s ease-in;
 }
+
+/* Dynamic Backgrounds */
+body.zone-forest { background: linear-gradient(180deg, #1a3d2e, #0d1f17); }
+body.zone-cave { background: linear-gradient(180deg, #2d2d3d, #1a1a24); }
+body.zone-lake { background: linear-gradient(180deg, #1a4a6e, #0d2a3f); }
+body.zone-mountain { background: linear-gradient(180deg, #4a4a5a, #2a2a3a); }
+body.zone-desert { background: linear-gradient(180deg, #6b5a3a, #3d3220); }
+body.zone-ocean { background: linear-gradient(180deg, #1a5a8e, #0d3a5f); }
+body.zone-volcano { background: linear-gradient(180deg, #5a2a1a, #3d1a10); }
+body.zone-swamp { background: linear-gradient(180deg, #2d4a2d, #1a2d1a); }
+body.zone-sky { background: linear-gradient(180deg, #3a5a8e, #1a3a6e); }
+body.zone-toxicMarsh { background: linear-gradient(180deg, #3d5a3d, #2d3d2d); }
+body.zone-darkforest { background: linear-gradient(180deg, #1a1a2d, #0d0d1a); }
+body.zone-battle { background: linear-gradient(180deg, #4a2a2a, #2a1a1a); }
+
+/* Screen Shake Effect */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.screen-shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Victory Cinematic */
+@keyframes victory-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+@keyframes victory-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+    50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+}
+
+.victory-cinematic {
+    animation: victory-pulse 1s ease-in-out 3, victory-glow 2s ease-in-out 3;
+}
+
+/* Defeat Cinematic */
+@keyframes defeat-fade {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0.3; transform: scale(0.9); }
+}
+
+@keyframes defeat-shake {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25% { transform: translateX(-3px) rotate(-1deg); }
+    75% { transform: translateX(3px) rotate(1deg); }
+}
+
+.defeat-cinematic {
+    animation: defeat-fade 1s ease-out, defeat-shake 0.5s ease-in-out;
+}
+
+/* Weather Effects */
+.weather-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+}
+
+/* Rain Effect */
+@keyframes rain-drop {
+    0% { transform: translateY(-100vh); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(100vh); opacity: 0; }
+}
+
+.rain-drop {
+    position: absolute;
+    width: 2px;
+    height: 20px;
+    background: linear-gradient(transparent, rgba(174, 194, 224, 0.6));
+    animation: rain-drop linear infinite;
+}
+
+/* Snow Effect */
+@keyframes snow-fall {
+    0% { transform: translateY(-100vh) rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+.snow-flake {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    animation: snow-fall linear infinite;
+}
+
+/* Fog Effect */
+@keyframes fog-drift {
+    0% { transform: translateX(-100%); opacity: 0.3; }
+    50% { opacity: 0.5; }
+    100% { transform: translateX(100%); opacity: 0.3; }
+}
+
+.fog-layer {
+    position: absolute;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(200, 200, 200, 0.3), transparent);
+    animation: fog-drift linear infinite;
+}

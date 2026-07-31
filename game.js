@@ -3341,6 +3341,9 @@ const UIManager = {
         if (screenId === "craftingScreen") {
             this.renderCrafting();
         }
+        if (screenId === "explorationScreen") {
+            this.renderExploration();
+        }
         this.updatePlayerLevelDisplay();
 
         const footer = document.getElementById("footerNav");

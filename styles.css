@@ -9,8 +9,9 @@ body {
     min-height: 100vh;
 }
 
-.screen { display: none; padding: 20px; }
+.screen { padding: 20px; }
 .screen.active { display: block; }
+.hidden { display: none !important; }
 
 button {
     border: none;

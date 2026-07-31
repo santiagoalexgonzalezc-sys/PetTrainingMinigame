@@ -22,6 +22,8 @@ const DataManager = {
                 totalCrafts: PlayerSystem.totalCrafts,
                 totalPrestiges: PlayerSystem.totalPrestiges,
                 lastDailyBonus: PlayerSystem.lastDailyBonus,
+                loginStreak: PlayerSystem.loginStreak,
+                lastLoginDate: PlayerSystem.lastLoginDate,
                 dailyActivities: Array.from(PlayerSystem.dailyActivities),
                 achievements: Array.from(PlayerSystem.achievements)
             },
@@ -116,6 +118,8 @@ const DataManager = {
                 PlayerSystem.totalCrafts = data.player.totalCrafts || 0;
                 PlayerSystem.totalPrestiges = data.player.totalPrestiges || 0;
                 PlayerSystem.lastDailyBonus = data.player.lastDailyBonus || null;
+                PlayerSystem.loginStreak = data.player.loginStreak || 0;
+                PlayerSystem.lastLoginDate = data.player.lastLoginDate || null;
                 PlayerSystem.dailyActivities = new Set(Array.isArray(data.player.dailyActivities) ? data.player.dailyActivities : []);
                 PlayerSystem.achievements = new Set(Array.isArray(data.player.achievements) ? data.player.achievements : []);
             } else {
@@ -131,6 +135,8 @@ const DataManager = {
                 PlayerSystem.totalCrafts = 0;
                 PlayerSystem.totalPrestiges = 0;
                 PlayerSystem.lastDailyBonus = null;
+                PlayerSystem.loginStreak = 0;
+                PlayerSystem.lastLoginDate = null;
                 PlayerSystem.dailyActivities = new Set();
                 PlayerSystem.achievements = new Set();
             }
@@ -138,7 +144,44 @@ const DataManager = {
             // Migration: restore maxPartySize and maxTotalPets from save or defaults
             PetManager.maxPartySize = data.maxPartySize || 6;
             PetManager.maxTotalPets = data.maxTotalPets || 300;
-        }   
+
+            // Check daily login rewards
+            this.checkDailyLogin();
+        }
+    },
+
+    checkDailyLogin() {
+        const today = new Date().toDateString();
+        const lastLogin = PlayerSystem.lastLoginDate;
+
+        if (lastLogin !== today) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (lastLogin === yesterday.toDateString()) {
+                // Consecutive day
+                PlayerSystem.loginStreak++;
+            } else {
+                // Streak broken
+                PlayerSystem.loginStreak = 1;
+            }
+
+            PlayerSystem.lastLoginDate = today;
+
+            // Calculate reward based on streak
+            const baseReward = 100;
+            const streakBonus = Math.min(PlayerSystem.loginStreak * 20, 500);
+            const totalReward = baseReward + streakBonus;
+
+            Economy.money += totalReward;
+
+            // Show notification
+            setTimeout(() => {
+                UIManager.showToast(`🎁 Daily Login Bonus! Day ${PlayerSystem.loginStreak}: +${totalReward}💰`);
+            }, 500);
+
+            DataManager.save();
+        }
     },
 
     resetAccount() {
@@ -951,6 +994,8 @@ const PlayerSystem = {
     totalCrafts: 0,
     totalPrestiges: 0,
     lastDailyBonus: null,
+    loginStreak: 0,
+    lastLoginDate: null,
     dailyActivities: new Set(),
     achievements: new Set()
 };
@@ -3259,6 +3304,191 @@ const UIManager = {
         });
     },
 
+    // Pet Search/Filter Functions
+    filterPets() {
+        const searchTerm = document.getElementById("petSearchInput").value.toLowerCase();
+        this.renderPets(searchTerm);
+    },
+
+    filterStorage() {
+        const searchTerm = document.getElementById("storageSearchInput").value.toLowerCase();
+        this.renderStorage(searchTerm);
+    },
+
+    // Pet Comparison Tool
+    comparePet1Id: null,
+    comparePet2Id: null,
+
+    openCompareOverlay() {
+        this.comparePet1Id = null;
+        this.comparePet2Id = null;
+        document.getElementById("comparePet1").innerHTML = "Click a pet to select";
+        document.getElementById("comparePet2").innerHTML = "Click a pet to select";
+        document.getElementById("compareOverlay").classList.remove("hidden");
+    },
+
+    closeCompareOverlay() {
+        document.getElementById("compareOverlay").classList.add("hidden");
+    },
+
+    selectComparePet(petId, slot) {
+        const allPets = [...PetManager.pets, ...PetManager.storage];
+        const pet = allPets.find(p => String(p.id) === String(petId));
+
+        if (!pet) return;
+
+        if (slot === 1) {
+            this.comparePet1Id = petId;
+        } else {
+            this.comparePet2Id = petId;
+        }
+
+        this.renderComparePet(pet, slot);
+
+        // If both pets selected, show comparison
+        if (this.comparePet1Id && this.comparePet2Id) {
+            this.showComparison();
+        }
+    },
+
+    renderComparePet(pet, slot) {
+        const container = document.getElementById(slot === 1 ? "comparePet1" : "comparePet2");
+        const template = PetTypes[pet.typeId];
+        const evolution = PetManager.getEvolution(pet);
+        const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
+
+        container.innerHTML = `
+            <div class="text-4xl mb-2">${template.emoji}</div>
+            <h4>${evolution}</h4>
+            <p class="text-sm opacity-80">Level ${pet.level} ${pet.tier}</p>
+            <p class="text-sm opacity-80">${template.type.toUpperCase()}</p>
+            <div class="mt-4 space-y-1 text-sm">
+                <div class="flex justify-between"><span>HP:</span><span>${maxHP}</span></div>
+                <div class="flex justify-between"><span>ATK:</span><span>${pet.stats.attack}</span></div>
+                <div class="flex justify-between"><span>DEF:</span><span>${pet.stats.defense}</span></div>
+                <div class="flex justify-between"><span>SPD:</span><span>${pet.stats.speed}</span></div>
+                <div class="flex justify-between"><span>SPC:</span><span>${pet.stats.special}</span></div>
+            </div>
+            <button onclick="UIManager.selectCompareSlot(${slot})" class="mt-4 border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-sm">Change Pet</button>
+        `;
+    },
+
+    selectCompareSlot(slot) {
+        // Show pet selection dialog
+        const allPets = [...PetManager.pets, ...PetManager.storage];
+        const petNames = allPets.map(p => {
+            const template = PetTypes[p.typeId];
+            return `${template.emoji} ${PetManager.getEvolution(p)} (Lv ${p.level})`;
+        }).join("\n");
+
+        const choice = prompt(`Select pet for slot ${slot}:\n${petNames}\n\nEnter pet number (1-${allPets.length})`);
+        const idx = parseInt(choice, 10) - 1;
+
+        if (!isNaN(idx) && idx >= 0 && idx < allPets.length) {
+            this.selectComparePet(allPets[idx].id, slot);
+        }
+    },
+
+    showComparison() {
+        const pet1 = [...PetManager.pets, ...PetManager.storage].find(p => String(p.id) === String(this.comparePet1Id));
+        const pet2 = [...PetManager.pets, ...PetManager.storage].find(p => String(p.id) === String(this.comparePet2Id));
+
+        if (!pet1 || !pet2) return;
+
+        const template1 = PetTypes[pet1.typeId];
+        const template2 = PetTypes[pet2.typeId];
+        const maxHP1 = PetManager.calculateMaxHP(template1, pet1.level, pet1);
+        const maxHP2 = PetManager.calculateMaxHP(template2, pet2.level, pet2);
+
+        const stats = [
+            { name: "HP", val1: maxHP1, val2: maxHP2 },
+            { name: "ATK", val1: pet1.stats.attack, val2: pet2.stats.attack },
+            { name: "DEF", val1: pet1.stats.defense, val2: pet2.stats.defense },
+            { name: "SPD", val1: pet1.stats.speed, val2: pet2.stats.speed },
+            { name: "SPC", val1: pet1.stats.special, val2: pet2.stats.special },
+        ];
+
+        const comparisonHTML = stats.map(stat => {
+            const diff = stat.val2 - stat.val1;
+            const diffClass = diff > 0 ? "text-green-400" : diff < 0 ? "text-red-400" : "text-gray-400";
+            const diffText = diff !== 0 ? `(${diff > 0 ? "+" : ""}${diff})` : "";
+            return `<div class="flex justify-between items-center text-sm">
+                <span>${stat.name}:</span>
+                <span>${stat.val1}</span>
+                <span class="${diffClass}">${diffText}</span>
+                <span>${stat.val2}</span>
+            </div>`;
+        }).join("");
+
+        // Add comparison section between the two pet displays
+        const container = document.getElementById("compareOverlay");
+        const comparisonDiv = document.createElement("div");
+        comparisonDiv.className = "bg-white/10 rounded-xl p-4 my-4";
+        comparisonDiv.innerHTML = `<h3>Stat Comparison</h3>${comparisonHTML}`;
+
+        // Remove existing comparison if any
+        const existing = container.querySelector(".comparison-section");
+        if (existing) existing.remove();
+
+        comparisonDiv.classList.add("comparison-section");
+        container.querySelector(".max-w-4xl").insertBefore(comparisonDiv, container.querySelector(".grid").nextSibling);
+    },
+
+    // Export/Import Save Data
+    exportSave() {
+        const saveData = localStorage.getItem("petSimulator");
+        if (!saveData) {
+            this.showToast("No save data to export!");
+            return;
+        }
+
+        const blob = new Blob([saveData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `pet_simulator_save_${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.showToast("Save data exported successfully!");
+    },
+
+    importSave() {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json";
+
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const saveData = JSON.parse(event.target.result);
+
+                    if (!saveData.pets || !saveData.money) {
+                        this.showToast("Invalid save file format!");
+                        return;
+                    }
+
+                    if (confirm("This will overwrite your current save. Are you sure?")) {
+                        localStorage.setItem("petSimulator", JSON.stringify(saveData));
+                        location.reload();
+                    }
+                } catch (error) {
+                    this.showToast("Failed to parse save file!");
+                    console.error("Import error:", error);
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        input.click();
+    },
+
     getTypeColorClass(type) {
         const colors = {
             fire: "bg-red-400",
@@ -3295,14 +3525,24 @@ const UIManager = {
     },
 
     // Main Screen
-    renderPets() {
+    renderPets(searchTerm = "") {
         const list = document.getElementById("petList");
         list.innerHTML = "";
-        
+
         document.getElementById("partyCount").innerText = PetManager.pets.length;
         document.getElementById("maxPartySize").innerText = PetManager.maxPartySize;
-        
-        PetManager.pets.forEach(pet => {
+
+        const filteredPets = PetManager.pets.filter(pet => {
+            if (!searchTerm) return true;
+            const template = PetTypes[pet.typeId];
+            const evolution = PetManager.getEvolution(pet);
+            const searchLower = searchTerm.toLowerCase();
+            return template.name.toLowerCase().includes(searchLower) ||
+                   template.type.toLowerCase().includes(searchLower) ||
+                   evolution.toLowerCase().includes(searchLower);
+        });
+
+        filteredPets.forEach(pet => {
             const template = PetTypes[pet.typeId];
             const evolution = PetManager.getEvolution(pet);
             const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
@@ -4211,7 +4451,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     },
 
     // Pet Storage Screen
-    renderStorage() {
+    renderStorage(searchTerm = "") {
         const grid = document.getElementById("storageGrid");
         grid.innerHTML = "";
         document.getElementById("storageCount").innerText = PetManager.storage.length;
@@ -4220,13 +4460,24 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         const d1Pets = PetManager.storage.filter(pet => pet.tier === "D1");
         const d1Count = d1Pets.length;
 
-        if (PetManager.storage.length === 0) {
-            grid.innerHTML = "<p>No pets in storage yet. Catch more to fill it up!</p>";
+        // Filter storage pets based on search term
+        const filteredStorage = PetManager.storage.filter(pet => {
+            if (!searchTerm) return true;
+            const template = PetTypes[pet.typeId];
+            const evolution = PetManager.getEvolution(pet);
+            const searchLower = searchTerm.toLowerCase();
+            return template.name.toLowerCase().includes(searchLower) ||
+                   template.type.toLowerCase().includes(searchLower) ||
+                   evolution.toLowerCase().includes(searchLower);
+        });
+
+        if (filteredStorage.length === 0) {
+            grid.innerHTML = searchTerm ? "<p>No pets match your search.</p>" : "<p>No pets in storage yet. Catch more to fill it up!</p>";
             return;
         }
 
-        // Add auto-sell button if there are D1 pets
-        if (d1Count > 0) {
+        // Add auto-sell button if there are D1 pets (only when not filtering)
+        if (d1Count > 0 && !searchTerm) {
             const autoSellBtn = document.createElement("button");
             autoSellBtn.className = "border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5";
             autoSellBtn.innerText = `🗑️ Auto-Sell D1 Pets (${d1Count})`;
@@ -4234,7 +4485,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             grid.appendChild(autoSellBtn);
         }
 
-        PetManager.storage.forEach(pet => {
+        filteredStorage.forEach(pet => {
             const template = PetTypes[pet.typeId];
             const evolution = PetManager.getEvolution(pet);
             const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);

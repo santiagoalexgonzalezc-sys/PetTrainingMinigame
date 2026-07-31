@@ -1002,7 +1002,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["leafBunny", "vineSnake", "mossBear", "glimmerMoth", "moonPixie"],
             rarePets: ["mindCat", "dreamOwl", "fieldDeer", "thornHog"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(34, 139, 34, 0.15)"
         },
         cave: {
             name: "Cave",
@@ -1012,7 +1013,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["scaleLizard", "sparkDog"],
             rarePets: ["drakeWhelp", "frostPenguin", "crystalSeal", "frostBear", "crystalWyrm", "mindApe"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(105, 105, 105, 0.15)"
         },
         lake: {
             name: "Lake",
@@ -1022,7 +1024,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["aquaTurtle", "mistFrog", "waveWhale"],
             rarePets: ["shockEel", "boltMouse"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(30, 144, 255, 0.15)"
         },
         mountain: {
             name: "Mountain",
@@ -1032,7 +1035,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["flameCat", "zapBird", "scaleLizard", "frostBear", "cloudSheep", "glacierFox"],
             rarePets: ["drakeWhelp", "cosmicFox", "crystalWyrm", "voltageOx"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(139, 137, 112, 0.15)"
         },
         desert: {
             name: "Desert",
@@ -1042,7 +1046,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["emberFox", "sparkDog", "scaleLizard", "cinderScorpion", "duneLion"],
             rarePets: ["flameCat", "drakeWhelp"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(210, 180, 140, 0.15)"
         },
         ocean: {
             name: "Ocean",
@@ -1052,7 +1057,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["waveWhale", "shockEel", "crystalSeal", "tidalCrab"],
             rarePets: ["aquaTurtle", "frostPenguin"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(0, 105, 148, 0.15)"
         },
         volcano: {
             name: "Volcano",
@@ -1062,7 +1068,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["flameCat", "emberFox", "sparkDog"],
             rarePets: ["drakeWhelp", "scaleLizard", "cinderScorpion", "cinderHawk"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(178, 34, 34, 0.15)"
         },
         swamp: {
             name: "Swamp",
@@ -1072,7 +1079,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["mistFrog", "vineSnake", "mossBear", "glimmerMoth", "marshCroc", "sunstoneBeetle"],
             rarePets: ["waveWhale", "dreamOwl", "frostBear"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(85, 107, 47, 0.15)"
         },
         sky: {
             name: "Sky",
@@ -1082,7 +1090,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["zapBird", "boltMouse", "dreamOwl", "cloudSheep"],
             rarePets: ["cosmicFox", "shockEel"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(135, 206, 250, 0.15)"
         },
         toxicMarsh: {
             name: "Toxic Marsh",
@@ -1092,7 +1101,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["venomAsp", "bogToad", "mistFrog", "vineSnake"],
             rarePets: ["cosmicFox", "moonPixie"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(128, 0, 128, 0.15)"
         },
         darkforest: {
             name: "Dark Forest",
@@ -1102,7 +1112,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["shadowWolf", "duskBat"],
             rarePets: [],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(47, 79, 79, 0.15)"
         }
     },
     cooldowns: {},
@@ -2520,8 +2531,8 @@ this.playerAbilityCooldown = ability.cooldown;
                 PlayerSystem.bestStreak = PlayerSystem.battleStreak;
             }
             
-            // Win streak bonus multiplier (player XP only)
-            const streakMultiplier = 1 + Math.min(PlayerSystem.battleStreak * 0.1, 1.0);
+            // Win streak bonus multiplier (player XP only) - increased to 10x+ cap
+            const streakMultiplier = 1 + Math.min(PlayerSystem.battleStreak * 0.15, 9.0);
             
             // Type advantage bonus (player XP only)
             const playerTemplate = PetTypes[this.playerPet.typeId];
@@ -2534,7 +2545,8 @@ this.playerAbilityCooldown = ability.cooldown;
             const totalXP = Math.floor(playerBaseXP * streakMultiplier * typeAdvantageMultiplier);
             const playerLevelUp = addXP(totalXP);
             
-            this.addLog(`🎉 Victory! +${totalXP} XP, +${moneyReward} Gold`);
+            const streakText = PlayerSystem.battleStreak > 0 ? ` [Streak: ${PlayerSystem.battleStreak}x${streakMultiplier.toFixed(1)}]` : "";
+            this.addLog(`🎉 Victory! +${totalXP} XP, +${moneyReward} Gold${streakText}`);
             if (playerLevelUp) {
                 this.addLog(`⬆ Player Level Up! Now level ${PlayerSystem.level}`);
             }
@@ -2914,6 +2926,11 @@ const UIManager = {
     showScreen(screenId) {
         document.querySelectorAll("[id$=Screen]").forEach(s => s.classList.add("hidden"));
         document.getElementById(screenId).classList.remove("hidden");
+
+        // Remove ambient color when leaving exploration
+        if (screenId !== "explorationScreen") {
+            this.removeZoneAmbientColor();
+        }
         
         if (Exploration.autoExplore.active && screenId !== "battleScreen") {
             Exploration.autoExplore.active = false;
@@ -2940,6 +2957,9 @@ const UIManager = {
         }
         if (screenId === "storageScreen") {
             this.renderStorage();
+        }
+        if (screenId === "collectionScreen") {
+            this.renderCollection();
         }
         this.updatePlayerLevelDisplay();
 
@@ -3335,8 +3355,108 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     showFloorOverlay(zoneId) {
         Exploration.selectedZoneId = zoneId;
         Exploration.floorPage = 0;
+        this.applyZoneAmbientColor(zoneId);
         this.renderFloorOverlay();
         document.getElementById("floorOverlay").classList.remove("hidden");
+    },
+
+    applyZoneAmbientColor(zoneId) {
+        const zone = Exploration.zones[zoneId];
+        if (zone && zone.ambientColor) {
+            document.body.style.background = `linear-gradient(180deg, ${zone.ambientColor}, #0b0d18)`;
+        }
+    },
+
+    removeZoneAmbientColor() {
+        document.body.style.background = "linear-gradient(180deg, #131827, #0b0d18)";
+    },
+
+    closeFloorOverlay() {
+        document.getElementById("floorOverlay").classList.add("hidden");
+        this.removeZoneAmbientColor();
+    },
+
+    // Collection Book Screen
+    collectionFilter: 'all',
+
+    filterCollection(filter) {
+        this.collectionFilter = filter;
+        this.renderCollection();
+    },
+
+    renderCollection() {
+        const grid = document.getElementById("collectionGrid");
+        grid.innerHTML = "";
+
+        // Get all pet types the player has collected
+        const collectedTypes = new Set();
+        PetManager.pets.forEach(pet => collectedTypes.add(pet.typeId));
+        PetManager.storage.forEach(pet => collectedTypes.add(pet.typeId));
+
+        const totalTypes = Object.keys(PetTypes).length;
+        const collectedCount = collectedTypes.size;
+
+        document.getElementById("collectionCount").innerText = collectedCount;
+        document.getElementById("totalPetTypes").innerText = totalTypes;
+
+        // Render each pet type
+        for (const [typeId, template] of Object.entries(PetTypes)) {
+            const isCollected = collectedTypes.has(typeId);
+
+            // Apply filter
+            if (this.collectionFilter === 'collected' && !isCollected) continue;
+            if (this.collectionFilter === 'missing' && isCollected) continue;
+
+            const card = document.createElement("div");
+            card.className = `bg-white/10 rounded-xl p-4 text-center ${isCollected ? 'border-2 border-green-400' : 'border-2 border-gray-600 opacity-60'}`;
+            
+            const bestPet = this.getBestPetOfType(typeId);
+            const bestStats = bestPet ? this.getBestPetStats(bestPet, template) : null;
+
+            card.innerHTML = `
+                <div class="text-4xl mb-2">${isCollected ? template.emoji : '❓'}</div>
+                <h3 class="font-bold">${template.name}</h3>
+                <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
+                ${isCollected ? '<div class="text-green-400 text-sm font-bold mt-2">✓ Collected</div>' : '<div class="text-red-400 text-sm font-bold mt-2">✗ Not Found</div>'}
+                ${bestStats ? `
+                    <div class="mt-2 text-xs opacity-80">
+                        <div>Best: Lv ${bestPet.level} ${bestPet.tier}</div>
+                        <div>HP: ${bestStats.hp} | ATK: ${bestStats.attack}</div>
+                        <div>DEF: ${bestStats.defense} | SPD: ${bestStats.speed}</div>
+                        <div>SPC: ${bestStats.special}</div>
+                    </div>
+                ` : ''}
+                <div class="mt-2 text-xs opacity-60">${template.passive}</div>
+            `;
+            grid.appendChild(card);
+        }
+    },
+
+    getBestPetOfType(typeId) {
+        let bestPet = null;
+        let bestPower = 0;
+
+        const allPets = [...PetManager.pets, ...PetManager.storage];
+        for (const pet of allPets) {
+            if (pet.typeId === typeId) {
+                const power = TeamPowerSystem.calculatePetPower(pet);
+                if (power > bestPower) {
+                    bestPower = power;
+                    bestPet = pet;
+                }
+            }
+        }
+        return bestPet;
+    },
+
+    getBestPetStats(pet, template) {
+        return {
+            hp: PetManager.calculateMaxHP(template, pet.level, pet),
+            attack: pet.stats.attack,
+            defense: pet.stats.defense,
+            speed: pet.stats.speed,
+            special: pet.stats.special
+        };
     },
 
     renderFloorOverlay() {
@@ -3864,9 +3984,22 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         grid.innerHTML = "";
         document.getElementById("storageCount").innerText = PetManager.storage.length;
 
+        // Count D1 pets in storage
+        const d1Pets = PetManager.storage.filter(pet => pet.tier === "D1");
+        const d1Count = d1Pets.length;
+
         if (PetManager.storage.length === 0) {
             grid.innerHTML = "<p>No pets in storage yet. Catch more to fill it up!</p>";
             return;
+        }
+
+        // Add auto-sell button if there are D1 pets
+        if (d1Count > 0) {
+            const autoSellBtn = document.createElement("button");
+            autoSellBtn.className = "border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5";
+            autoSellBtn.innerText = `🗑️ Auto-Sell D1 Pets (${d1Count})`;
+            autoSellBtn.onclick = () => this.autoSellD1Pets();
+            grid.appendChild(autoSellBtn);
         }
 
         PetManager.storage.forEach(pet => {
@@ -3950,6 +4083,34 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             this.showScreen("mainScreen");
             this.renderPets();
             this.updateTeamPower();
+        }
+    },
+
+    autoSellD1Pets() {
+        const d1Pets = PetManager.storage.filter(pet => pet.tier === "D1");
+        if (d1Pets.length === 0) {
+            alert("No D1 pets in storage to sell!");
+            return;
+        }
+
+        const totalValue = d1Pets.reduce((sum, pet) => {
+            return sum + pet.level * 25 + (pet.prestigeLevel || 0) * 1000 + (pet.shiny ? 5000 : 0) + TierSystem.getTierSellValue(pet.tier);
+        }, 0);
+
+        const petList = d1Pets.map(pet => {
+            const template = PetTypes[pet.typeId];
+            return `${template.emoji} ${PetManager.getEvolution(pet)} (Lv ${pet.level}${pet.shiny ? ' ✨' : ''})`;
+        }).join('\n');
+
+        if (confirm(`Sell ${d1Pets.length} D1 pets from storage?\n\nTotal Value: ${totalValue} 💰\n\nPets to sell:\n${petList}`)) {
+            d1Pets.forEach(pet => {
+                Economy.sellPet(pet);
+            });
+            DataManager.save();
+            this.renderStorage();
+            this.updateTeamPower();
+            this.updateCurrency();
+            alert(`Sold ${d1Pets.length} D1 pets for ${totalValue} 💰!`);
         }
     },
 

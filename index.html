@@ -53,6 +53,7 @@
         <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-gray-700 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🏠 Home</button>
         <button onclick="UIManager.showScreen('explorationScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🗺️ Explore</button>
         <button onclick="UIManager.showScreen('storageScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">📦 Pet Storage</button>
+        <button onclick="UIManager.showScreen('collectionScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-purple-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">📖 Collection</button>
         <button onclick="UIManager.showScreen('shopScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛒 Shop</button>
         <button onclick="UIManager.showScreen('inventoryScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🎒 Inventory</button>
         <button onclick="UIManager.showScreen('craftingScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-yellow-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛠️ Crafting</button>
@@ -136,7 +137,7 @@
                 <button id="floorNextBtn" onclick="UIManager.floorNextPage()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Next ▶</button>
             </div>
             <div class="text-center">
-                <button onclick="document.getElementById('floorOverlay').classList.add('hidden')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
+                <button onclick="UIManager.closeFloorOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Cancel</button>
             </div>
         </div>
     </div>
@@ -285,6 +286,20 @@
         <h2>📦 Pet Storage</h2>
         <p>Stored pets: <span id="storageCount">0</span></p>
         <div id="storageGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto my-5"></div>
+        <br>
+        <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
+    </div>
+
+    <!-- COLLECTION BOOK SCREEN -->
+    <div id="collectionScreen" class="hidden p-5">
+        <h2>📖 Pet Collection Book</h2>
+        <p>Collected: <span id="collectionCount">0</span>/<span id="totalPetTypes">0</span></p>
+        <div id="collectionFilter" class="flex flex-wrap gap-2 justify-center my-4">
+            <button onclick="UIManager.filterCollection('all')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-gray-700 text-xs sm:text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5">All</button>
+            <button onclick="UIManager.filterCollection('collected')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-green-700 text-xs sm:text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5">Collected</button>
+            <button onclick="UIManager.filterCollection('missing')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-red-700 text-xs sm:text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5">Missing</button>
+        </div>
+        <div id="collectionGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto my-5"></div>
         <br>
         <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
     </div>

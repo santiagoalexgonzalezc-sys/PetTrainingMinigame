@@ -3316,7 +3316,7 @@ const UIManager = {
             if (notifContainer) notifContainer.classList.add("hidden");
         }
 
-        // Reset visuals when leaving battle or exploration
+    // Reset visuals when leaving battle or exploration
         if (screenId !== "battleScreen" && screenId !== "explorationScreen") {
             this.resetBackground();
             this.clearWeather();

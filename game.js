@@ -3306,12 +3306,16 @@ const UIManager = {
 
     // Pet Search/Filter Functions
     filterPets() {
-        const searchTerm = document.getElementById("petSearchInput").value.toLowerCase();
+        const searchInput = document.getElementById("petSearchInput");
+        if (!searchInput) return;
+        const searchTerm = searchInput.value.toLowerCase();
         this.renderPets(searchTerm);
     },
 
     filterStorage() {
-        const searchTerm = document.getElementById("storageSearchInput").value.toLowerCase();
+        const searchInput = document.getElementById("storageSearchInput");
+        if (!searchInput) return;
+        const searchTerm = searchInput.value.toLowerCase();
         this.renderStorage(searchTerm);
     },
 
@@ -3322,13 +3326,17 @@ const UIManager = {
     openCompareOverlay() {
         this.comparePet1Id = null;
         this.comparePet2Id = null;
-        document.getElementById("comparePet1").innerHTML = "Click a pet to select";
-        document.getElementById("comparePet2").innerHTML = "Click a pet to select";
-        document.getElementById("compareOverlay").classList.remove("hidden");
+        const pet1El = document.getElementById("comparePet1");
+        const pet2El = document.getElementById("comparePet2");
+        const overlay = document.getElementById("compareOverlay");
+        if (pet1El) pet1El.innerHTML = "Click a pet to select";
+        if (pet2El) pet2El.innerHTML = "Click a pet to select";
+        if (overlay) overlay.classList.remove("hidden");
     },
 
     closeCompareOverlay() {
-        document.getElementById("compareOverlay").classList.add("hidden");
+        const overlay = document.getElementById("compareOverlay");
+        if (overlay) overlay.classList.add("hidden");
     },
 
     selectComparePet(petId, slot) {
@@ -3422,6 +3430,7 @@ const UIManager = {
 
         // Add comparison section between the two pet displays
         const container = document.getElementById("compareOverlay");
+        if (!container) return;
         const comparisonDiv = document.createElement("div");
         comparisonDiv.className = "bg-white/10 rounded-xl p-4 my-4";
         comparisonDiv.innerHTML = `<h3>Stat Comparison</h3>${comparisonHTML}`;
@@ -3431,7 +3440,11 @@ const UIManager = {
         if (existing) existing.remove();
 
         comparisonDiv.classList.add("comparison-section");
-        container.querySelector(".max-w-4xl").insertBefore(comparisonDiv, container.querySelector(".grid").nextSibling);
+        const maxWContainer = container.querySelector(".max-w-4xl");
+        const grid = container.querySelector(".grid");
+        if (maxWContainer && grid && grid.nextSibling) {
+            maxWContainer.insertBefore(comparisonDiv, grid.nextSibling);
+        }
     },
 
     // Export/Import Save Data

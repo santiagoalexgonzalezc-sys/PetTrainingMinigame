@@ -1203,10 +1203,10 @@ const TitleSystem = {
         artisan: { id: "artisan", name: "Artisan", description: "Craft 50 items", requirement: () => PlayerSystem.totalCrafts >= 50 },
         onFire: { id: "onFire", name: "On Fire", description: "Achieve 5 battle streak", requirement: () => PlayerSystem.bestStreak >= 5 },
         unstoppable: { id: "unstoppable", name: "Unstoppable", description: "Achieve 10 battle streak", requirement: () => PlayerSystem.bestStreak >= 10 },
-        dragonTamer: { id: "dragonTamer", name: "Dragon Tamer", description: "Own 5 dragon-type pets", requirement: () => this.countPetType("dragon") >= 5 },
-        grassGuardian: { id: "grassGuardian", name: "Grass Guardian", description: "Own 5 grass-type pets", requirement: () => this.countPetType("grass") >= 5 },
-        waterMaster: { id: "waterMaster", name: "Water Master", description: "Own 5 water-type pets", requirement: () => this.countPetType("water") >= 5 },
-        fireLord: { id: "fireLord", name: "Fire Lord", description: "Own 5 fire-type pets", requirement: () => this.countPetType("fire") >= 5 }
+        dragonTamer: { id: "dragonTamer", name: "Dragon Tamer", description: "Own 5 dragon-type pets", requirement: () => TitleSystem.countPetType("dragon") >= 5 },
+        grassGuardian: { id: "grassGuardian", name: "Grass Guardian", description: "Own 5 grass-type pets", requirement: () => TitleSystem.countPetType("grass") >= 5 },
+        waterMaster: { id: "waterMaster", name: "Water Master", description: "Own 5 water-type pets", requirement: () => TitleSystem.countPetType("water") >= 5 },
+        fireLord: { id: "fireLord", name: "Fire Lord", description: "Own 5 fire-type pets", requirement: () => TitleSystem.countPetType("fire") >= 5 }
     },
 
     countPetType(type) {
@@ -3340,6 +3340,9 @@ const UIManager = {
         }
         if (screenId === "craftingScreen") {
             this.renderCrafting();
+        }
+        if (screenId === "explorationScreen") {
+            this.renderExploration();
         }
         this.updatePlayerLevelDisplay();
 

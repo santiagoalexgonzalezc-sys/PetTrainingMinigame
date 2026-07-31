@@ -19,9 +19,12 @@ const DataManager = {
                 totalCatches: PlayerSystem.totalCatches,
                 totalTrainings: PlayerSystem.totalTrainings,
                 totalExplores: PlayerSystem.totalExplores,
-lastDailyBonus: PlayerSystem.lastDailyBonus,
-                 dailyActivities: Array.from(PlayerSystem.dailyActivities)
-             },
+                totalCrafts: PlayerSystem.totalCrafts,
+                totalPrestiges: PlayerSystem.totalPrestiges,
+                lastDailyBonus: PlayerSystem.lastDailyBonus,
+                dailyActivities: Array.from(PlayerSystem.dailyActivities),
+                achievements: Array.from(PlayerSystem.achievements)
+            },
              maxPartySize: PetManager.maxPartySize,
             maxTotalPets: PetManager.maxTotalPets
         };
@@ -110,8 +113,11 @@ lastDailyBonus: PlayerSystem.lastDailyBonus,
                 PlayerSystem.totalCatches = data.player.totalCatches || 0;
                 PlayerSystem.totalTrainings = data.player.totalTrainings || 0;
                 PlayerSystem.totalExplores = data.player.totalExplores || 0;
+                PlayerSystem.totalCrafts = data.player.totalCrafts || 0;
+                PlayerSystem.totalPrestiges = data.player.totalPrestiges || 0;
                 PlayerSystem.lastDailyBonus = data.player.lastDailyBonus || null;
                 PlayerSystem.dailyActivities = new Set(Array.isArray(data.player.dailyActivities) ? data.player.dailyActivities : []);
+                PlayerSystem.achievements = new Set(Array.isArray(data.player.achievements) ? data.player.achievements : []);
             } else {
                 PlayerSystem.level = 1;
                 PlayerSystem.xp = 0;
@@ -122,8 +128,11 @@ lastDailyBonus: PlayerSystem.lastDailyBonus,
                 PlayerSystem.totalCatches = 0;
                 PlayerSystem.totalTrainings = 0;
                 PlayerSystem.totalExplores = 0;
+                PlayerSystem.totalCrafts = 0;
+                PlayerSystem.totalPrestiges = 0;
                 PlayerSystem.lastDailyBonus = null;
                 PlayerSystem.dailyActivities = new Set();
+                PlayerSystem.achievements = new Set();
             }
             
             // Migration: restore maxPartySize and maxTotalPets from save or defaults
@@ -939,8 +948,125 @@ const PlayerSystem = {
     totalCatches: 0,
     totalTrainings: 0,
     totalExplores: 0,
+    totalCrafts: 0,
+    totalPrestiges: 0,
     lastDailyBonus: null,
-    dailyActivities: new Set()
+    dailyActivities: new Set(),
+    achievements: new Set()
+};
+
+// ==================== ACHIEVEMENT SYSTEM ====================
+const AchievementSystem = {
+    achievements: {
+        firstCatch: { id: "firstCatch", name: "First Catch", description: "Catch your first pet", icon: "🎱", reward: 100 },
+        defeat10: { id: "defeat10", name: "Novice Trainer", description: "Defeat 10 pets in battle", icon: "⚔️", reward: 200 },
+        defeat50: { id: "defeat50", name: "Skilled Trainer", description: "Defeat 50 pets in battle", icon: "🗡️", reward: 500 },
+        defeat100: { id: "defeat100", name: "Master Trainer", description: "Defeat 100 pets in battle", icon: "🏆", reward: 1000 },
+        catch10: { id: "catch10", name: "Collector", description: "Catch 10 different pets", icon: "📦", reward: 300 },
+        catch25: { id: "catch25", name: "Hoarder", description: "Catch 25 different Pets", icon: "🎁", reward: 750 },
+        shiny: { id: "shiny", name: "Lucky Find", description: "Find a shiny pet", icon: "✨", reward: 2000 },
+        craft10: { id: "craft10", name: "Craftsman", description: "Craft 10 items", icon: "🔨", reward: 300 },
+        craft50: { id: "craft50", name: "Master Craftsman", description: "Craft 50 items", icon: "⚒️", reward: 1000 },
+        level10: { id: "level10", name: "Rising Star", description: "Reach player level 10", icon: "⭐", reward: 500 },
+        level25: { id: "level25", name: "Veteran", description: "Reach player level 25", icon: "🌟", reward: 1500 },
+        level50: { id: "level50", name: "Legend", description: "Reach player level 50", icon: "👑", reward: 5000 },
+        streak5: { id: "streak5", name: "On Fire", description: "Achieve a 5-win battle streak", icon: "🔥", reward: 400 },
+        streak10: { id: "streak10", name: "Unstoppable", description: "Achieve a 10-win battle streak", icon: "💥", reward: 1000 },
+        prestige1: { id: "prestige1", name: "Prestige Beginner", description: "Perform your first prestige fusion", icon: "✨", reward: 1000 },
+        explore10: { id: "explore10", name: "Explorer", description: "Complete 10 explorations", icon: "🗺️", reward: 300 },
+        explore50: { id: "explore50", name: "Adventurer", description: "Complete 50 explorations", icon: "🧭", reward: 1000 }
+    },
+
+    checkAchievement(achievementId) {
+        if (PlayerSystem.achievements.has(achievementId)) return false;
+
+        const achievement = this.achievements[achievementId];
+        if (!achievement) return false;
+
+        let unlocked = false;
+
+        switch (achievementId) {
+            case "firstCatch":
+                unlocked = PlayerSystem.totalCatches >= 1;
+                break;
+            case "defeat10":
+                unlocked = PlayerSystem.totalBattles >= 10;
+                break;
+            case "defeat50":
+                unlocked = PlayerSystem.totalBattles >= 50;
+                break;
+            case "defeat100":
+                unlocked = PlayerSystem.totalBattles >= 100;
+                break;
+            case "catch10":
+                unlocked = this.getUniquePetCount() >= 10;
+                break;
+            case "catch25":
+                unlocked = this.getUniquePetCount() >= 25;
+                break;
+            case "shiny":
+                unlocked = this.hasShinyPet();
+                break;
+            case "craft10":
+                unlocked = PlayerSystem.totalCrafts >= 10;
+                break;
+            case "craft50":
+                unlocked = PlayerSystem.totalCrafts >= 50;
+                break;
+            case "level10":
+                unlocked = PlayerSystem.level >= 10;
+                break;
+            case "level25":
+                unlocked = PlayerSystem.level >= 25;
+                break;
+            case "level50":
+                unlocked = PlayerSystem.level >= 50;
+                break;
+            case "streak5":
+                unlocked = PlayerSystem.bestStreak >= 5;
+                break;
+            case "streak10":
+                unlocked = PlayerSystem.bestStreak >= 10;
+                break;
+            case "prestige1":
+                unlocked = PlayerSystem.totalPrestiges >= 1;
+                break;
+            case "explore10":
+                unlocked = PlayerSystem.totalExplores >= 10;
+                break;
+            case "explore50":
+                unlocked = PlayerSystem.totalExplores >= 50;
+                break;
+        }
+
+        if (unlocked) {
+            PlayerSystem.achievements.add(achievementId);
+            Economy.money += achievement.reward;
+            UIManager.showToast(`🏆 Achievement Unlocked: ${achievement.icon} ${achievement.name} (+${achievement.reward}💰)`);
+            DataManager.save();
+            return true;
+        }
+
+        return false;
+    },
+
+    getUniquePetCount() {
+        const uniqueTypes = new Set();
+        PetManager.pets.forEach(pet => uniqueTypes.add(pet.typeId));
+        PetManager.storage.forEach(pet => uniqueTypes.add(pet.typeId));
+        return uniqueTypes.size;
+    },
+
+    hasShinyPet() {
+        const allPets = [...PetManager.pets, ...PetManager.storage];
+        return allPets.some(pet => pet.shiny);
+    },
+
+    checkAllAchievements() {
+        for (const achievementId of Object.keys(this.achievements)) {
+            this.checkAchievement(achievementId);
+        }
+    }
 };
 
 function xpNeeded(level) {
@@ -979,6 +1105,11 @@ function applyLevelUpRewards(fromLevel, toLevel) {
     const teamSlotsGained = Math.floor(toLevel / 5) - Math.floor(fromLevel / 5);
     PetManager.maxPartySize = Math.min(12, PetManager.maxPartySize + teamSlotsGained);
 
+    // Check level achievements
+    AchievementSystem.checkAchievement("level10");
+    AchievementSystem.checkAchievement("level25");
+    AchievementSystem.checkAchievement("level50");
+
     const storageSlotsGained = Math.floor(toLevel / 25) - Math.floor(fromLevel / 25);
     PetManager.maxTotalPets = Math.min(300, PetManager.maxTotalPets + storageSlotsGained);
 }
@@ -989,6 +1120,8 @@ function getPlayerLevelBonus() {
 
 function getExploreExplore() {
     PlayerSystem.totalExplores++;
+    AchievementSystem.checkAchievement("explore10");
+    AchievementSystem.checkAchievement("explore50");
 }
 
 // ==================== EXPLORATION ====================
@@ -1002,7 +1135,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["leafBunny", "vineSnake", "mossBear", "glimmerMoth", "moonPixie"],
             rarePets: ["mindCat", "dreamOwl", "fieldDeer", "thornHog"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(34, 139, 34, 0.15)"
         },
         cave: {
             name: "Cave",
@@ -1012,7 +1146,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["scaleLizard", "sparkDog"],
             rarePets: ["drakeWhelp", "frostPenguin", "crystalSeal", "frostBear", "crystalWyrm", "mindApe"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(105, 105, 105, 0.15)"
         },
         lake: {
             name: "Lake",
@@ -1022,7 +1157,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["aquaTurtle", "mistFrog", "waveWhale"],
             rarePets: ["shockEel", "boltMouse"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(30, 144, 255, 0.15)"
         },
         mountain: {
             name: "Mountain",
@@ -1032,7 +1168,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["flameCat", "zapBird", "scaleLizard", "frostBear", "cloudSheep", "glacierFox"],
             rarePets: ["drakeWhelp", "cosmicFox", "crystalWyrm", "voltageOx"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(139, 137, 112, 0.15)"
         },
         desert: {
             name: "Desert",
@@ -1042,7 +1179,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["emberFox", "sparkDog", "scaleLizard", "cinderScorpion", "duneLion"],
             rarePets: ["flameCat", "drakeWhelp"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(210, 180, 140, 0.15)"
         },
         ocean: {
             name: "Ocean",
@@ -1052,7 +1190,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["waveWhale", "shockEel", "crystalSeal", "tidalCrab"],
             rarePets: ["aquaTurtle", "frostPenguin"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(0, 105, 148, 0.15)"
         },
         volcano: {
             name: "Volcano",
@@ -1062,7 +1201,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["flameCat", "emberFox", "sparkDog"],
             rarePets: ["drakeWhelp", "scaleLizard", "cinderScorpion", "cinderHawk"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(178, 34, 34, 0.15)"
         },
         swamp: {
             name: "Swamp",
@@ -1072,7 +1212,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["mistFrog", "vineSnake", "mossBear", "glimmerMoth", "marshCroc", "sunstoneBeetle"],
             rarePets: ["waveWhale", "dreamOwl", "frostBear"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(85, 107, 47, 0.15)"
         },
         sky: {
             name: "Sky",
@@ -1082,7 +1223,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["zapBird", "boltMouse", "dreamOwl", "cloudSheep"],
             rarePets: ["cosmicFox", "shockEel"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(135, 206, 250, 0.15)"
         },
         toxicMarsh: {
             name: "Toxic Marsh",
@@ -1092,7 +1234,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["venomAsp", "bogToad", "mistFrog", "vineSnake"],
             rarePets: ["cosmicFox", "moonPixie"],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(128, 0, 128, 0.15)"
         },
         darkforest: {
             name: "Dark Forest",
@@ -1102,7 +1245,8 @@ const Exploration = {
             maxFloor: 200,
             commonPets: ["shadowWolf", "duskBat"],
             rarePets: [],
-            encounterRate: 1
+            encounterRate: 1,
+            ambientColor: "rgba(47, 79, 79, 0.15)"
         }
     },
     cooldowns: {},
@@ -1538,7 +1682,7 @@ const BattleSystem = {
                 Exploration.autoExplore.active = false;
                 BattleSystem.autoExploreActive = false;
                 BattleSystem.autoExplorePetId = null;
-                alert("Auto-explore pet not found or fainted!");
+                this.showToast("Auto-explore pet not found or fainted!");
                 UIManager.showScreen("mainScreen");
                 return;
             }
@@ -2519,9 +2663,16 @@ this.playerAbilityCooldown = ability.cooldown;
             if (PlayerSystem.battleStreak > PlayerSystem.bestStreak) {
                 PlayerSystem.bestStreak = PlayerSystem.battleStreak;
             }
+
+            // Check achievements
+            AchievementSystem.checkAchievement("defeat10");
+            AchievementSystem.checkAchievement("defeat50");
+            AchievementSystem.checkAchievement("defeat100");
+            AchievementSystem.checkAchievement("streak5");
+            AchievementSystem.checkAchievement("streak10");
             
-            // Win streak bonus multiplier (player XP only)
-            const streakMultiplier = 1 + Math.min(PlayerSystem.battleStreak * 0.1, 1.0);
+            // Win streak bonus multiplier (player XP only) - increased to 10x+ cap
+            const streakMultiplier = 1 + Math.min(PlayerSystem.battleStreak * 0.15, 9.0);
             
             // Type advantage bonus (player XP only)
             const playerTemplate = PetTypes[this.playerPet.typeId];
@@ -2534,7 +2685,8 @@ this.playerAbilityCooldown = ability.cooldown;
             const totalXP = Math.floor(playerBaseXP * streakMultiplier * typeAdvantageMultiplier);
             const playerLevelUp = addXP(totalXP);
             
-            this.addLog(`🎉 Victory! +${totalXP} XP, +${moneyReward} Gold`);
+            const streakText = PlayerSystem.battleStreak > 0 ? ` [Streak: ${PlayerSystem.battleStreak}x${streakMultiplier.toFixed(1)}]` : "";
+            this.addLog(`🎉 Victory! +${totalXP} XP, +${moneyReward} Gold${streakText}`);
             if (playerLevelUp) {
                 this.addLog(`⬆ Player Level Up! Now level ${PlayerSystem.level}`);
             }
@@ -2670,10 +2822,24 @@ this.playerAbilityCooldown = ability.cooldown;
         
         if (success && PetManager.pets.length < PetManager.maxPartySize) {
             PetManager.pets.push(wildPet);
+            PlayerSystem.totalCatches++;
+            AchievementSystem.checkAchievement("firstCatch");
+            AchievementSystem.checkAchievement("catch10");
+            AchievementSystem.checkAchievement("catch25");
+            if (wildPet.shiny) {
+                AchievementSystem.checkAchievement("shiny");
+            }
             DataManager.save();
             return { success: true, reason: "Caught!" };
         } else if (success && PetManager.pets.length + PetManager.storage.length < PetManager.maxTotalPets) {
             PetManager.storage.push(wildPet);
+            PlayerSystem.totalCatches++;
+            AchievementSystem.checkAchievement("firstCatch");
+            AchievementSystem.checkAchievement("catch10");
+            AchievementSystem.checkAchievement("catch25");
+            if (wildPet.shiny) {
+                AchievementSystem.checkAchievement("shiny");
+            }
             DataManager.save();
             return { success: true, reason: "Caught! Sent to Pet Storage 📦." };
         } else if (success) {
@@ -2790,7 +2956,7 @@ const TrainingSystem = {
         DataManager.save();
         
         setTimeout(() => {
-            alert(message);
+            this.showToast(message);
             UIManager.showScreen("petScreen");
             UIManager.updatePetScreen();
             UIManager.renderPets();
@@ -2912,8 +3078,34 @@ const UIManager = {
     },
 
     showScreen(screenId) {
-        document.querySelectorAll("[id$=Screen]").forEach(s => s.classList.add("hidden"));
-        document.getElementById(screenId).classList.remove("hidden");
+        const screens = document.querySelectorAll("[id$=Screen]");
+        const currentScreen = Array.from(screens).find(s => !s.classList.contains("hidden"));
+
+        // Apply fade-out to current screen
+        if (currentScreen && currentScreen.id !== screenId) {
+            currentScreen.classList.add("screen-transition-out");
+            setTimeout(() => {
+                currentScreen.classList.add("hidden");
+                currentScreen.classList.remove("screen-transition-out");
+            }, 200);
+        }
+
+        // Apply fade-in to new screen
+        setTimeout(() => {
+            const newScreen = document.getElementById(screenId);
+            if (newScreen) {
+                newScreen.classList.remove("hidden");
+                newScreen.classList.add("screen-transition");
+                setTimeout(() => {
+                    newScreen.classList.remove("screen-transition");
+                }, 300);
+            }
+        }, currentScreen && currentScreen.id !== screenId ? 200 : 0);
+
+        // Remove ambient color when leaving exploration
+        if (screenId !== "explorationScreen") {
+            this.removeZoneAmbientColor();
+        }
         
         if (Exploration.autoExplore.active && screenId !== "battleScreen") {
             Exploration.autoExplore.active = false;
@@ -2940,6 +3132,9 @@ const UIManager = {
         }
         if (screenId === "storageScreen") {
             this.renderStorage();
+        }
+        if (screenId === "collectionScreen") {
+            this.renderCollection();
         }
         this.updatePlayerLevelDisplay();
 
@@ -3006,6 +3201,8 @@ const UIManager = {
         const totalPower = TeamPowerSystem.getTotalPower();
         const partyPower = TeamPowerSystem.getPartyPower();
         const zonesUnlocked = PlayerSystem.unlockedZones.length;
+        const achievementsUnlocked = PlayerSystem.achievements.size;
+        const totalAchievements = Object.keys(AchievementSystem.achievements).length;
 
         const stats = [
             { label: "Level", value: PlayerSystem.level, color: "" },
@@ -3018,6 +3215,7 @@ const UIManager = {
             { label: "Total Trainings", value: PlayerSystem.totalTrainings, color: "" },
             { label: "Total Explores", value: PlayerSystem.totalExplores, color: "" },
             { label: "Zones Unlocked", value: `${zonesUnlocked} / ${Object.keys(Exploration.zones).length}`, color: "" },
+            { label: "Achievements", value: `${achievementsUnlocked} / ${totalAchievements}`, color: "text-purple-400" },
             { label: "Total Power", value: totalPower, color: "text-yellow-400" },
             { label: "Party Power", value: partyPower, color: "text-blue-400" },
         ];
@@ -3025,6 +3223,20 @@ const UIManager = {
         container.innerHTML = stats
             .map(s => `<div class="flex justify-between"><span>${s.label}</span><span class="${s.color} font-bold">${s.value}</span></div>`)
             .join("");
+
+        // Render achievements
+        const achievementsContainer = document.getElementById("profileAchievements");
+        if (achievementsContainer) {
+            achievementsContainer.innerHTML = "";
+            for (const [id, achievement] of Object.entries(AchievementSystem.achievements)) {
+                const isUnlocked = PlayerSystem.achievements.has(id);
+                const badge = document.createElement("div");
+                badge.className = `inline-block m-1 p-2 rounded-lg text-center ${isUnlocked ? "bg-purple-600/50 border-2 border-purple-400" : "bg-gray-700/50 border-2 border-gray-600 opacity-50"}`;
+                badge.title = `${achievement.name}: ${achievement.description}${isUnlocked ? ` (+${achievement.reward}💰)` : ""}`;
+                badge.innerHTML = `<div class="text-2xl">${achievement.icon}</div>`;
+                achievementsContainer.appendChild(badge);
+            }
+        }
     },
 
     // Starter Screen
@@ -3270,7 +3482,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             this.updatePetScreen();
             this.renderPets();
             this.updateTeamPower();
-            alert(`✨ Upgraded to ${result.nextTier}!`);
+            this.showToast(`✨ Upgraded to ${result.nextTier}!`);
         }
     },
 
@@ -3318,13 +3530,13 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
     exploreZone(zoneId) {
         if (!PetManager.selectedPet) {
-            alert("Select a pet first!");
+            this.showToast("Select a pet first!");
             return;
         }
         
         const zone = Exploration.zones[zoneId];
         if (PlayerSystem.level < zone.unlockLevel) {
-            alert(`Reach player level ${zone.unlockLevel} to unlock ${zone.name}!`);
+            this.showToast(`Reach player level ${zone.unlockLevel} to unlock ${zone.name}!`);
             return;
         }
         
@@ -3335,8 +3547,135 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     showFloorOverlay(zoneId) {
         Exploration.selectedZoneId = zoneId;
         Exploration.floorPage = 0;
+        this.applyZoneAmbientColor(zoneId);
         this.renderFloorOverlay();
         document.getElementById("floorOverlay").classList.remove("hidden");
+    },
+
+    applyZoneAmbientColor(zoneId) {
+        const zone = Exploration.zones[zoneId];
+        if (zone && zone.ambientColor) {
+            document.body.style.background = `linear-gradient(180deg, ${zone.ambientColor}, #0b0d18)`;
+        }
+    },
+
+    removeZoneAmbientColor() {
+        document.body.style.background = "linear-gradient(180deg, #131827, #0b0d18)";
+    },
+
+    closeFloorOverlay() {
+        document.getElementById("floorOverlay").classList.add("hidden");
+        this.removeZoneAmbientColor();
+    },
+
+    // Collection Book Screen
+    collectionFilter: 'all',
+
+    filterCollection(filter) {
+        this.collectionFilter = filter;
+        this.renderCollection();
+    },
+
+    renderCollection() {
+        const grid = document.getElementById("collectionGrid");
+        grid.innerHTML = "";
+
+        // Get all pet types the player has collected
+        const collectedTypes = new Set();
+        PetManager.pets.forEach(pet => collectedTypes.add(pet.typeId));
+        PetManager.storage.forEach(pet => collectedTypes.add(pet.typeId));
+
+        const totalTypes = Object.keys(PetTypes).length;
+        const collectedCount = collectedTypes.size;
+
+        document.getElementById("collectionCount").innerText = collectedCount;
+        document.getElementById("totalPetTypes").innerText = totalTypes;
+
+        // Render each pet type
+        for (const [typeId, template] of Object.entries(PetTypes)) {
+            const isCollected = collectedTypes.has(typeId);
+
+            // Apply filter
+            if (this.collectionFilter === 'collected' && !isCollected) continue;
+            if (this.collectionFilter === 'missing' && isCollected) continue;
+
+            const card = document.createElement("div");
+            card.className = `bg-white/10 rounded-xl p-4 text-center ${isCollected ? 'border-2 border-green-400' : 'border-2 border-gray-600 opacity-60'}`;
+            
+            const bestPet = this.getBestPetOfType(typeId);
+            const bestStats = bestPet ? this.getBestPetStats(bestPet, template) : null;
+
+            card.innerHTML = `
+                <div class="text-4xl mb-2">${isCollected ? template.emoji : '❓'}</div>
+                <h3 class="font-bold">${template.name}</h3>
+                <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
+                ${isCollected ? '<div class="text-green-400 text-sm font-bold mt-2">✓ Collected</div>' : '<div class="text-red-400 text-sm font-bold mt-2">✗ Not Found</div>'}
+                ${bestStats ? `
+                    <div class="mt-2 text-xs opacity-80">
+                        <div>Best: Lv ${bestPet.level} ${bestPet.tier}</div>
+                        <div>HP: ${bestStats.hp} | ATK: ${bestStats.attack}</div>
+                        <div>DEF: ${bestStats.defense} | SPD: ${bestStats.speed}</div>
+                        <div>SPC: ${bestStats.special}</div>
+                    </div>
+                ` : ''}
+                <div class="mt-2 text-xs opacity-60">${template.passive}</div>
+            `;
+            grid.appendChild(card);
+        }
+    },
+
+    getBestPetOfType(typeId) {
+        let bestPet = null;
+        let bestPower = 0;
+
+        const allPets = [...PetManager.pets, ...PetManager.storage];
+        for (const pet of allPets) {
+            if (pet.typeId === typeId) {
+                const power = TeamPowerSystem.calculatePetPower(pet);
+                if (power > bestPower) {
+                    bestPower = power;
+                    bestPet = pet;
+                }
+            }
+        }
+        return bestPet;
+    },
+
+    getBestPetStats(pet, template) {
+        return {
+            hp: PetManager.calculateMaxHP(template, pet.level, pet),
+            attack: pet.stats.attack,
+            defense: pet.stats.defense,
+            speed: pet.stats.speed,
+            special: pet.stats.special
+        };
+    },
+
+    // Toast Notification System
+    showToast(message, duration = 3000) {
+        const container = document.getElementById("toastContainer");
+        if (!container) return;
+
+        const toast = document.createElement("div");
+        toast.className = "bg-gray-800/95 border border-white/20 rounded-xl px-4 py-3 text-white text-sm shadow-lg transform transition-all duration-300 translate-x-full";
+        toast.innerHTML = message;
+
+        container.appendChild(toast);
+
+        // Animate in
+        requestAnimationFrame(() => {
+            toast.classList.remove("translate-x-full");
+        });
+
+        // Remove after duration
+        setTimeout(() => {
+            toast.classList.add("translate-x-full", "opacity-0");
+            setTimeout(() => {
+                if (container.contains(toast)) {
+                    container.removeChild(toast);
+                }
+            }, 300);
+        }, duration);
     },
 
     renderFloorOverlay() {
@@ -3417,7 +3756,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         } else if (Exploration.autoExplore.active) {
             setTimeout(() => this.startNextAutoExplore(), 1000);
         } else {
-            alert("Nothing found this time...");
+            this.showToast("Nothing found this time...");
         }
     },
 
@@ -3480,6 +3819,19 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         if (enemyName) enemyName.innerText = (enemy.shiny ? "✨ " : "") + PetManager.getEvolution(enemy) + (BattleSystem.bleeding === "enemy" ? " 🩸" : "") + (BattleSystem.burning === "enemy" ? " 🔥" + (BattleSystem.burnDuration.enemy > 0 && BattleSystem.burnDuration.enemy < 9999 ? BattleSystem.burnDuration.enemy : "") : "") + (BattleSystem.confused === "enemy" ? " 🧠" : "") + (BattleSystem.shield.enemy.turns > 0 ? " 🛡️" : "") + (BattleSystem.poisoned === "enemy" ? " ☠️" : "");
         if (enemyTier) enemyTier.innerText = `Tier: ${enemy.tier || "D1"}` + (enemy.shiny ? " ✨" : "");
         if (enemyLevel) enemyLevel.innerText = `Level ${enemy.level}`;
+
+        // Update type effectiveness display
+        const typeEffectiveness = BattleSystem.getTypeEffectiveness(playerTemplate.type, enemyTemplate.type);
+        const typeEffectivenessDisplay = document.getElementById("typeEffectivenessDisplay");
+        if (typeEffectivenessDisplay) {
+            if (typeEffectiveness > 1) {
+                typeEffectivenessDisplay.innerHTML = `<span class="text-green-400">⚡ Super Effective (${typeEffectiveness.toFixed(1)}x)</span>`;
+            } else if (typeEffectiveness < 1) {
+                typeEffectivenessDisplay.innerHTML = `<span class="text-red-400">🛡️ Not Very Effective (${typeEffectiveness.toFixed(1)}x)</span>`;
+            } else {
+                typeEffectivenessDisplay.innerHTML = `<span class="text-gray-400">⚔️ Neutral (1.0x)</span>`;
+            }
+        }
         
         if (enemySprite) {
             if (enemy.shiny) {
@@ -3559,7 +3911,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
     openSwitchOverlay() {
         if (!BattleSystem.active || !BattleSystem.isPlayerTurn) {
-            alert("Can only switch during your turn!");
+            this.showToast("Can only switch during your turn!");
             return;
         }
         
@@ -3612,12 +3964,12 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
     tryCatch() {
         if (!BattleSystem.active || !BattleSystem.isPlayerTurn) {
-            alert("Can only catch during your turn!");
+            this.showToast("Can only catch during your turn!");
             return;
         }
         
         const result = BattleSystem.tryCatch(BattleSystem.enemyPet);
-        alert(result.reason);
+        this.showToast(result.reason);
         
         if (result.success) {
             BattleSystem.active = false;
@@ -3687,7 +4039,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             this.updateCurrency();
             this.updateTeamPower();
         } else {
-            alert("Not enough money!");
+            this.showToast("Not enough money!");
         }
     },
 
@@ -3697,7 +4049,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         
         const maxAffordable = Math.floor(Economy.money / item.price);
         if (maxAffordable <= 0) {
-            alert("Not enough money!");
+            this.showToast("Not enough money!");
             return;
         }
         
@@ -3708,7 +4060,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 this.updateCurrency();
                 this.updateTeamPower();
             } else {
-                alert("Not enough money!");
+                this.showToast("Not enough money!");
             }
         }
     },
@@ -3739,7 +4091,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     useItem(itemId) {
         const pet = PetManager.selectedPet;
         if (!pet) {
-            alert("Select a pet first!");
+            this.showToast("Select a pet first!");
             return;
         }
         
@@ -3753,13 +4105,13 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     useItemForPet(itemId) {
         const pet = PetManager.selectedPet;
         if (!pet) {
-            alert("Select a pet first!");
+            this.showToast("Select a pet first!");
             return;
         }
 
         const item = Economy.shopItems[itemId];
         if (!item) {
-            alert("Unknown item!");
+            this.showToast("Unknown item!");
             return;
         }
 
@@ -3770,11 +4122,11 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             if (input === null) return; // Cancelled
             qty = parseInt(input, 10);
             if (isNaN(qty) || qty < 1) {
-                alert("Invalid quantity!");
+                this.showToast("Invalid quantity!");
                 return;
             }
             if (qty > owned) {
-                alert(`You only have ${owned} ${item.name}(s)!`);
+                this.showToast(`You only have ${owned} ${item.name}(s)!`);
                 return;
             }
         }
@@ -3785,7 +4137,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             this.renderInventory();
             this.updateTeamPower();
         } else {
-            alert("Can't use that item!");
+            this.showToast("Can't use that item!");
         }
     },
 
@@ -3799,7 +4151,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             this.renderPets();
             this.updateTeamPower();
         } else {
-            alert(result.reason);
+            this.showToast(result.reason);
         }
     },
 
@@ -3813,14 +4165,14 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             this.renderPets();
             this.updateTeamPower();
         } else {
-            alert(result.reason);
+            this.showToast(result.reason);
         }
     },
 
     openEquipOverlay() {
         const pet = PetManager.selectedPet;
         if (!pet) {
-            alert("Select a pet first!");
+            this.showToast("Select a pet first!");
             return;
         }
         
@@ -3864,9 +4216,22 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         grid.innerHTML = "";
         document.getElementById("storageCount").innerText = PetManager.storage.length;
 
+        // Count D1 pets in storage
+        const d1Pets = PetManager.storage.filter(pet => pet.tier === "D1");
+        const d1Count = d1Pets.length;
+
         if (PetManager.storage.length === 0) {
             grid.innerHTML = "<p>No pets in storage yet. Catch more to fill it up!</p>";
             return;
+        }
+
+        // Add auto-sell button if there are D1 pets
+        if (d1Count > 0) {
+            const autoSellBtn = document.createElement("button");
+            autoSellBtn.className = "border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5";
+            autoSellBtn.innerText = `🗑️ Auto-Sell D1 Pets (${d1Count})`;
+            autoSellBtn.onclick = () => this.autoSellD1Pets();
+            grid.appendChild(autoSellBtn);
         }
 
         PetManager.storage.forEach(pet => {
@@ -3923,7 +4288,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             );
             const idx = parseInt(choice, 10) - 1;
             if (isNaN(idx) || idx < 0 || idx >= PetManager.pets.length) {
-                alert("Withdraw cancelled.");
+                this.showToast("Withdraw cancelled.");
                 return;
             }
             const swapId = PetManager.pets[idx].id;
@@ -3941,7 +4306,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         const pet = PetManager.selectedPet;
         if (!pet) return;
         if (PetManager.pets.length <= 1) {
-            alert("You can't deposit your last party member!");
+            this.showToast("You can't deposit your last party member!");
             return;
         }
         if (confirm(`Deposit ${PetTypes[pet.typeId].name} to storage?`)) {
@@ -3950,6 +4315,34 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             this.showScreen("mainScreen");
             this.renderPets();
             this.updateTeamPower();
+        }
+    },
+
+    autoSellD1Pets() {
+        const d1Pets = PetManager.storage.filter(pet => pet.tier === "D1");
+        if (d1Pets.length === 0) {
+            this.showToast("No D1 pets in storage to sell!");
+            return;
+        }
+
+        const totalValue = d1Pets.reduce((sum, pet) => {
+            return sum + pet.level * 25 + (pet.prestigeLevel || 0) * 1000 + (pet.shiny ? 5000 : 0) + TierSystem.getTierSellValue(pet.tier);
+        }, 0);
+
+        const petList = d1Pets.map(pet => {
+            const template = PetTypes[pet.typeId];
+            return `${template.emoji} ${PetManager.getEvolution(pet)} (Lv ${pet.level}${pet.shiny ? ' ✨' : ''})`;
+        }).join('\n');
+
+        if (confirm(`Sell ${d1Pets.length} D1 pets from storage?\n\nTotal Value: ${totalValue} 💰\n\nPets to sell:\n${petList}`)) {
+            d1Pets.forEach(pet => {
+                Economy.sellPet(pet);
+            });
+            DataManager.save();
+            this.renderStorage();
+            this.updateTeamPower();
+            this.updateCurrency();
+            this.showToast(`Sold ${d1Pets.length} D1 pets for ${totalValue} 💰!`);
         }
     },
 
@@ -3970,7 +4363,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     openPrestigeForSelectedPet() {
         const pet = PetManager.selectedPet;
         if (!pet) {
-            alert("Select a pet first!");
+            this.showToast("Select a pet first!");
             return;
         }
         this.openPrestige();
@@ -4094,13 +4487,13 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
     confirmPrestige() {
         if (!this.prestigePetId || !this.prestigeMaterialId) {
-            alert("Please select both pets!");
+            this.showToast("Please select both pets!");
             return;
         }
-        
+
         const validation = PetManager.canPrestige(this.prestigePetId, this.prestigeMaterialId);
         if (!validation.valid) {
-            alert(validation.reason);
+            this.showToast(validation.reason);
             return;
         }
         
@@ -4114,14 +4507,14 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         if (result.success) {
             const pet = result.pet;
             const template = PetTypes[pet.typeId];
-            alert(`✨ Prestige ${pet.prestigeLevel} achieved! ${template.name} gained:\n+${pet.bonusStats.hp} HP | +${pet.bonusStats.attack} ATK | +${pet.bonusStats.defense} DEF | +${pet.bonusStats.speed} SPD | +${pet.bonusStats.special} SPC`);
+            this.showToast(`✨ Prestige ${pet.prestigeLevel} achieved! ${template.name} gained: +${pet.bonusStats.hp} HP | +${pet.bonusStats.attack} ATK | +${pet.bonusStats.defense} DEF | +${pet.bonusStats.speed} SPD | +${pet.bonusStats.special} SPC`);
             DataManager.save();
             this.closePrestigeOverlay();
             this.showScreen("mainScreen");
             this.renderPets();
             this.updateTeamPower();
         } else {
-            alert(result.reason);
+            this.showToast(result.reason);
         }
     },
 
@@ -4179,10 +4572,13 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
     craftItem(recipeId) {
         if (!CraftingSystem.canCraft(recipeId)) {
-            alert("Not enough resources!");
+            this.showToast("Not enough resources!");
             return;
         }
         CraftingSystem.craft(recipeId);
+        PlayerSystem.totalCrafts++;
+        AchievementSystem.checkAchievement("craft10");
+        AchievementSystem.checkAchievement("craft50");
         DataManager.save();
         this.renderCrafting();
         this.updateCurrency();
@@ -4190,7 +4586,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
     openAutoExploreSetup() {
         if (PlayerSystem.level < 50) {
-            alert("Reach player level 50 to unlock Auto Explore!");
+            this.showToast("Reach player level 50 to unlock Auto Explore!");
             return;
         }
         Exploration.autoExplore.active = false;
@@ -4296,12 +4692,12 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
     startAutoExplore() {
         if (!Exploration.autoExplore.zoneId || !Exploration.autoExplore.floorIndex || !Exploration.autoExplore.petId) {
-            alert("Please select zone, floor, and pet!");
+            this.showToast("Please select zone, floor, and pet!");
             return;
         }
         const pet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
         if (!pet || pet.currentHP <= 0) {
-            alert("Selected pet not found or has no HP!");
+            this.showToast("Selected pet not found or has no HP!");
             return;
         }
         Exploration.autoExplore.active = true;

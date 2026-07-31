@@ -312,3 +312,22 @@ button:disabled:hover { transform: none; }
 #prestigeInfo {
     border: 1px solid rgba(168, 85, 247, 0.4);
 }
+
+/* Screen Transitions */
+@keyframes fade-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fade-out {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.95); }
+}
+
+.screen-transition {
+    animation: fade-in 0.3s ease-out;
+}
+
+.screen-transition-out {
+    animation: fade-out 0.2s ease-in;
+}

@@ -1375,6 +1375,40 @@ const EquipmentSystem = {
             bonuses: { damageReduction: 0.10 },
             description: "+15 Defense, +10% Damage Reduction",
             recipe: { steelIngot: 5, obsidianBlade: 2, ancientRune: 1 }
+        },
+        // Beginner-friendly Rings
+        ringOfGathering: {
+            id: "ringOfGathering",
+            name: "Ring of Gathering",
+            type: "ring",
+            tier: 1,
+            emoji: "🎒",
+            stats: { speed: 5 },
+            bonuses: { materialDropChance: 0.05 },
+            description: "+5 Speed, +5% Material Drop Chance",
+            recipe: { woodStick: 5, leather: 3, herbs: 2 }
+        },
+        ringOfSurvival: {
+            id: "ringOfSurvival",
+            name: "Ring of Survival",
+            type: "ring",
+            tier: 1,
+            emoji: "🛡️",
+            stats: { hp: 15, defense: 5 },
+            bonuses: { hpRegeneration: 0.03 },
+            description: "+15 HP, +5 Defense, +3% HP Regeneration",
+            recipe: { leather: 5, ore: 3, crystal: 2 }
+        },
+        ringOfTraining: {
+            id: "ringOfTraining",
+            name: "Ring of Training",
+            type: "ring",
+            tier: 1,
+            emoji: "📚",
+            stats: { attack: 5, special: 5 },
+            bonuses: { xpGain: 0.05 },
+            description: "+5 Attack, +5 Special, +5% XP Gain",
+            recipe: { woodStick: 5, herbs: 3, crystal: 2 }
         }
     },
 

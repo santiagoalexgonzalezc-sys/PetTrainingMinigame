@@ -1521,6 +1521,66 @@ const EquipmentSystem = {
 
         DataManager.save();
         return { success: true };
+    },
+
+    getStats(pet) {
+        if (!pet.equipment || !Array.isArray(pet.equipment) || pet.equipment.length === 0) return { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+        let totalStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+        for (const itemId of pet.equipment) {
+            const item = Economy.shopItems[itemId];
+            if (item && item.stats) {
+                for (const [stat, value] of Object.entries(item.stats)) {
+                    totalStats[stat] = (totalStats[stat] || 0) + value;
+                }
+            }
+        }
+        return totalStats;
+    },
+
+    canEquip(petId) {
+        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) ||
+                    PetManager.storage.find(p => String(p.id) === String(petId));
+        if (!pet) return { valid: false, reason: "Pet not found!" };
+        if (!Array.isArray(pet.equipment) || pet.equipment.length >= 5) return { valid: false, reason: "Max 5 equipment slots!" };
+        return { valid: true };
+    },
+
+    equip(petId, itemId) {
+        const validation = this.canEquip(petId);
+        if (!validation.valid) return { success: false, reason: validation.reason };
+
+        if (!Economy.inventory[itemId] || Economy.inventory[itemId] <= 0) {
+            return { success: false, reason: "No item in inventory!" };
+        }
+
+        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) ||
+                    PetManager.storage.find(p => String(p.id) === String(petId));
+
+        Economy.inventory[itemId]--;
+        if (!Array.isArray(pet.equipment)) pet.equipment = [];
+        pet.equipment.push(itemId);
+        pet.stats = PetManager.calculateStats(PetTypes[pet.typeId], pet.level, pet);
+        const newMaxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
+        pet.currentHP = Math.min(pet.currentHP, newMaxHP);
+
+        return { success: true, pet };
+    },
+
+    unequip(petId, itemId) {
+        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) ||
+                    PetManager.storage.find(p => String(p.id) === String(petId));
+        if (!pet || !Array.isArray(pet.equipment) || pet.equipment.length === 0) return { success: false, reason: "No equipment to unequip!" };
+
+        const index = pet.equipment.indexOf(itemId);
+        if (index === -1) return { success: false, reason: "Item not found!" };
+
+        pet.equipment.splice(index, 1);
+        Economy.inventory[itemId] = (Economy.inventory[itemId] || 0) + 1;
+        pet.stats = PetManager.calculateStats(PetTypes[pet.typeId], pet.level, pet);
+        const newMaxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
+        pet.currentHP = Math.min(pet.currentHP, newMaxHP);
+
+        return { success: true, pet };
     }
 };
 
@@ -2223,69 +2283,6 @@ const TierSystem = {
         pet.currentHP = Math.min(pet.currentHP, newMaxHP);
 
         return { success: true, pet, nextTier };
-    }
-};
-
-// ==================== EQUIPMENT SYSTEM ====================
-const EquipmentSystem = {
-    getStats(pet) {
-        if (!pet.equipment || !Array.isArray(pet.equipment) || pet.equipment.length === 0) return { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
-        let totalStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
-        for (const itemId of pet.equipment) {
-            const item = Economy.shopItems[itemId];
-            if (item && item.stats) {
-                for (const [stat, value] of Object.entries(item.stats)) {
-                    totalStats[stat] = (totalStats[stat] || 0) + value;
-                }
-            }
-        }
-        return totalStats;
-    },
-    
-    canEquip(petId) {
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
-                    PetManager.storage.find(p => String(p.id) === String(petId));
-        if (!pet) return { valid: false, reason: "Pet not found!" };
-        if (!Array.isArray(pet.equipment) || pet.equipment.length >= 5) return { valid: false, reason: "Max 5 equipment slots!" };
-        return { valid: true };
-    },
-    
-    equip(petId, itemId) {
-        const validation = this.canEquip(petId);
-        if (!validation.valid) return { success: false, reason: validation.reason };
-        
-        if (!Economy.inventory[itemId] || Economy.inventory[itemId] <= 0) {
-            return { success: false, reason: "No item in inventory!" };
-        }
-        
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
-                    PetManager.storage.find(p => String(p.id) === String(petId));
-        
-        Economy.inventory[itemId]--;
-        if (!Array.isArray(pet.equipment)) pet.equipment = [];
-        pet.equipment.push(itemId);
-        pet.stats = PetManager.calculateStats(PetTypes[pet.typeId], pet.level, pet);
-        const newMaxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
-        pet.currentHP = Math.min(pet.currentHP, newMaxHP);
-        
-        return { success: true, pet };
-    },
-    
-    unequip(petId, itemId) {
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
-                    PetManager.storage.find(p => String(p.id) === String(petId));
-        if (!pet || !Array.isArray(pet.equipment) || pet.equipment.length === 0) return { success: false, reason: "No equipment to unequip!" };
-        
-        const index = pet.equipment.indexOf(itemId);
-        if (index === -1) return { success: false, reason: "Item not found!" };
-        
-        pet.equipment.splice(index, 1);
-        Economy.inventory[itemId] = (Economy.inventory[itemId] || 0) + 1;
-        pet.stats = PetManager.calculateStats(PetTypes[pet.typeId], pet.level, pet);
-        const newMaxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
-        pet.currentHP = Math.min(pet.currentHP, newMaxHP);
-        
-        return { success: true, pet };
     }
 };
 
@@ -3988,7 +3985,7 @@ const BossSystem = {
             emoji: "🔥",
             abilities: ["magmaShield", "infernoRage"],
             rewards: {
-                gold: [500, 800],
+                gold: [5000, 6000],
                 materials: { dragonScale: 1, phoenixEmber: 1 },
                 common: { woodStick: 5, rock: 3, ore: 2 }
             }
@@ -4004,7 +4001,7 @@ const BossSystem = {
             emoji: "🌊",
             abilities: ["tidalWave", "pressure"],
             rewards: {
-                gold: [500, 800],
+                gold: [5000, 6000],
                 materials: { abyssalPearl: 1, tidalGem: 1 },
                 common: { herbs: 5, leather: 3, crystal: 2 }
             }
@@ -4020,7 +4017,7 @@ const BossSystem = {
             emoji: "🌳",
             abilities: ["thornArmor", "regrowth"],
             rewards: {
-                gold: [800, 1200],
+                gold: [7000, 8000],
                 materials: { ancientRoot: 1, natureEssence: 1 },
                 common: { woodStick: 8, herbs: 5, crystal: 3 }
             }
@@ -4036,7 +4033,7 @@ const BossSystem = {
             emoji: "⚡",
             abilities: ["chainLightning", "staticField"],
             rewards: {
-                gold: [800, 1200],
+                gold: [7000, 8000],
                 materials: { stormEssence: 1, stormCore: 1 },
                 common: { ore: 8, thunderShard: 2, crystal: 3 }
             }
@@ -4052,7 +4049,7 @@ const BossSystem = {
             emoji: "👑",
             abilities: ["shadowClone", "soulDrain"],
             rewards: {
-                gold: [1200, 1800],
+                gold: [10000, 12000],
                 materials: { shadowEssence: 1, shadowCloth: 1, abyssalStone: 1 },
                 common: { darkRock: 8, shadowEssence: 2, gem: 3 }
             }
@@ -4068,7 +4065,7 @@ const BossSystem = {
             emoji: "❄️",
             abilities: ["crystalPrison", "prismBeam"],
             rewards: {
-                gold: [1200, 1800],
+                gold: [10000, 12000],
                 materials: { prismShard: 1, frostCrystal: 1, prismLens: 1 },
                 common: { crystal: 8, frostCrystal: 2, gem: 3 }
             }
@@ -4084,7 +4081,7 @@ const BossSystem = {
             emoji: "☠️",
             abilities: ["toxicCloud", "venomousBite"],
             rewards: {
-                gold: [1800, 2500],
+                gold: [15000, 20000],
                 materials: { venomSac: 1, toxicFang: 1, shadowEssence: 1 },
                 common: { herbs: 10, venomSac: 2, darkRock: 4 }
             }
@@ -4100,7 +4097,7 @@ const BossSystem = {
             emoji: "🐉",
             abilities: ["dragonBreath", "ancientPower"],
             rewards: {
-                gold: [2500, 4000],
+                gold: [25000, 35000],
                 materials: { dragonScale: 2, eternalEssence: 1, voidCrystal: 1 },
                 common: { dragonScale: 3, starMetal: 2, celestialDust: 1 }
             }

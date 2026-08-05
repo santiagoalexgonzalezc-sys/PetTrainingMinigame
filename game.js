@@ -4324,10 +4324,36 @@ const UIManager = {
         const isHidden = overlay.classList.contains("hidden");
         if (isHidden) {
             this.updateProfileStats();
+            this.updateProfileAchievements();
+            this.updateProfileTitles();
+            this.updateProfileCollection();
+            this.showProfileTab('stats');
             overlay.classList.remove("hidden");
         } else {
             overlay.classList.add("hidden");
         }
+    },
+
+    showProfileTab(tabName) {
+        // Hide all tab content
+        document.querySelectorAll('.profile-tab-content').forEach(el => el.classList.add('hidden'));
+        
+        // Show selected tab content
+        const selectedTab = document.getElementById(`profile-${tabName}`);
+        if (selectedTab) {
+            selectedTab.classList.remove('hidden');
+        }
+        
+        // Update button styles
+        document.querySelectorAll('.profile-tab-btn').forEach(btn => {
+            if (btn.dataset.tab === tabName) {
+                btn.classList.remove('bg-gray-700');
+                btn.classList.add('bg-blue-600');
+            } else {
+                btn.classList.remove('bg-blue-600');
+                btn.classList.add('bg-gray-700');
+            }
+        });
     },
 
     updateProfileStats() {
@@ -4363,55 +4389,102 @@ const UIManager = {
         container.innerHTML = stats
             .map(s => `<div class="flex justify-between"><span>${s.label}</span><span class="${s.color} font-bold">${s.value}</span></div>`)
             .join("");
+    },
 
-        // Render achievements with tier colors
-        const achievementsContainer = document.getElementById("profileAchievements");
-        if (achievementsContainer) {
-            achievementsContainer.innerHTML = "";
-            for (const [id, achievement] of Object.entries(AchievementSystem.achievements)) {
-                const isUnlocked = PlayerSystem.achievements.has(id);
-                const tier = achievement.tier || "bronze";
-                const tierColors = {
-                    bronze: "border-amber-600 bg-amber-900/30",
-                    silver: "border-gray-400 bg-gray-700/30",
-                    gold: "border-yellow-400 bg-yellow-600/30",
-                    platinum: "border-cyan-400 bg-cyan-700/30"
-                };
-                const badge = document.createElement("div");
-                badge.className = `inline-block m-1 p-2 rounded-lg text-center border-2 ${isUnlocked ? tierColors[tier] : "bg-gray-700/50 border-gray-600 opacity-50"}`;
-                badge.title = `${achievement.name} (${tier.charAt(0).toUpperCase() + tier.slice(1)}): ${achievement.description}${isUnlocked ? ` (+${Math.floor(achievement.reward * AchievementSystem.getTierMultiplier(tier))}💰)` : ""}`;
-                badge.innerHTML = `<div class="text-2xl">${achievement.icon}</div>`;
-                achievementsContainer.appendChild(badge);
-            }
+    updateProfileAchievements() {
+        const container = document.getElementById("profileAchievements");
+        if (!container) return;
+
+        container.innerHTML = "";
+        for (const [id, achievement] of Object.entries(AchievementSystem.achievements)) {
+            const isUnlocked = PlayerSystem.achievements.has(id);
+            const tier = achievement.tier || "bronze";
+            const tierColors = {
+                bronze: "border-amber-600 bg-amber-900/30",
+                silver: "border-gray-400 bg-gray-700/30",
+                gold: "border-yellow-400 bg-yellow-600/30",
+                platinum: "border-cyan-400 bg-cyan-700/30"
+            };
+            const badge = document.createElement("div");
+            badge.className = `inline-block m-1 p-3 rounded-lg text-center border-2 ${isUnlocked ? tierColors[tier] : "bg-gray-700/50 border-gray-600 opacity-50"}`;
+            badge.title = `${achievement.name} (${tier.charAt(0).toUpperCase() + tier.slice(1)}): ${achievement.description}${isUnlocked ? ` (+${Math.floor(achievement.reward * AchievementSystem.getTierMultiplier(tier))}💰)` : ""}`;
+            badge.innerHTML = `
+                <div class="text-2xl">${achievement.icon}</div>
+                <div class="text-xs mt-1">${achievement.name}</div>
+            `;
+            container.appendChild(badge);
         }
+    },
 
-        // Render title selector
-        const titleContainer = document.getElementById("profileTitles");
-        if (titleContainer) {
-            const unlockedTitles = TitleSystem.getUnlockedTitles();
-            titleContainer.innerHTML = `<h3>🏅 Titles</h3>`;
-            const noneBtn = document.createElement("button");
-            noneBtn.className = `m-1 p-2 rounded-lg border-2 ${!selectedTitle ? "bg-yellow-600/50 border-yellow-400" : "bg-gray-700/50 border-gray-600"}`;
-            noneBtn.innerText = "None";
-            noneBtn.onclick = () => {
-                TitleSystem.selectTitle(null);
+    updateProfileTitles() {
+        const container = document.getElementById("profileTitles");
+        if (!container) return;
+
+        const selectedTitle = TitleSystem.getSelectedTitle();
+        const unlockedTitles = TitleSystem.getUnlockedTitles();
+        
+        container.innerHTML = "";
+        
+        const noneBtn = document.createElement("button");
+        noneBtn.className = `m-1 p-3 rounded-lg border-2 w-full text-left ${!selectedTitle ? "bg-yellow-600/50 border-yellow-400" : "bg-gray-700/50 border-gray-600"}`;
+        noneBtn.innerHTML = `<div class="font-bold">None</div><div class="text-xs opacity-70">No title selected</div>`;
+        noneBtn.onclick = () => {
+            TitleSystem.selectTitle(null);
+            this.updateProfileTitles();
+            this.updateProfileStats();
+        };
+        container.appendChild(noneBtn);
+
+        unlockedTitles.forEach(title => {
+            const btn = document.createElement("button");
+            const isSelected = selectedTitle && selectedTitle.id === title.id;
+            btn.className = `m-1 p-3 rounded-lg border-2 w-full text-left ${isSelected ? "bg-yellow-600/50 border-yellow-400" : "bg-gray-700/50 border-gray-600"}`;
+            btn.innerHTML = `
+                <div class="font-bold">${title.icon} ${title.name}</div>
+                <div class="text-xs opacity-70">${title.description}</div>
+            `;
+            btn.onclick = () => {
+                TitleSystem.selectTitle(title.id);
+                this.updateProfileTitles();
                 this.updateProfileStats();
             };
-            titleContainer.appendChild(noneBtn);
+            container.appendChild(btn);
+        });
+    },
 
-            unlockedTitles.forEach(title => {
-                const btn = document.createElement("button");
-                const isSelected = selectedTitle && selectedTitle.id === title.id;
-                btn.className = `m-1 p-2 rounded-lg border-2 ${isSelected ? "bg-yellow-600/50 border-yellow-400" : "bg-gray-700/50 border-gray-600"}`;
-                btn.title = title.description;
-                btn.innerText = title.name;
-                btn.onclick = () => {
-                    TitleSystem.selectTitle(title.id);
-                    this.updateProfileStats();
-                };
-                titleContainer.appendChild(btn);
-            });
-        }
+    updateProfileCollection() {
+        const container = document.getElementById("profileCollection");
+        if (!container) return;
+
+        // Get all unique pet types owned
+        const ownedTypes = new Set();
+        PetManager.pets.forEach(pet => ownedTypes.add(pet.typeId));
+        PetManager.storage.forEach(pet => ownedTypes.add(pet.typeId));
+        
+        const totalTypes = Object.keys(PetTypes).length;
+        const ownedCount = ownedTypes.size;
+        const percentage = Math.round((ownedCount / totalTypes) * 100);
+
+        container.innerHTML = `
+            <div class="bg-white/10 rounded-xl p-4 mb-4">
+                <div class="text-2xl font-bold">${ownedCount} / ${totalTypes}</div>
+                <div class="text-sm opacity-70">Pets Collected (${percentage}%)</div>
+                <div class="w-full h-3 bg-gray-800 rounded-full overflow-hidden mt-2">
+                    <div class="h-full bg-gradient-to-r from-green-400 to-blue-400 transition-all duration-300" style="width: ${percentage}%"></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                ${Object.entries(PetTypes).map(([typeId, template]) => {
+                    const owned = ownedTypes.has(typeId);
+                    return `
+                        <div class="p-2 rounded-lg text-center border-2 ${owned ? "bg-green-900/30 border-green-600" : "bg-gray-700/50 border-gray-600 opacity-50"}" title="${template.name} - ${template.type}">
+                            <div class="text-xl">${template.emoji}</div>
+                            <div class="text-xs mt-1">${owned ? "✓" : "?"}</div>
+                        </div>
+                    `;
+                }).join("")}
+            </div>
+        `;
     },
 
     // Starter Screen
@@ -5920,6 +5993,14 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
     closeEquipOverlay() {
         document.getElementById("equipOverlay").classList.add("hidden");
+    },
+
+    openNewsOverlay() {
+        document.getElementById("newsOverlay").classList.remove("hidden");
+    },
+
+    closeNewsOverlay() {
+        document.getElementById("newsOverlay").classList.add("hidden");
     },
 
     // Pet Storage Screen

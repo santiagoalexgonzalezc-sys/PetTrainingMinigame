@@ -50,9 +50,6 @@ const DataManager = {
                 if (p.levelBonusStats === undefined) p.levelBonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (p.shiny === undefined) p.shiny = false;
                 if (p.shinyBonus === undefined) p.shinyBonus = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
-                if (!p.equipmentSlots) {
-                    p.equipmentSlots = { weapon: null, armor: null, ring: null };
-                }
                 if (!Array.isArray(p.equipment)) {
                     if (p.equipment && typeof p.equipment === "string") {
                         p.equipment = [p.equipment];
@@ -83,9 +80,6 @@ const DataManager = {
                 if (p.levelBonusStats === undefined) p.levelBonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (p.shiny === undefined) p.shiny = false;
                 if (p.shinyBonus === undefined) p.shinyBonus = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
-                if (!p.equipmentSlots) {
-                    p.equipmentSlots = { weapon: null, armor: null, ring: null };
-                }
                 if (!Array.isArray(p.equipment)) {
                     if (p.equipment && typeof p.equipment === "string") {
                         p.equipment = [p.equipment];
@@ -1181,6 +1175,15 @@ const Economy = {
         sunStone: { name: "Sun Stone", price: 500, type: "evolution", power: 1 }
     },
 
+    getItem(itemId) {
+        return this.shopItems[itemId] ?? EquipmentSystem.equipment[itemId];
+    },
+
+    isEquipment(itemId) {
+        const item = this.getItem(itemId);
+        return !!item && (item.type === "equipment" || ["weapon", "armor", "ring"].includes(item.type));
+    },
+
     buyItem(itemId, quantity = 1) {
         const item = this.shopItems[itemId];
         if (!item || this.money < item.price * quantity) return false;
@@ -1450,84 +1453,11 @@ const EquipmentSystem = {
         return true;
     },
 
-    equipToPet(petId, equipmentId) {
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId));
-        if (!pet) return { success: false, reason: "Pet not found!" };
-
-        const equip = this.equipment[equipmentId];
-        if (!equip) return { success: false, reason: "Equipment not found!" };
-
-        if ((Economy.inventory[equipmentId] || 0) < 1) {
-            return { success: false, reason: "You don't have this equipment!" };
-        }
-
-        // Check slot limits
-        if (!pet.equipmentSlots) {
-            pet.equipmentSlots = { weapon: null, armor: null, ring: null };
-        }
-
-        if (pet.equipmentSlots[equip.type]) {
-            return { success: false, reason: `Already equipped a ${equip.type}!` };
-        }
-
-        // Equip the item
-        pet.equipmentSlots[equip.type] = equipmentId;
-        Economy.inventory[equipmentId]--;
-
-        // Apply stats
-        if (equip.stats) {
-            for (const [stat, value] of Object.entries(equip.stats)) {
-                pet.bonusStats[stat] = (pet.bonusStats[stat] || 0) + value;
-            }
-        }
-
-        // Recalculate stats
-        const template = PetTypes[pet.typeId];
-        if (template) {
-            pet.stats = PetManager.calculateStats(template, pet.level, pet);
-        }
-
-        DataManager.save();
-        return { success: true, equipment: equip };
-    },
-
-    unequipFromPet(petId, slot) {
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId));
-        if (!pet) return { success: false, reason: "Pet not found!" };
-
-        if (!pet.equipmentSlots || !pet.equipmentSlots[slot]) {
-            return { success: false, reason: "Nothing equipped in this slot!" };
-        }
-
-        const equipmentId = pet.equipmentSlots[slot];
-        const equip = this.equipment[equipmentId];
-
-        // Remove stats
-        if (equip && equip.stats) {
-            for (const [stat, value] of Object.entries(equip.stats)) {
-                pet.bonusStats[stat] = Math.max(0, (pet.bonusStats[stat] || 0) - value);
-            }
-        }
-
-        // Return to inventory
-        Economy.inventory[equipmentId] = (Economy.inventory[equipmentId] || 0) + 1;
-        pet.equipmentSlots[slot] = null;
-
-        // Recalculate stats
-        const template = PetTypes[pet.typeId];
-        if (template) {
-            pet.stats = PetManager.calculateStats(template, pet.level, pet);
-        }
-
-        DataManager.save();
-        return { success: true };
-    },
-
     getStats(pet) {
         if (!pet.equipment || !Array.isArray(pet.equipment) || pet.equipment.length === 0) return { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
         let totalStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
         for (const itemId of pet.equipment) {
-            const item = Economy.shopItems[itemId];
+            const item = Economy.getItem(itemId);
             if (item && item.stats) {
                 for (const [stat, value] of Object.entries(item.stats)) {
                     totalStats[stat] = (totalStats[stat] || 0) + value;
@@ -5000,7 +4930,7 @@ const UIManager = {
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
-                ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[itemId]?.name || ""}</div>`).join("") : ""}
+                ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.getItem(itemId)?.name || ""}</div>`).join("") : ""}
                 <div class="opacity-90 text-sm">Tier: ${pet.tier} (+${pet.tierBonus} all stats)</div>
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 
@@ -5068,7 +4998,7 @@ const UIManager = {
             <div class="opacity-90 text-sm">Tier Bonus: +${pet.tierBonus || 0}%</div>
             ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? `<div class="opacity-90 text-sm">Equipment:</div>` : ""}
             ${Array.isArray(pet.equipment) ? pet.equipment.map((itemId, idx) => {
-                const item = Economy.shopItems[itemId];
+                const item = Economy.getItem(itemId);
                 if (!item) return "";
                 const statsText = item.stats ? Object.entries(item.stats).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join(" | ") : "";
                 return `<div class="opacity-90 text-sm">${item.name} <span class="text-xs">(${statsText})</span> <button onclick="UIManager.unequipPet('${itemId}')" class="text-red-400 text-xs ml-2">[Unequip]</button></div>`;
@@ -5647,7 +5577,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
-                ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[itemId]?.name || ""}</div>`).join("") : ""}
+                ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.getItem(itemId)?.name || ""}</div>`).join("") : ""}
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
                     <div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div>
                 </div>
@@ -5778,7 +5708,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         for (const [itemId, count] of Object.entries(Economy.inventory)) {
             if (count <= 0) continue;
             
-            const item = Economy.shopItems[itemId];
+            const item = Economy.getItem(itemId);
             if (!item) continue; // Skip invalid items
             
             const card = document.createElement("div");
@@ -5787,7 +5717,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 <div class="absolute top-1 right-1 bg-red-400 rounded-full w-6 h-6 text-xs leading-6">${count}</div>
                 <h4>${item.name}</h4>
                 ${item.type === "heal" || item.type === "xp" || item.type === "training" ? `<button onclick="UIManager.useItemForPet('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Use</button>` : ""}
-                ${item.type === "equipment" ? `<button onclick="UIManager.equipPet('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Equip</button>` : ""}
+                ${Economy.isEquipment(itemId) ? `<button onclick="UIManager.equipPet('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Equip</button>` : ""}
             `;
             grid.appendChild(card);
         }
@@ -5814,7 +5744,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             return;
         }
 
-        const item = Economy.shopItems[itemId];
+        const item = Economy.getItem(itemId);
         if (!item) {
             this.showToast("Unknown item!");
             return;
@@ -5889,8 +5819,8 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         
         for (const [itemId, count] of Object.entries(Economy.inventory)) {
             if (count <= 0) continue;
-            const item = Economy.shopItems[itemId];
-            if (!item || item.type !== "equipment") continue;
+            const item = Economy.getItem(itemId);
+            if (!item || !Economy.isEquipment(itemId)) continue;
             
             const card = document.createElement("div");
             card.className = "bg-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/20 transition-all";
@@ -5977,7 +5907,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
-                ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[itemId]?.name || ""}</div>`).join("") : ""}
+                ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.getItem(itemId)?.name || ""}</div>`).join("") : ""}
                 <div class="opacity-90 text-sm">Tier: ${pet.tier} (+${pet.tierBonus} all stats)</div>
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div></div>
@@ -6250,7 +6180,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             herbs: "🌿", crystal: "💎", darkRock: "🟣"
         };
         resourceItems.forEach(itemId => {
-            const item = Economy.shopItems[itemId];
+            const item = Economy.getItem(itemId);
             if (!item) return;
             const count = Economy.inventory[itemId] || 0;
             const card = document.createElement("div");
@@ -6265,28 +6195,61 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
         const recipeGrid = document.getElementById("craftingRecipes");
         recipeGrid.innerHTML = "";
-        for (const [recipeId, recipe] of Object.entries(CraftingSystem.recipes)) {
-            const canCraft = CraftingSystem.canCraft(recipeId);
-            const costText = Object.entries(recipe.cost).map(([itemId, qty]) => {
-                const rItem = Economy.shopItems[itemId];
+        const recipes = [
+            ...Object.entries(CraftingSystem.recipes).map(([recipeId, recipe]) => ({
+                recipeId,
+                name: recipe.name,
+                costs: recipe.cost,
+                canCraft: CraftingSystem.canCraft(recipeId)
+            })),
+            ...Object.entries(EquipmentSystem.equipment).map(([recipeId, equipment]) => ({
+                recipeId,
+                name: `${equipment.emoji} ${equipment.name}`,
+                costs: equipment.recipe,
+                canCraft: EquipmentSystem.canCraft(recipeId)
+            }))
+        ];
+
+        recipes.forEach(({ recipeId, name, costs, canCraft }) => {
+            const costText = Object.entries(costs).map(([itemId, qty]) => {
+                const rItem = Economy.getItem(itemId);
                 const owned = Economy.inventory[itemId] || 0;
                 const has = owned >= qty;
-                const emojis = { woodStick: "🪵", rock: "🪨", leather: "🥾", ore: "⛏️", herbs: "🌿", crystal: "💎", darkRock: "🟣" };
-                return `<span class="${has ? "text-green-400" : "text-red-400"}">${emojis[itemId] || ""} ${qty}/${owned}</span>`;
+                const emojis = {
+                    woodStick: "🪵", rock: "🪨", leather: "🥾", ore: "⛏️",
+                    herbs: "🌿", crystal: "💎", darkRock: "🟣"
+                };
+                const label = rItem?.name || itemId;
+                return `<span class="${has ? "text-green-400" : "text-red-400"}">${emojis[itemId] || ""} ${label}: ${qty}/${owned}</span>`;
             }).join(" ");
 
             const card = document.createElement("div");
             card.className = "bg-white/10 rounded-xl p-4 text-center";
             card.innerHTML = `
-                <h4>${recipe.name}</h4>
+                <h4>${name}</h4>
                 <div class="text-xs my-2 opacity-80">${costText}</div>
                 <button onclick="UIManager.craftItem('${recipeId}')" ${canCraft ? "" : "disabled"} class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white m-1 transition-all duration-150 text-sm hover:-translate-y-0.5 ${canCraft ? "bg-yellow-800" : "bg-gray-600 opacity-50 cursor-not-allowed"}">Craft</button>
             `;
             recipeGrid.appendChild(card);
-        }
+        });
     },
 
     craftItem(recipeId) {
+        if (EquipmentSystem.equipment[recipeId]) {
+            const result = EquipmentSystem.craftEquipment(recipeId);
+            if (!result.success) {
+                this.showToast(result.reason);
+                return;
+            }
+            DataManager.updateQuestProgress("craft", recipeId);
+            AchievementSystem.checkAchievement("craft10");
+            AchievementSystem.checkAchievement("craft50");
+            DataManager.save();
+            this.renderCrafting();
+            this.updateCurrency();
+            return;
+        }
+
         if (!CraftingSystem.canCraft(recipeId)) {
             this.showToast("Not enough resources!");
             return;

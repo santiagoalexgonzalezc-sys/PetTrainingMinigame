@@ -339,9 +339,9 @@ function getEvolutionName(pet) {
   const tpl = PET_TEMPLATES[pet.typeId];
   if (!tpl) return pet.typeId;
   const evo = tpl.evolution;
-  if (pet.level >= 30) return evo[2];
-  if (pet.level >= 15) return evo[1];
-  return evo[0];
+  if (!Array.isArray(evo) || evo.length === 0) return tpl.name;
+  const stage = pet.level >= 30 ? 2 : pet.level >= 15 ? 1 : 0;
+  return evo[Math.min(stage, evo.length - 1)];
 }
 
 function calculateMaxHP(pet) {

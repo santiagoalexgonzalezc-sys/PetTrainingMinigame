@@ -901,10 +901,12 @@ const PetManager = {
     },
 
     getEvolution(pet) {
-        const template = PetTypes[pet.typeId];
-        if (pet.level >= 30) return template.evolution[2];
-        if (pet.level >= 15) return template.evolution[1];
-        return template.evolution[0];
+        const template = pet ? PetTypes[pet.typeId] : null;
+        if (!template) return pet?.typeId || "Unknown";
+        const evolution = template.evolution;
+        if (!Array.isArray(evolution) || evolution.length === 0) return template.name;
+        const stage = pet.level >= 30 ? 2 : pet.level >= 15 ? 1 : 0;
+        return evolution[Math.min(stage, evolution.length - 1)];
     },
 
     getTemplate(pet) {
@@ -2103,8 +2105,7 @@ const BattleSystem = {
     },
 
     getPetName(pet) {
-        const template = PetTypes[pet.typeId];
-        return template.evolution[0];
+        return PetManager.getEvolution(pet);
     },
 
     getTypeEffectiveness(attackerType, defenderType) {

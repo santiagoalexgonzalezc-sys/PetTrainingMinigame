@@ -4133,6 +4133,7 @@ const BossSystem = {
         BattleSystem.isBossBattle = true;
         BattleSystem.currentBoss = boss;
         BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
+        UIManager.showScreen("battleScreen");
 
         return true;
     },

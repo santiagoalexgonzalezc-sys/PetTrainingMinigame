@@ -1063,13 +1063,9 @@ const Economy = {
         hyperPotion: 0,
         tierStone: 0,
         xpOrb: 0,
+        rareXpOrb: 0,
         precisionGuide: 0,
         focusIncense: 0,
-        bandOfSwiftness: 0,
-        toughCollar: 0,
-        focusBand: 0,
-        lifeBangle: 0,
-        attackSunglasses: 0,
         woodStick: 0,
         rock: 0,
         leather: 0,
@@ -1165,21 +1161,22 @@ const Economy = {
         tierStone: { name: "Tier Stone", price: 500, type: "upgrade", power: 1 },
         xpOrb: { name: "XP Orb", price: 250, type: "xp", power: 500 },
         rareXpOrb: { name: "Rare XP Orb", price: 1000, type: "xp", power: 2000 },
-        woodStick: { name: "Wood Stick", price: 0, type: "resource", power: 1 },
-        rock: { name: "Rock", price: 0, type: "resource", power: 1 },
-        leather: { name: "Leather", price: 0, type: "resource", power: 1 },
-        ore: { name: "Ore", price: 0, type: "resource", power: 1 },
-        herbs: { name: "Herbs", price: 0, type: "resource", power: 1 },
-        crystal: { name: "Crystal", price: 0, type: "resource", power: 1 },
-        darkRock: { name: "Dark Rock", price: 0, type: "resource", power: 1 },
+        woodStick: { name: "Wood Stick", price: 110, type: "resource", power: 1 },
+        rock: { name: "Rock", price: 115, type: "resource", power: 1 },
+        leather: { name: "Leather", price: 120, type: "resource", power: 1 },
+        ore: { name: "Ore", price: 125, type: "resource", power: 1 },
+        herbs: { name: "Herbs", price: 115, type: "resource", power: 1 },
+        crystal: { name: "Crystal", price: 130, type: "resource", power: 1 },
+        darkRock: { name: "Dark Rock", price: 120, type: "resource", power: 1 },
         gem: { name: "Gem", price: 200, type: "currency", power: 1 },
         precisionGuide: { name: "Precision Guide", price: 100, type: "training", power: 1 },
         focusIncense: { name: "Focus Incense", price: 150, type: "training", power: 5 },
-        bandOfSwiftness: { name: "Band of Swiftness", price: 4000, type: "equipment", power: 10, stats: { speed: 10 } },
-        toughCollar: { name: "Tough Collar", price: 4000, type: "equipment", power: 10, stats: { defense: 10 } },
-        focusBand: { name: "Focus Band", price: 4000, type: "equipment", power: 10, stats: { special: 10 } },
-        lifeBangle: { name: "Life Bangle", price: 4000, type: "equipment", power: 10, stats: { hp: 10 } },
-        attackSunglasses: { name: "Attack Sunglasses", price: 4000, type: "equipment", power: 10, stats: { attack: 10 } }
+        fireStone: { name: "Fire Stone", price: 500, type: "evolution", power: 1 },
+        waterStone: { name: "Water Stone", price: 500, type: "evolution", power: 1 },
+        thunderStone: { name: "Thunder Stone", price: 500, type: "evolution", power: 1 },
+        leafStone: { name: "Leaf Stone", price: 500, type: "evolution", power: 1 },
+        moonStone: { name: "Moon Stone", price: 500, type: "evolution", power: 1 },
+        sunStone: { name: "Sun Stone", price: 500, type: "evolution", power: 1 }
     },
 
     buyItem(itemId, quantity = 1) {
@@ -1322,6 +1319,62 @@ const EquipmentSystem = {
             stats: { defense: 25 },
             description: "+25 Defense",
             recipe: { ore: 5, steelIngot: 2 }
+        },
+        // Rings
+        ringOfSwiftness: {
+            id: "ringOfSwiftness",
+            name: "Ring of Swiftness",
+            type: "ring",
+            tier: 1,
+            emoji: "💨",
+            stats: { speed: 15 },
+            bonuses: { evasion: 0.05 },
+            description: "+15 Speed, +5% Evasion",
+            recipe: { flyingFeather: 5, electricSpark: 2, timeCrystal: 1 }
+        },
+        ringOfPower: {
+            id: "ringOfPower",
+            name: "Ring of Power",
+            type: "ring",
+            tier: 1,
+            emoji: "💪",
+            stats: { attack: 20 },
+            bonuses: { critChance: 0.10 },
+            description: "+20 Attack, +10% Crit Chance",
+            recipe: { monsterHorn: 5, dragonScale: 2, chaosOrb: 1 }
+        },
+        ringOfVitality: {
+            id: "ringOfVitality",
+            name: "Ring of Vitality",
+            type: "ring",
+            tier: 1,
+            emoji: "❤️",
+            stats: { hp: 40 },
+            bonuses: { healingBonus: 0.05 },
+            description: "+40 HP, +5% Healing Received",
+            recipe: { turtleShell: 5, soulStone: 2, divineFeather: 1 }
+        },
+        ringOfElements: {
+            id: "ringOfElements",
+            name: "Ring of Elements",
+            type: "ring",
+            tier: 1,
+            emoji: "🌟",
+            stats: { special: 15 },
+            bonuses: { elementalDamage: 0.10 },
+            description: "+15 Special, +10% All Elemental Damage",
+            recipe: { magicCrystal: 5, mysticRune: 2, starFragment: 1 }
+        },
+        ringOfProtection: {
+            id: "ringOfProtection",
+            name: "Ring of Protection",
+            type: "ring",
+            tier: 1,
+            emoji: "🛡️",
+            stats: { defense: 15 },
+            bonuses: { damageReduction: 0.10 },
+            description: "+15 Defense, +10% Damage Reduction",
+            recipe: { steelIngot: 5, obsidianBlade: 2, ancientRune: 1 }
         }
     },
 
@@ -1628,6 +1681,83 @@ const TitleSystem = {
             return this.titles[PlayerSystem.selectedTitle];
         }
         return null;
+    }
+};
+
+// ==================== DAILY QUEST SYSTEM ====================
+const DailyQuestSystem = {
+    questTypes: {
+        gatherWood: { id: "gatherWood", name: "Gather Wood", description: "Collect 5 Wood Sticks", target: 5, material: "woodStick", reward: { gold: 100, material: "herbs", qty: 3 } },
+        gatherOre: { id: "gatherOre", name: "Gather Ore", description: "Collect 5 Ore", target: 5, material: "ore", reward: { gold: 150, material: "crystal", qty: 2 } },
+        gatherLeather: { id: "gatherLeather", name: "Gather Leather", description: "Collect 5 Leather", target: 5, material: "leather", reward: { gold: 100, material: "beastFur", qty: 2 } },
+        defeatFirePets: { id: "defeatFirePets", name: "Fire Hunter", description: "Defeat 5 fire-type pets", target: 5, type: "fire", reward: { gold: 200, material: "fireEssence", qty: 3 } },
+        defeatWaterPets: { id: "defeatWaterPets", name: "Water Hunter", description: "Defeat 5 water-type pets", target: 5, type: "water", reward: { gold: 200, material: "waterOrb", qty: 3 } },
+        craftEquipment: { id: "craftEquipment", name: "Blacksmith", description: "Craft 3 pieces of equipment", target: 3, reward: { gold: 300, material: "steelIngot", qty: 2 } },
+        exploreZones: { id: "exploreZones", name: "Explorer", description: "Explore 10 times", target: 10, reward: { gold: 250, material: "magicCrystal", qty: 1 } }
+    },
+
+    generateDailyQuests() {
+        const today = new Date().toDateString();
+        if (PlayerSystem.lastQuestReset === today && PlayerSystem.dailyQuests.length > 0) {
+            return PlayerSystem.dailyQuests;
+        }
+
+        const questPool = Object.keys(this.questTypes);
+        const selectedQuests = [];
+
+        // Select 3 random quests
+        while (selectedQuests.length < 3 && questPool.length > 0) {
+            const randomIndex = Math.floor(Math.random() * questPool.length);
+            const questId = questPool.splice(randomIndex, 1)[0];
+            const questType = this.questTypes[questId];
+
+            selectedQuests.push({
+                id: questId,
+                progress: 0,
+                completed: false
+            });
+        }
+
+        PlayerSystem.dailyQuests = selectedQuests;
+        PlayerSystem.lastQuestReset = today;
+        DataManager.save();
+        return selectedQuests;
+    },
+
+    updateQuestProgress(questId, amount = 1) {
+        const quest = PlayerSystem.dailyQuests.find(q => q.id === questId);
+        if (!quest || quest.completed) return false;
+
+        quest.progress = Math.min(quest.progress + amount, this.questTypes[questId].target);
+
+        if (quest.progress >= this.questTypes[questId].target) {
+            quest.completed = true;
+            this.completeQuest(questId);
+        }
+
+        DataManager.save();
+        return true;
+    },
+
+    completeQuest(questId) {
+        const questType = this.questTypes[questId];
+        if (!questType) return;
+
+        const reward = questType.reward;
+        Economy.money += reward.gold;
+        Economy.inventory[reward.material] = (Economy.inventory[reward.material] || 0) + reward.qty;
+
+        UIManager.showToast(`🎯 Quest Complete: ${questType.name}! +${reward.gold}💰 +${reward.qty}x ${reward.material}`);
+        DataManager.save();
+    },
+
+    checkQuestCompletion() {
+        for (const quest of PlayerSystem.dailyQuests) {
+            if (!quest.completed && quest.progress >= this.questTypes[quest.id].target) {
+                quest.completed = true;
+                this.completeQuest(quest.id);
+            }
+        }
     }
 };
 

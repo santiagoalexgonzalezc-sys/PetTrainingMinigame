@@ -65,16 +65,12 @@
         <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-gray-700 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🏠 Home</button>
         <button onclick="UIManager.showScreen('explorationScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🗺️ Explore</button>
         <button onclick="UIManager.showScreen('storageScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">📦 Pet Storage</button>
-        <button onclick="UIManager.showScreen('collectionScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-purple-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">📖 Collection</button>
         <button onclick="UIManager.showScreen('bossScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-red-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">⚔️ Boss Fight</button>
         <button onclick="UIManager.showScreen('shopScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛒 Shop</button>
         <button onclick="UIManager.showScreen('inventoryScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🎒 Inventory</button>
         <button onclick="UIManager.showScreen('craftingScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-yellow-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛠️ Crafting</button>
         <button id="autoExploreFooterBtn" onclick="UIManager.openAutoExploreSetup()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-green-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5 hidden">🔄 Auto Explore</button>
         <button onclick="UIManager.openPrestige()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-purple-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">✨ Prestige Fusion</button>
-        <button onclick="UIManager.exportSave()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-600 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">💾 Export</button>
-        <button onclick="UIManager.importSave()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-600 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">📂 Import</button>
-        <button onclick="DataManager.resetAccount()" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-red-500 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🗑️ Reset Account</button>
     </div>
 
     <!-- PET DETAIL SCREEN -->
@@ -171,6 +167,7 @@
                 <button onclick="UIManager.showProfileTab('achievements')" class="profile-tab-btn bg-gray-700 rounded-lg px-4 py-2 text-sm font-bold cursor-pointer border-none hover:bg-gray-600 transition-colors" data-tab="achievements">🏆 Achievements</button>
                 <button onclick="UIManager.showProfileTab('titles')" class="profile-tab-btn bg-gray-700 rounded-lg px-4 py-2 text-sm font-bold cursor-pointer border-none hover:bg-gray-600 transition-colors" data-tab="titles">🎖️ Titles</button>
                 <button onclick="UIManager.showProfileTab('collection')" class="profile-tab-btn bg-gray-700 rounded-lg px-4 py-2 text-sm font-bold cursor-pointer border-none hover:bg-gray-600 transition-colors" data-tab="collection">📖 Collection</button>
+                <button onclick="UIManager.showProfileTab('account')" class="profile-tab-btn bg-gray-700 rounded-lg px-4 py-2 text-sm font-bold cursor-pointer border-none hover:bg-gray-600 transition-colors" data-tab="account">⚙️ Account</button>
             </div>
             
             <!-- Tab Content -->
@@ -196,6 +193,28 @@
                 <div id="profile-collection" class="profile-tab-content hidden">
                     <h3 class="text-lg font-bold mb-4">📖 Pet Collection</h3>
                     <div id="profileCollection" class="space-y-2"></div>
+                </div>
+                
+                <!-- Account Management Tab -->
+                <div id="profile-account" class="profile-tab-content hidden">
+                    <h3 class="text-lg font-bold mb-4">⚙️ Account Management</h3>
+                    <div class="space-y-4">
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <h4 class="font-bold mb-2">💾 Save Data</h4>
+                            <p class="text-sm opacity-70 mb-3">Export your save data to backup or transfer to another device.</p>
+                            <button onclick="UIManager.exportSave()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Export Save</button>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <h4 class="font-bold mb-2">📂 Load Data</h4>
+                            <p class="text-sm opacity-70 mb-3">Import save data from a backup file.</p>
+                            <button onclick="UIManager.importSave()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Import Save</button>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-4">
+                            <h4 class="font-bold mb-2 text-red-400">🗑️ Reset Account</h4>
+                            <p class="text-sm opacity-70 mb-3">Permanently delete all progress and start fresh. This action cannot be undone!</p>
+                            <button onclick="DataManager.resetAccount()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-600 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Reset Account</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -409,6 +428,10 @@
                     <h3>Pet 2</h3>
                     <div id="comparePet2" class="text-center">Click a pet to select</div>
                 </div>
+            </div>
+            <div id="comparisonSection" class="comparison-section hidden bg-white/10 rounded-xl p-4 my-4">
+                <h3>Stat Comparison</h3>
+                <div id="comparisonStats"></div>
             </div>
             <div class="text-center">
                 <button onclick="UIManager.closeCompareOverlay()" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-red-500 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Close</button>

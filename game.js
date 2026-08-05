@@ -3812,7 +3812,7 @@ const TrainingSystem = {
         DataManager.save();
         
         setTimeout(() => {
-            this.showToast(message);
+            UIManager.showToast(message);
             UIManager.showScreen("petScreen");
             UIManager.updatePetScreen();
             UIManager.renderPets();
@@ -4901,22 +4901,12 @@ const UIManager = {
             </div>`;
         }).join("");
 
-        // Add comparison section between the two pet displays
-        const container = document.getElementById("compareOverlay");
-        if (!container) return;
-        const comparisonDiv = document.createElement("div");
-        comparisonDiv.className = "bg-white/10 rounded-xl p-4 my-4";
-        comparisonDiv.innerHTML = `<h3>Stat Comparison</h3>${comparisonHTML}`;
-
-        // Remove existing comparison if any
-        const existing = container.querySelector(".comparison-section");
-        if (existing) existing.remove();
-
-        comparisonDiv.classList.add("comparison-section");
-        const maxWContainer = container.querySelector(".max-w-4xl");
-        const grid = container.querySelector(".grid");
-        if (maxWContainer && grid && grid.nextSibling) {
-            maxWContainer.insertBefore(comparisonDiv, grid.nextSibling);
+        // Update the comparison section
+        const comparisonSection = document.getElementById("comparisonSection");
+        const comparisonStats = document.getElementById("comparisonStats");
+        if (comparisonSection && comparisonStats) {
+            comparisonStats.innerHTML = comparisonHTML;
+            comparisonSection.classList.remove("hidden");
         }
     },
 

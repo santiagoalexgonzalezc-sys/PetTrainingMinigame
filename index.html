@@ -63,6 +63,7 @@
         <button onclick="UIManager.showScreen('explorationScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🗺️ Explore</button>
         <button onclick="UIManager.showScreen('storageScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">📦 Pet Storage</button>
         <button onclick="UIManager.showScreen('collectionScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-purple-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">📖 Collection</button>
+        <button onclick="UIManager.showScreen('bossScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-red-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">⚔️ Boss Fight</button>
         <button onclick="UIManager.showScreen('shopScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛒 Shop</button>
         <button onclick="UIManager.showScreen('inventoryScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🎒 Inventory</button>
         <button onclick="UIManager.showScreen('craftingScreen')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-yellow-800 text-xs sm:text-sm md:text-base font-semibold transition-all duration-150 hover:-translate-y-0.5">🛠️ Crafting</button>
@@ -320,6 +321,15 @@
             <button onclick="UIManager.filterCollection('missing')" class="border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-red-700 text-xs sm:text-sm font-semibold transition-all duration-150 hover:-translate-y-0.5">Missing</button>
         </div>
         <div id="collectionGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto my-5"></div>
+        <br>
+        <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
+    </div>
+
+    <!-- BOSS FIGHT SCREEN -->
+    <div id="bossScreen" class="screen hidden p-5">
+        <h2>⚔️ Boss Arena</h2>
+        <p>Boss Keys: <span id="bossKeyCount">0</span> 🔑</p>
+        <div id="bossGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-5xl mx-auto my-5"></div>
         <br>
         <button onclick="UIManager.showScreen('mainScreen')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-blue-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">⬅ Back</button>
     </div>

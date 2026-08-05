@@ -46,7 +46,7 @@
 ## 🌍 Content Additions
 - New zones — "Crystal Caves" (ice/fairy), "Shadow Realm" (dark/ghost), "Volcanic Isle" (fire/dragon)
 - New pet evolutions — Add 3-stage evolution lines for existing pets
-- Legendary boss fight — A rare zone boss (S-tier) that appears once per hour
+- Legendary boss fight — A rare zone boss that appears rarely
 - Trading system — Trade pets with another player (even if local)
 - Pet breeding — Combine two pets to create offspring with mixed stats/abilities
 - Guild/team system — Form a party of 6 pets with a team name, shared resources

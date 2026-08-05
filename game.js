@@ -43,7 +43,7 @@ const DataManager = {
             PetManager.pets = data.pets || [];
             PetManager.storage = data.storage || [];
             Economy.money = data.money || 100;
-            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0, woodStick: 0, rock: 0, leather: 0, ore: 0, herbs: 0, crystal: 0, darkRock: 0, gem: 0 };
+            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0, woodStick: 0, rock: 0, leather: 0, ore: 0, herbs: 0, crystal: 0, darkRock: 0, gem: 0, bossKey: 0, dragonScale: 0, phoenixFeather: 0, abyssalPearl: 0, ancientRoot: 0, stormEssence: 0, shadowEssence: 0, prismShard: 0, venomSac: 0, titaniumPlate: 0, mithrilThread: 0, frostCrystal: 0, shadowCloth: 0, thunderShard: 0, natureEssence: 0, obsidianBlade: 0, starMetal: 0, phoenixEmber: 0, tidalGem: 0, stormCore: 0, abyssalStone: 0, prismLens: 0, toxicFang: 0, spiritOrb: 0, ancientRune: 0, soulFragment: 0, timeDust: 0, eternalEssence: 0, voidCrystal: 0, celestialDust: 0 };
             PetManager.pets.forEach(p => {
                 if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
@@ -699,9 +699,115 @@ const PetTypes = {
         name: "Bog Toad",
         emoji: "🐸",
         type: "poison",
-        baseStats: { hp: 78, attack: 50, defense: 55, speed: 40, special: 52 },
+        baseStats: { hp: 78, attack: 50, defense:  55, speed: 40, special: 52 },
         passive: "Corrosion - Acidic strikes ignore half defense",
         evolution: ["Muck Tadpole", "Bog Toad", "Blight Matriarch"]
+    },
+
+    // Boss Pets
+    infernoEmperor: {
+        name: "Inferno Emperor",
+        emoji: "🔥",
+        type: "fire",
+        baseStats: { hp: 120, attack: 110, defense: 95, speed: 100, special: 115 },
+        passive: "Magma Shield - 15% damage reflection",
+        ability: {
+            name: "Inferno Rage",
+            type: "fire",
+            cooldown: 3,
+            description: "Deals 1.5x damage when HP below 50%"
+        }
+    },
+    tidalTitan: {
+        name: "Tidal Titan",
+        emoji: "🌊",
+        type: "water",
+        baseStats: { hp: 130, attack: 95, defense: 110, speed: 90, special: 105 },
+        passive: "Tidal Wave - Heals 10% HP each turn",
+        ability: {
+            name: "Pressure",
+            type: "water",
+            cooldown: 2,
+            description: "Reduces enemy speed by 25%"
+        }
+    },
+    forestGuardian: {
+        name: "Forest Guardian",
+        emoji: "🌳",
+        type: "grass",
+        baseStats: { hp: 140, attack: 90, defense: 120, speed: 85, special: 100 },
+        passive: "Thorn Armor - 10% damage to attacker on hit",
+        ability: {
+            name: "Regrowth",
+            type: "grass",
+            cooldown: 5,
+            description: "Revives once at 25% HP"
+        }
+    },
+    stormSovereign: {
+        name: "Storm Sovereign",
+        emoji: "⚡",
+        type: "electric",
+        baseStats: { hp: 110, attack: 115, defense: 90, speed: 120, special: 110 },
+        passive: "Chain Lightning - 20% chance to attack twice",
+        ability: {
+            name: "Static Field",
+            type: "electric",
+            cooldown: 3,
+            description: "20% chance to paralyze for 1 turn"
+        }
+    },
+    shadowMonarch: {
+        name: "Shadow Monarch",
+        emoji: "👑",
+        type: "dark",
+        baseStats: { hp: 115, attack: 120, defense: 100, speed: 110, special: 115 },
+        passive: "Shadow Clone - 15% chance to create attacking copy",
+        ability: {
+            name: "Soul Drain",
+            type: "dark",
+            cooldown: 3,
+            description: "Reduces enemy attack by 10%"
+        }
+    },
+    crystalEmpress: {
+        name: "Crystal Empress",
+        emoji: "❄️",
+        type: "ice",
+        baseStats: { hp: 120, attack: 105, defense: 115, speed: 95, special: 120 },
+        passive: "Crystal Prison - 15% freeze chance for 1 turn",
+        ability: {
+            name: "Prism Beam",
+            type: "ice",
+            cooldown: 3,
+            description: "+25% damage, ignores 25% defense"
+        }
+    },
+    venomKing: {
+        name: "Venom King",
+        emoji: "☠️",
+        type: "poison",
+        baseStats: { hp: 125, attack: 110, defense: 105, speed: 100, special: 115 },
+        passive: "Toxic Cloud - 5% max HP damage per turn",
+        ability: {
+            name: "Venomous Bite",
+            type: "poison",
+            cooldown: 2,
+            description: "50% healing reduction"
+        }
+    },
+    dragonLord: {
+        name: "Dragon Lord",
+        emoji: "🐉",
+        type: "dragon",
+        baseStats: { hp: 150, attack: 140, defense: 130, speed: 125, special: 135 },
+        passive: "Dragon Breath - Small damage to all party pets",
+        ability: {
+            name: "Ancient Power",
+            type: "dragon",
+            cooldown: 4,
+            description: "+15% to all stats"
+        }
     }
 };
     
@@ -965,7 +1071,37 @@ const Economy = {
         herbs: 0,
         crystal: 0,
         darkRock: 0,
-        gem: 0
+        gem: 0,
+        bossKey: 0,
+        dragonScale: 0,
+        phoenixFeather: 0,
+        abyssalPearl: 0,
+        ancientRoot: 0,
+        stormEssence: 0,
+        shadowEssence: 0,
+        prismShard: 0,
+        venomSac: 0,
+        titaniumPlate: 0,
+        mithrilThread: 0,
+        frostCrystal: 0,
+        shadowCloth: 0,
+        thunderShard: 0,
+        natureEssence: 0,
+        obsidianBlade: 0,
+        starMetal: 0,
+        phoenixEmber: 0,
+        tidalGem: 0,
+        stormCore: 0,
+        abyssalStone: 0,
+        prismLens: 0,
+        toxicFang: 0,
+        spiritOrb: 0,
+        ancientRune: 0,
+        soulFragment: 0,
+        timeDust: 0,
+        eternalEssence: 0,
+        voidCrystal: 0,
+        celestialDust: 0
     },
     shopItems: {
         greatBall: { name: "Great Ball", price: 150, type: "catch", power: 2 },
@@ -1053,6 +1189,8 @@ const PlayerSystem = {
     totalExplores: 0,
     totalCrafts: 0,
     totalPrestiges: 0,
+    totalBossesDefeated: 0,
+    dragonLordDefeated: false,
     lastDailyBonus: null,
     loginStreak: 0,
     lastLoginDate: null,
@@ -1082,7 +1220,10 @@ const AchievementSystem = {
         craft50: { id: "craft50", name: "Artisan", description: "Craft 50 items", icon: "🔨", reward: 800, tier: "silver" },
         streak5: { id: "streak5", name: "On Fire", description: "Achieve 5 battle streak", icon: "🔥", reward: 500, tier: "bronze" },
         streak10: { id: "streak10", name: "Unstoppable", description: "Achieve 10 battle streak", icon: "⚡", reward: 1000, tier: "gold" },
-        prestige1: { id: "prestige1", name: "First Fusion", description: "Perform your first prestige fusion", icon: "✨", reward: 1000, tier: "gold" }
+        prestige1: { id: "prestige1", name: "First Fusion", description: "Perform your first prestige fusion", icon: "✨", reward: 1000, tier: "gold" },
+        bossSlayer1: { id: "bossSlayer1", name: "Boss Slayer I", description: "Defeat 5 bosses", icon: "👑", reward: 1500, tier: "silver" },
+        bossSlayer2: { id: "bossSlayer2", name: "Boss Slayer II", description: "Defeat 20 bosses", icon: "👑", reward: 3000, tier: "gold" },
+        dragonSlayer: { id: "dragonSlayer", name: "Dragon Slayer", description: "Defeat the Dragon Lord", icon: "🐉", reward: 5000, tier: "platinum" }
     },
 
     getTierMultiplier(tier) {
@@ -1155,6 +1296,15 @@ const AchievementSystem = {
             case "explore50":
                 unlocked = PlayerSystem.totalExplores >= 50;
                 break;
+            case "bossSlayer1":
+                unlocked = PlayerSystem.totalBossesDefeated >= 5;
+                break;
+            case "bossSlayer2":
+                unlocked = PlayerSystem.totalBossesDefeated >= 20;
+                break;
+            case "dragonSlayer":
+                unlocked = PlayerSystem.dragonLordDefeated;
+                break;
         }
 
         if (unlocked) {
@@ -1206,7 +1356,10 @@ const TitleSystem = {
         dragonTamer: { id: "dragonTamer", name: "Dragon Tamer", description: "Own 5 dragon-type pets", requirement: () => TitleSystem.countPetType("dragon") >= 5 },
         grassGuardian: { id: "grassGuardian", name: "Grass Guardian", description: "Own 5 grass-type pets", requirement: () => TitleSystem.countPetType("grass") >= 5 },
         waterMaster: { id: "waterMaster", name: "Water Master", description: "Own 5 water-type pets", requirement: () => TitleSystem.countPetType("water") >= 5 },
-        fireLord: { id: "fireLord", name: "Fire Lord", description: "Own 5 fire-type pets", requirement: () => TitleSystem.countPetType("fire") >= 5 }
+        fireLord: { id: "fireLord", name: "Fire Lord", description: "Own 5 fire-type pets", requirement: () => TitleSystem.countPetType("fire") >= 5 },
+        bossHunter: { id: "bossHunter", name: "Boss Hunter", description: "Defeat 5 bosses", requirement: () => PlayerSystem.totalBossesDefeated >= 5 },
+        bossConqueror: { id: "bossConqueror", name: "Boss Conqueror", description: "Defeat 20 bosses", requirement: () => PlayerSystem.totalBossesDefeated >= 20 },
+        dragonSlayer: { id: "dragonSlayer", name: "Dragon Slayer", description: "Defeat the Dragon Lord", requirement: () => PlayerSystem.dragonLordDefeated }
     },
 
     countPetType(type) {
@@ -1445,6 +1598,18 @@ const Exploration = {
 
         if (Math.random() > zone.encounterRate) {
             return null;
+        }
+
+        // Check for random boss encounter (5% chance)
+        const randomBoss = BossSystem.checkRandomBossEncounter();
+        if (randomBoss) {
+            const bossPet = PetManager.createPet(randomBoss.typeId, randomBoss.level, {
+                tier: randomBoss.tier,
+                shiny: false
+            });
+            if (bossPet) {
+                return { boss: randomBoss, pet: bossPet };
+            }
         }
 
         // Determine pet rarity
@@ -1833,6 +1998,10 @@ const BattleSystem = {
     shield: { enemy: { turns: 0, percent: 0 }, player: { turns: 0, percent: 0 } },
     poisoned: null,
     poisonDuration: { enemy: 0, player: 0 },
+    isBossBattle: false,
+    currentBoss: null,
+    bossAbilityUsed: false,
+    regrowthUsed: false,
 
     typeEffectiveness: {
         fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5, dragon: 0.5, fairy: 2, dark: 1, normal: 1 },
@@ -1889,7 +2058,9 @@ const BattleSystem = {
         this.poisonDuration = { enemy: 0, player: 0 };
         this.autoExploreActive = Exploration.autoExplore.active;
         this.autoExplorePetId = Exploration.autoExplore.petId;
-        
+        this.bossAbilityUsed = false;
+        this.regrowthUsed = false;
+
         // Determine who goes first by speed
         const playerSpeed = this.playerPet.stats.speed;
         const enemySpeed = this.enemyPet.stats.speed;
@@ -1996,7 +2167,46 @@ const BattleSystem = {
         if (defenderShield.turns > 0) {
             damage = Math.floor(damage * (1 - defenderShield.percent));
         }
-        
+
+        // Boss passive abilities
+        if (this.isBossBattle && defender === this.enemyPet && this.currentBoss) {
+            const bossTemplate = PetTypes[this.currentBoss.typeId];
+            if (bossTemplate) {
+                // Magma Shield - 15% damage reflection
+                if (bossTemplate.passive && bossTemplate.passive.includes("Magma Shield")) {
+                    const reflectedDamage = Math.floor(damage * 0.15);
+                    if (reflectedDamage > 0 && attacker === this.playerPet) {
+                        attacker.currentHP = Math.max(0, attacker.currentHP - reflectedDamage);
+                        this.addLog(`${this.currentBoss.name}'s Magma Shield reflected ${reflectedDamage} damage!`);
+                    }
+                }
+
+                // Thorn Armor - 10% damage to attacker on hit
+                if (bossTemplate.passive && bossTemplate.passive.includes("Thorn Armor")) {
+                    const thornDamage = Math.floor(damage * 0.10);
+                    if (thornDamage > 0 && attacker === this.playerPet) {
+                        attacker.currentHP = Math.max(0, attacker.currentHP - thornDamage);
+                        this.addLog(`${this.currentBoss.name}'s Thorn Armor dealt ${thornDamage} damage!`);
+                    }
+                }
+
+                // Prism Beam - +25% damage, ignores 25% defense
+                if (bossTemplate.ability && bossTemplate.ability.name === "Prism Beam" && attacker === this.enemyPet) {
+                    damage = Math.floor(damage * 1.25);
+                    this.addLog(`${this.currentBoss.name}'s Prism Beam boosted damage!`);
+                }
+
+                // Inferno Rage - +50% damage when HP below 50%
+                if (bossTemplate.ability && bossTemplate.ability.name === "Inferno Rage" && attacker === this.enemyPet) {
+                    const maxHP = PetManager.calculateMaxHP(bossTemplate, this.enemyPet.level, this.enemyPet);
+                    if (this.enemyPet.currentHP / maxHP < 0.5) {
+                        damage = Math.floor(damage * 1.5);
+                        this.addLog(`${this.currentBoss.name}'s Inferno Rage activated!`);
+                    }
+                }
+            }
+        }
+
         return { damage, isCrit, typeMult };
     },
 
@@ -2051,7 +2261,7 @@ playerTurn() {
      
  enemyTurn() {
           if (!this.active || this.isPlayerTurn) return;
-          
+
           // Check if enemy is confused
           if (this.confused === "enemy") {
               this.addLog(`${this.getPetName(this.enemyPet)} is confused and can't move!`);
@@ -2066,17 +2276,103 @@ playerTurn() {
               }, 500);
               return;
           }
-          
+
+          // Boss abilities at start of enemy turn
+          if (this.isBossBattle && this.currentBoss) {
+              const bossTemplate = PetTypes[this.currentBoss.typeId];
+              if (bossTemplate) {
+                  // Tidal Wave - Heals 10% HP each turn
+                  if (bossTemplate.passive && bossTemplate.passive.includes("Tidal Wave")) {
+                      const maxHP = PetManager.calculateMaxHP(bossTemplate, this.enemyPet.level, this.enemyPet);
+                      const healAmount = Math.floor(maxHP * 0.10);
+                      this.enemyPet.currentHP = Math.min(maxHP, this.enemyPet.currentHP + healAmount);
+                      this.addLog(`${this.currentBoss.name}'s Tidal Wave healed ${healAmount} HP!`);
+                  }
+
+                  // Toxic Cloud - 5% max HP damage per turn
+                  if (bossTemplate.passive && bossTemplate.passive.includes("Toxic Cloud")) {
+                      const maxHP = PetManager.calculateMaxHP(PetTypes[this.playerPet.typeId], this.playerPet.level, this.playerPet);
+                      const toxicDamage = Math.floor(maxHP * 0.05);
+                      this.playerPet.currentHP = Math.max(0, this.playerPet.currentHP - toxicDamage);
+                      this.addLog(`${this.currentBoss.name}'s Toxic Cloud dealt ${toxicDamage} damage!`);
+                  }
+
+                  // Pressure - Reduces enemy speed by 25%
+                  if (bossTemplate.ability && bossTemplate.ability.name === "Pressure") {
+                      this.playerStatMods.speed = Math.min(6, this.playerStatMods.speed - 1);
+                      this.addLog(`${this.currentBoss.name}'s Pressure reduced your speed!`);
+                  }
+
+                  // Soul Drain - Reduces enemy attack by 10%
+                  if (bossTemplate.ability && bossTemplate.ability.name === "Soul Drain") {
+                      this.playerStatMods.attack = Math.min(6, this.playerStatMods.attack - 1);
+                      this.addLog(`${this.currentBoss.name}'s Soul Drain reduced your attack!`);
+                  }
+
+                  // Ancient Power - +15% to all stats (one-time use)
+                  if (bossTemplate.ability && bossTemplate.ability.name === "Ancient Power" && !this.bossAbilityUsed) {
+                      this.enemyStatMods.attack = Math.min(6, this.enemyStatMods.attack + 1);
+                      this.enemyStatMods.defense = Math.min(6, this.enemyStatMods.defense + 1);
+                      this.enemyStatMods.speed = Math.min(6, this.enemyStatMods.speed + 1);
+                      this.enemyStatMods.special = Math.min(6, this.enemyStatMods.special + 1);
+                      this.bossAbilityUsed = true;
+                      this.addLog(`${this.currentBoss.name}'s Ancient Power boosted all stats!`);
+                  }
+
+                  // Chain Lightning - 20% chance to attack twice
+                  if (bossTemplate.passive && bossTemplate.passive.includes("Chain Lightning") && Math.random() < 0.20) {
+                      this.addLog(`${this.currentBoss.name}'s Chain Lightning triggered!`);
+                      this.attack(this.enemyPet, this.playerPet, false);
+                      if (this.playerPet.currentHP <= 0) {
+                          this.endBattle(false);
+                          return;
+                      }
+                  }
+
+                  // Shadow Clone - 15% chance to create attacking copy
+                  if (bossTemplate.passive && bossTemplate.passive.includes("Shadow Clone") && Math.random() < 0.15) {
+                      this.addLog(`${this.currentBoss.name}'s Shadow Clone appeared!`);
+                      this.attack(this.enemyPet, this.playerPet, false);
+                      if (this.playerPet.currentHP <= 0) {
+                          this.endBattle(false);
+                          return;
+                      }
+                  }
+
+                  // Crystal Prison - 15% freeze chance for 1 turn
+                  if (bossTemplate.passive && bossTemplate.passive.includes("Crystal Prison") && Math.random() < 0.15) {
+                      this.confused = "player";
+                      this.addLog(`${this.currentBoss.name}'s Crystal Prison froze you!`);
+                  }
+
+                  // Static Field - 20% chance to paralyze for 1 turn
+                  if (bossTemplate.ability && bossTemplate.ability.name === "Static Field" && Math.random() < 0.20) {
+                      this.confused = "player";
+                      this.addLog(`${this.currentBoss.name}'s Static Field paralyzed you!`);
+                  }
+
+                  // Regrowth - Revives once at 25% HP
+                  if (bossTemplate.ability && bossTemplate.ability.name === "Regrowth" && !this.regrowthUsed) {
+                      const maxHP = PetManager.calculateMaxHP(bossTemplate, this.enemyPet.level, this.enemyPet);
+                      if (this.enemyPet.currentHP <= 0) {
+                          this.enemyPet.currentHP = Math.floor(maxHP * 0.25);
+                          this.regrowthUsed = true;
+                          this.addLog(`${this.currentBoss.name}'s Regrowth revived it at 25% HP!`);
+                      }
+                  }
+              }
+          }
+
           this.attack(this.enemyPet, this.playerPet, false);
-         
+
          if (this.playerPet.currentHP <= 0) {
              this.endBattle(false);
              return;
          }
-         
+
          this.isPlayerTurn = true;
          UIManager.updateBattleScreen();
-         
+
          if (this.autoExploreActive) {
              setTimeout(() => this.autoPlayTurn(), 1000);
          }
@@ -2955,6 +3251,16 @@ this.playerAbilityCooldown = ability.cooldown;
                 Economy.inventory.rareXpOrb = (Economy.inventory.rareXpOrb || 0) + 1;
                 this.addLog("✨ Found a Rare XP Orb!");
             }
+
+            // 5% chance to drop a Boss Key when defeating a wild pet
+            BossSystem.dropBossKey();
+
+            // Give boss rewards if this was a boss battle
+            if (this.isBossBattle && this.currentBoss) {
+                BossSystem.giveBossRewards(this.currentBoss);
+                this.isBossBattle = false;
+                this.currentBoss = null;
+            }
         } else {
             PlayerSystem.battleStreak = 0;
             PlayerSystem.totalBattles++;
@@ -3270,6 +3576,250 @@ const CraftingSystem = {
     }
 };
 
+// ==================== BOSS SYSTEM ====================
+const BossSystem = {
+    bosses: {
+        infernoEmperor: {
+            id: "infernoEmperor",
+            name: "Inferno Emperor",
+            typeId: "infernoEmperor",
+            type: "fire",
+            keyCost: 1,
+            level: 50,
+            tier: "A3",
+            emoji: "🔥",
+            abilities: ["magmaShield", "infernoRage"],
+            rewards: {
+                gold: [500, 800],
+                materials: { dragonScale: 1, phoenixEmber: 1 },
+                common: { woodStick: 5, rock: 3, ore: 2 }
+            }
+        },
+        tidalTitan: {
+            id: "tidalTitan",
+            name: "Tidal Titan",
+            typeId: "tidalTitan",
+            type: "water",
+            keyCost: 1,
+            level: 50,
+            tier: "A3",
+            emoji: "🌊",
+            abilities: ["tidalWave", "pressure"],
+            rewards: {
+                gold: [500, 800],
+                materials: { abyssalPearl: 1, tidalGem: 1 },
+                common: { herbs: 5, leather: 3, crystal: 2 }
+            }
+        },
+        forestGuardian: {
+            id: "forestGuardian",
+            name: "Forest Guardian",
+            typeId: "forestGuardian",
+            type: "grass",
+            keyCost: 2,
+            level: 60,
+            tier: "A4",
+            emoji: "🌳",
+            abilities: ["thornArmor", "regrowth"],
+            rewards: {
+                gold: [800, 1200],
+                materials: { ancientRoot: 1, natureEssence: 1 },
+                common: { woodStick: 8, herbs: 5, crystal: 3 }
+            }
+        },
+        stormSovereign: {
+            id: "stormSovereign",
+            name: "Storm Sovereign",
+            typeId: "stormSovereign",
+            type: "electric",
+            keyCost: 2,
+            level: 60,
+            tier: "A4",
+            emoji: "⚡",
+            abilities: ["chainLightning", "staticField"],
+            rewards: {
+                gold: [800, 1200],
+                materials: { stormEssence: 1, stormCore: 1 },
+                common: { ore: 8, thunderShard: 2, crystal: 3 }
+            }
+        },
+        shadowMonarch: {
+            id: "shadowMonarch",
+            name: "Shadow Monarch",
+            typeId: "shadowMonarch",
+            type: "dark",
+            keyCost: 3,
+            level: 70,
+            tier: "S1",
+            emoji: "👑",
+            abilities: ["shadowClone", "soulDrain"],
+            rewards: {
+                gold: [1200, 1800],
+                materials: { shadowEssence: 1, shadowCloth: 1, abyssalStone: 1 },
+                common: { darkRock: 8, shadowEssence: 2, gem: 3 }
+            }
+        },
+        crystalEmpress: {
+            id: "crystalEmpress",
+            name: "Crystal Empress",
+            typeId: "crystalEmpress",
+            type: "ice",
+            keyCost: 3,
+            level: 70,
+            tier: "S1",
+            emoji: "❄️",
+            abilities: ["crystalPrison", "prismBeam"],
+            rewards: {
+                gold: [1200, 1800],
+                materials: { prismShard: 1, frostCrystal: 1, prismLens: 1 },
+                common: { crystal: 8, frostCrystal: 2, gem: 3 }
+            }
+        },
+        venomKing: {
+            id: "venomKing",
+            name: "Venom King",
+            typeId: "venomKing",
+            type: "poison",
+            keyCost: 4,
+            level: 80,
+            tier: "S2",
+            emoji: "☠️",
+            abilities: ["toxicCloud", "venomousBite"],
+            rewards: {
+                gold: [1800, 2500],
+                materials: { venomSac: 1, toxicFang: 1, shadowEssence: 1 },
+                common: { herbs: 10, venomSac: 2, darkRock: 4 }
+            }
+        },
+        dragonLord: {
+            id: "dragonLord",
+            name: "Dragon Lord",
+            typeId: "dragonLord",
+            type: "dragon",
+            keyCost: 5,
+            level: 100,
+            tier: "S3",
+            emoji: "🐉",
+            abilities: ["dragonBreath", "ancientPower"],
+            rewards: {
+                gold: [2500, 4000],
+                materials: { dragonScale: 2, eternalEssence: 1, voidCrystal: 1 },
+                common: { dragonScale: 3, starMetal: 2, celestialDust: 1 }
+            }
+        }
+    },
+
+    dropBossKey() {
+        // 5% chance to drop a boss key when defeating a wild pet
+        if (Math.random() < 0.05) {
+            Economy.inventory.bossKey = (Economy.inventory.bossKey || 0) + 1;
+            UIManager.showToast("🔑 Boss Key dropped!");
+            DataManager.save();
+        }
+    },
+
+    checkRandomBossEncounter() {
+        // 5% chance for random boss encounter during exploration
+        if (Math.random() < 0.05) {
+            const bossIds = Object.keys(this.bosses);
+            const randomBossId = bossIds[Math.floor(Math.random() * bossIds.length)];
+            return this.bosses[randomBossId];
+        }
+        return null;
+    },
+
+    canFightBoss(bossId) {
+        const boss = this.bosses[bossId];
+        if (!boss) return false;
+        return (Economy.inventory.bossKey || 0) >= boss.keyCost;
+    },
+
+    startBossFight(bossId) {
+        const boss = this.bosses[bossId];
+        if (!boss || !this.canFightBoss(bossId)) {
+            UIManager.showToast("Not enough Boss Keys!");
+            return false;
+        }
+
+        // Deduct keys
+        Economy.inventory.bossKey -= boss.keyCost;
+        DataManager.save();
+
+        // Create boss pet
+        const bossPet = PetManager.createPet(boss.typeId, boss.level, {
+            tier: boss.tier,
+            shiny: false
+        });
+
+        // Start battle
+        BattleSystem.playerPet = PetManager.selectedPet ? { ...PetManager.selectedPet } : PetManager.pets[0];
+        BattleSystem.enemyPet = bossPet;
+        BattleSystem.isBossBattle = true;
+        BattleSystem.currentBoss = boss;
+        BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
+
+        return true;
+    },
+
+    giveBossRewards(boss) {
+        // Increment boss defeat counter
+        PlayerSystem.totalBossesDefeated++;
+
+        // Check if Dragon Lord was defeated
+        if (boss.id === "dragonLord") {
+            PlayerSystem.dragonLordDefeated = true;
+        }
+
+        // Gold reward
+        const goldReward = Math.floor(Math.random() * (boss.rewards.gold[1] - boss.rewards.gold[0] + 1)) + boss.rewards.gold[0];
+        Economy.money += goldReward;
+
+        // Boss-specific materials
+        for (const [material, qty] of Object.entries(boss.rewards.materials)) {
+            Economy.inventory[material] = (Economy.inventory[material] || 0) + qty;
+        }
+
+        // Common materials
+        for (const [material, qty] of Object.entries(boss.rewards.common)) {
+            Economy.inventory[material] = (Economy.inventory[material] || 0) + qty;
+        }
+
+        // Check boss achievements
+        AchievementSystem.checkAchievement("bossSlayer1");
+        AchievementSystem.checkAchievement("bossSlayer2");
+        AchievementSystem.checkAchievement("dragonSlayer");
+
+        DataManager.save();
+        UIManager.showToast(`🎉 Defeated ${boss.name}! Rewards: ${goldReward}💰 + materials!`);
+    },
+
+    renderBossScreen() {
+        const grid = document.getElementById("bossGrid");
+        grid.innerHTML = "";
+        document.getElementById("bossKeyCount").innerText = Economy.inventory.bossKey || 0;
+
+        for (const [bossId, boss] of Object.entries(this.bosses)) {
+            const canFight = this.canFightBoss(bossId);
+            const card = document.createElement("div");
+            card.className = `bg-white/10 rounded-2xl p-5 cursor-pointer transition-all duration-200 ${canFight ? "hover:bg-white/12 hover:-translate-y-1" : "opacity-50 cursor-not-allowed"}`;
+            card.innerHTML = `
+                <div class="text-5xl">${boss.emoji}</div>
+                <h3>${boss.name}</h3>
+                <p class="text-xs">Level: ${boss.level} | Tier: ${boss.tier}</p>
+                <p class="text-xs">Type: ${boss.type.toUpperCase()}</p>
+                <p class="text-xs">Key Cost: ${boss.keyCost} 🔑</p>
+                ${canFight ? `<p class="text-green-400 text-xs mt-1">Ready to fight!</p>` : `<p class="text-red-400 text-xs mt-1">Need ${boss.keyCost} keys</p>`}
+            `;
+
+            if (canFight) {
+                card.onclick = () => this.startBossFight(bossId);
+            }
+
+            grid.appendChild(card);
+        }
+    }
+};
+
 // ==================== UI MANAGER ====================
 const UIManager = {
     init() {
@@ -3343,6 +3893,9 @@ const UIManager = {
         }
         if (screenId === "explorationScreen") {
             this.renderExploration();
+        }
+        if (screenId === "bossScreen") {
+            BossSystem.renderBossScreen();
         }
         this.updatePlayerLevelDisplay();
 
@@ -4482,8 +5035,25 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     doExploreWithFloor(zoneId, floorIndex) {
         const result = Exploration.explore(zoneId, floorIndex);
         this.renderExploration();
-        
+
         if (result && result.pet && result.pet.stats) {
+            // Check if it's a boss encounter
+            if (result.boss) {
+                BattleSystem.enemyPet = result.pet;
+                BattleSystem.isBossBattle = true;
+                BattleSystem.currentBoss = result.boss;
+                if (Exploration.autoExplore.active && Exploration.autoExplore.petId) {
+                    const autoPet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
+                    BattleSystem.playerPet = autoPet ? { ...autoPet } : { ...PetManager.selectedPet };
+                } else {
+                    BattleSystem.playerPet = { ...PetManager.selectedPet };
+                }
+                UIManager.showToast(`⚠️ BOSS ENCOUNTER: ${result.boss.name}!`);
+                BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
+                return;
+            }
+
+            // Normal pet encounter
             BattleSystem.enemyPet = result.pet;
             if (Exploration.autoExplore.active && Exploration.autoExplore.petId) {
                 const autoPet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));

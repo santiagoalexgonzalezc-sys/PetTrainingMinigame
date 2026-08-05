@@ -887,8 +887,19 @@ const PetManager = {
         const levelBonus = pet?.levelBonusStats?.hp || 0;
         const shinyBonus = pet?.shinyBonus?.hp || 0;
         const tierBonus = pet?.tierBonus || 0;
-        const equipStats = EquipmentSystem.getStats(pet) || { hp: 0 };
-        return base + bonus + levelBonus + shinyBonus + tierBonus + (equipStats.hp || 0);
+        
+        // Calculate equipment stats from equipmentSlots
+        let equipHP = 0;
+        if (pet?.equipmentSlots) {
+            for (const slot of ['weapon', 'armor', 'ring']) {
+                const equipId = pet.equipmentSlots[slot];
+                if (equipId && EquipmentSystem.equipment[equipId]?.stats?.hp) {
+                    equipHP += EquipmentSystem.equipment[equipId].stats.hp;
+                }
+            }
+        }
+        
+        return base + bonus + levelBonus + shinyBonus + tierBonus + equipHP;
     },
 
     calculateStats(template, level, pet) {
@@ -900,8 +911,19 @@ const PetManager = {
             const levelBonus = pet?.levelBonusStats?.[stat] || 0;
             const shinyBonus = pet?.shinyBonus?.[stat] || 0;
             const tierBonus = pet?.tierBonus || 0;
-            const equipStats = EquipmentSystem.getStats(pet) || {};
-            stats[stat] = base + bonus + levelBonus + shinyBonus + tierBonus + (equipStats[stat] || 0);
+            
+            // Calculate equipment stats from equipmentSlots
+            let equipStat = 0;
+            if (pet?.equipmentSlots) {
+                for (const slot of ['weapon', 'armor', 'ring']) {
+                    const equipId = pet.equipmentSlots[slot];
+                    if (equipId && EquipmentSystem.equipment[equipId]?.stats?.[stat]) {
+                        equipStat += EquipmentSystem.equipment[equipId].stats[stat];
+                    }
+                }
+            }
+            
+            stats[stat] = base + bonus + levelBonus + shinyBonus + tierBonus + equipStat;
         }
         return stats;
     },
@@ -1214,10 +1236,13 @@ const Economy = {
     },
 
     sellPet(pet) {
-        if (Array.isArray(pet.equipment)) {
-            pet.equipment.forEach(itemId => {
-                Economy.inventory[itemId] = (Economy.inventory[itemId] || 0) + 1;
-            });
+        if (pet.equipmentSlots) {
+            for (const slot of ['weapon', 'armor', 'ring']) {
+                const equipId = pet.equipmentSlots[slot];
+                if (equipId) {
+                    Economy.inventory[equipId] = (Economy.inventory[equipId] || 0) + 1;
+                }
+            }
         }
         const value = pet.level * 25 + (pet.prestigeLevel || 0) * 1000 + (pet.shiny ? 5000 : 0) + TierSystem.getTierSellValue(pet.tier);
         this.money += value;
@@ -2221,69 +2246,6 @@ const TierSystem = {
         pet.currentHP = Math.min(pet.currentHP, newMaxHP);
 
         return { success: true, pet, nextTier };
-    }
-};
-
-// ==================== EQUIPMENT SYSTEM ====================
-const EquipmentSystem = {
-    getStats(pet) {
-        if (!pet.equipment || !Array.isArray(pet.equipment) || pet.equipment.length === 0) return { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
-        let totalStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
-        for (const itemId of pet.equipment) {
-            const item = Economy.shopItems[itemId];
-            if (item && item.stats) {
-                for (const [stat, value] of Object.entries(item.stats)) {
-                    totalStats[stat] = (totalStats[stat] || 0) + value;
-                }
-            }
-        }
-        return totalStats;
-    },
-    
-    canEquip(petId) {
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
-                    PetManager.storage.find(p => String(p.id) === String(petId));
-        if (!pet) return { valid: false, reason: "Pet not found!" };
-        if (!Array.isArray(pet.equipment) || pet.equipment.length >= 5) return { valid: false, reason: "Max 5 equipment slots!" };
-        return { valid: true };
-    },
-    
-    equip(petId, itemId) {
-        const validation = this.canEquip(petId);
-        if (!validation.valid) return { success: false, reason: validation.reason };
-        
-        if (!Economy.inventory[itemId] || Economy.inventory[itemId] <= 0) {
-            return { success: false, reason: "No item in inventory!" };
-        }
-        
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
-                    PetManager.storage.find(p => String(p.id) === String(petId));
-        
-        Economy.inventory[itemId]--;
-        if (!Array.isArray(pet.equipment)) pet.equipment = [];
-        pet.equipment.push(itemId);
-        pet.stats = PetManager.calculateStats(PetTypes[pet.typeId], pet.level, pet);
-        const newMaxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
-        pet.currentHP = Math.min(pet.currentHP, newMaxHP);
-        
-        return { success: true, pet };
-    },
-    
-    unequip(petId, itemId) {
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) || 
-                    PetManager.storage.find(p => String(p.id) === String(petId));
-        if (!pet || !Array.isArray(pet.equipment) || pet.equipment.length === 0) return { success: false, reason: "No equipment to unequip!" };
-        
-        const index = pet.equipment.indexOf(itemId);
-        if (index === -1) return { success: false, reason: "Item not found!" };
-        
-        pet.equipment.splice(index, 1);
-        Economy.inventory[itemId] = (Economy.inventory[itemId] || 0) + 1;
-        pet.stats = PetManager.calculateStats(PetTypes[pet.typeId], pet.level, pet);
-        const newMaxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
-        pet.currentHP = Math.min(pet.currentHP, newMaxHP);
-        
-        return { success: true, pet };
     }
 };
 
@@ -3950,7 +3912,22 @@ const CraftingSystem = {
         rareXpOrb:    { name: "Rare XP Orb",   outputQty: 1, cost: { crystal: 8, darkRock: 5 } },
         tierStone:    { name: "Tier Stone",    outputQty: 1, cost: { rock: 3, darkRock: 2 } },
         focusIncense: { name: "Focus Incense", outputQty: 1, cost: { ore: 4, darkRock: 2, crystal: 1 } },
-        precisionGuide: { name: "Precision Guide", outputQty: 1, cost: { herbs: 5, crystal: 2 } }
+        precisionGuide: { name: "Precision Guide", outputQty: 1, cost: { herbs: 5, crystal: 2 } },
+        // Equipment Recipes
+        flameSword:   { name: "Flame Sword",   outputQty: 1, cost: { woodStick: 5, fireEssence: 3, ore: 2 }, type: "equipment" },
+        waterStaff:   { name: "Water Staff",   outputQty: 1, cost: { woodStick: 5, waterOrb: 3, crystal: 2 }, type: "equipment" },
+        thunderDagger: { name: "Thunder Dagger", outputQty: 1, cost: { electricSpark: 3, steelIngot: 2, thunderShard: 1 }, type: "equipment" },
+        leatherVest:  { name: "Leather Vest",  outputQty: 1, cost: { leather: 5, beastFur: 3 }, type: "equipment" },
+        scaleArmor:   { name: "Scale Armor",   outputQty: 1, cost: { snakeScale: 5, turtleShell: 3 }, type: "equipment" },
+        ironPlate:    { name: "Iron Plate",    outputQty: 1, cost: { ore: 5, steelIngot: 2 }, type: "equipment" },
+        ringOfGathering: { name: "Ring of Gathering", outputQty: 1, cost: { woodStick: 5, leather: 3, herbs: 2 }, type: "equipment" },
+        ringOfSurvival:   { name: "Ring of Survival",   outputQty: 1, cost: { leather: 5, ore: 3, crystal: 2 }, type: "equipment" },
+        ringOfTraining:   { name: "Ring of Training",   outputQty: 1, cost: { woodStick: 5, herbs: 3, crystal: 2 }, type: "equipment" },
+        ringOfSwiftness:  { name: "Ring of Swiftness",  outputQty: 1, cost: { flyingFeather: 5, electricSpark: 2, timeCrystal: 1 }, type: "equipment" },
+        ringOfPower:      { name: "Ring of Power",      outputQty: 1, cost: { monsterHorn: 5, dragonScale: 2, chaosOrb: 1 }, type: "equipment" },
+        ringOfVitality:   { name: "Ring of Vitality",   outputQty: 1, cost: { turtleShell: 5, soulStone: 2, divineFeather: 1 }, type: "equipment" },
+        ringOfElements:   { name: "Ring of Elements",   outputQty: 1, cost: { magicCrystal: 5, mysticRune: 2, starFragment: 1 }, type: "equipment" },
+        ringOfProtection: { name: "Ring of Protection", outputQty: 1, cost: { steelIngot: 5, obsidianBlade: 2, ancientRune: 1 }, type: "equipment" }
     },
 
     canCraft(recipeId) {
@@ -3965,6 +3942,17 @@ const CraftingSystem = {
     craft(recipeId) {
         const recipe = this.recipes[recipeId];
         if (!recipe || !this.canCraft(recipeId)) return false;
+        
+        // If this is an equipment recipe, use EquipmentSystem
+        if (recipe.type === "equipment") {
+            const result = EquipmentSystem.craftEquipment(recipeId);
+            if (result.success) {
+                UIManager.showToast(`🔨 Crafted ${result.equipment.name}!`);
+            }
+            return result.success;
+        }
+        
+        // Otherwise use normal crafting
         for (const [itemId, qty] of Object.entries(recipe.cost)) {
             Economy.inventory[itemId] -= qty;
         }
@@ -5002,7 +4990,11 @@ const UIManager = {
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
-                ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[itemId]?.name || ""}</div>`).join("") : ""}
+                ${pet.equipmentSlots ? `
+                    ${pet.equipmentSlots.weapon ? `<div class="text-green-300 text-sm font-bold">⚔️ ${EquipmentSystem.equipment[pet.equipmentSlots.weapon]?.name || "Unknown"}</div>` : ""}
+                    ${pet.equipmentSlots.armor ? `<div class="text-green-300 text-sm font-bold">🛡️ ${EquipmentSystem.equipment[pet.equipmentSlots.armor]?.name || "Unknown"}</div>` : ""}
+                    ${pet.equipmentSlots.ring ? `<div class="text-green-300 text-sm font-bold">💍 ${EquipmentSystem.equipment[pet.equipmentSlots.ring]?.name || "Unknown"}</div>` : ""}
+                ` : ""}
                 <div class="opacity-90 text-sm">Tier: ${pet.tier} (+${pet.tierBonus} all stats)</div>
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 
@@ -5068,14 +5060,13 @@ const UIManager = {
             ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 font-bold">⭐ Prestige ${pet.prestigeLevel}</div><div class="text-purple-300 text-xs">+${pet.bonusStats.hp} HP | +${pet.bonusStats.attack} ATK | +${pet.bonusStats.defense} DEF | +${pet.bonusStats.speed} SPD | +${pet.bonusStats.special} SPC</div><br>` : ""}
             ${pet.shiny ? `<div class="text-yellow-300 font-bold">✨ Shiny</div><div class="text-yellow-300 text-xs">+${pet.shinyBonus.hp} HP | +${pet.shinyBonus.attack} ATK | +${pet.shinyBonus.defense} DEF | +${pet.shinyBonus.speed} SPD | +${pet.shinyBonus.special} SPC</div><br>` : ""}
             <div class="opacity-90 text-sm">Tier Bonus: +${pet.tierBonus || 0}%</div>
-            ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? `<div class="opacity-90 text-sm">Equipment:</div>` : ""}
-            ${Array.isArray(pet.equipment) ? pet.equipment.map((itemId, idx) => {
-                const item = Economy.shopItems[itemId];
-                if (!item) return "";
-                const statsText = item.stats ? Object.entries(item.stats).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join(" | ") : "";
-                return `<div class="opacity-90 text-sm">${item.name} <span class="text-xs">(${statsText})</span> <button onclick="UIManager.unequipPet('${itemId}')" class="text-red-400 text-xs ml-2">[Unequip]</button></div>`;
-            }).join("") : ""}
-            <div class="opacity-90 text-sm">HP: ${pet.currentHP}/${maxHP}</div>
+            ${pet.equipmentSlots ? `<div class="opacity-90 text-sm mt-2">Equipment:</div>` : ""}
+            ${pet.equipmentSlots ? `
+                ${pet.equipmentSlots.weapon ? `<div class="opacity-90 text-sm">⚔️ ${EquipmentSystem.equipment[pet.equipmentSlots.weapon]?.name || "Unknown"} <button onclick="UIManager.unequipPetSlot('weapon')" class="text-red-400 text-xs ml-2">[Unequip]</button></div>` : ""}
+                ${pet.equipmentSlots.armor ? `<div class="opacity-90 text-sm">🛡️ ${EquipmentSystem.equipment[pet.equipmentSlots.armor]?.name || "Unknown"} <button onclick="UIManager.unequipPetSlot('armor')" class="text-red-400 text-xs ml-2">[Unequip]</button></div>` : ""}
+                ${pet.equipmentSlots.ring ? `<div class="opacity-90 text-sm">💍 ${EquipmentSystem.equipment[pet.equipmentSlots.ring]?.name || "Unknown"} <button onclick="UIManager.unequipPetSlot('ring')" class="text-red-400 text-xs ml-2">[Unequip]</button></div>` : ""}
+            ` : ""}
+            <div class="opacity-90 text-sm mt-2">HP: ${pet.currentHP}/${maxHP}</div>
             <div class="opacity-90 text-sm">Attack: ${pet.stats.attack}</div>
             <div class="opacity-90 text-sm">Defense: ${pet.stats.defense}</div>
             <div class="opacity-90 text-sm">Speed: ${pet.stats.speed}</div>
@@ -5103,13 +5094,17 @@ const UIManager = {
         
         const equipBtn = document.getElementById("equipBtn");
         if (equipBtn) {
-            const hasEquipmentInInventory = Economy.inventory.bandOfSwiftness > 0 || Economy.inventory.toughCollar > 0 || Economy.inventory.focusBand > 0 || Economy.inventory.lifeBangle > 0 || Economy.inventory.attackSunglasses > 0;
-            const hasFreeSlot = !Array.isArray(pet.equipment) || pet.equipment.length < 6;
+            const hasEquipmentInInventory = Object.keys(EquipmentSystem.equipment).some(equipId => (Economy.inventory[equipId] || 0) > 0);
+            const hasFreeWeaponSlot = !pet.equipmentSlots || !pet.equipmentSlots.weapon;
+            const hasFreeArmorSlot = !pet.equipmentSlots || !pet.equipmentSlots.armor;
+            const hasFreeRingSlot = !pet.equipmentSlots || !pet.equipmentSlots.ring;
+            const hasFreeSlot = hasFreeWeaponSlot || hasFreeArmorSlot || hasFreeRingSlot;
             equipBtn.style.display = (hasFreeSlot && hasEquipmentInInventory) ? "inline-block" : "none";
         }
         const unequipBtn = document.getElementById("unequipBtn");
         if (unequipBtn) {
-            unequipBtn.style.display = (Array.isArray(pet.equipment) && pet.equipment.length > 0) ? "inline-block" : "none";
+            const hasEquipment = pet.equipmentSlots && (pet.equipmentSlots.weapon || pet.equipmentSlots.armor || pet.equipmentSlots.ring);
+            unequipBtn.style.display = hasEquipment ? "inline-block" : "none";
         }
         
         const canTrain = TrainingSystem.canTrain(pet);
@@ -5646,10 +5641,14 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 <h3>${template.emoji} ${evolution}${shinySuffix}${prestigeSuffix}</h3>
                 ${tierBadge}
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
-                <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
-                ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[itemId]?.name || ""}</div>`).join("") : ""}
+                ${pet.equipmentSlots ? `
+                    ${pet.equipmentSlots.weapon ? `<div class="text-green-300 text-sm font-bold">⚔️ ${EquipmentSystem.equipment[pet.equipmentSlots.weapon]?.name || "Unknown"}</div>` : ""}
+                    ${pet.equipmentSlots.armor ? `<div class="text-green-300 text-sm font-bold">🛡️ ${EquipmentSystem.equipment[pet.equipmentSlots.armor]?.name || "Unknown"}</div>` : ""}
+                    ${pet.equipmentSlots.ring ? `<div class="text-green-300 text-sm font-bold">💍 ${EquipmentSystem.equipment[pet.equipmentSlots.ring]?.name || "Unknown"}</div>` : ""}
+                ` : ""}
+                <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden">
                     <div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div>
                 </div>
@@ -5659,7 +5658,6 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 BattleSystem.switchPet(pet);
                 this.closeSwitchOverlay();
             };
-            grid.appendChild(card);
         });
         
         document.getElementById("switchOverlay").classList.remove("hidden");
@@ -5851,26 +5849,34 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     equipPet(itemId) {
         const pet = PetManager.selectedPet;
         if (!pet) return;
-        const result = EquipmentSystem.equip(pet.id, itemId);
+        const result = EquipmentSystem.equipToPet(pet.id, itemId);
         if (result.success) {
             DataManager.save();
+            this.closeEquipOverlay();
             this.updatePetScreen();
             this.renderPets();
             this.updateTeamPower();
+            this.showToast(`Equipped ${result.equipment.name}!`);
         } else {
             this.showToast(result.reason);
         }
     },
 
     unequipPet(itemId) {
+        // This function is deprecated - use unequipPetSlot instead
+        this.showToast("Use the unequip buttons on the pet screen instead!");
+    },
+
+    unequipPetSlot(slot) {
         const pet = PetManager.selectedPet;
         if (!pet) return;
-        const result = EquipmentSystem.unequip(pet.id, itemId);
+        const result = EquipmentSystem.unequipFromPet(pet.id, slot);
         if (result.success) {
             DataManager.save();
             this.updatePetScreen();
             this.renderPets();
             this.updateTeamPower();
+            this.showToast(`Unequipped ${slot}!`);
         } else {
             this.showToast(result.reason);
         }
@@ -5884,30 +5890,37 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         }
         
         this.equipPetId = pet.id;
-        document.getElementById("equipPetInfo").innerText = `Equip accessory on ${PetTypes[pet.typeId].emoji} ${PetManager.getEvolution(pet)}`;
+        document.getElementById("equipPetInfo").innerText = `Equip equipment on ${PetTypes[pet.typeId].emoji} ${PetManager.getEvolution(pet)}`;
         
         const grid = document.getElementById("equipGrid");
         grid.innerHTML = "";
         
-        for (const [itemId, count] of Object.entries(Economy.inventory)) {
+        for (const [equipId, equip] of Object.entries(EquipmentSystem.equipment)) {
+            const count = Economy.inventory[equipId] || 0;
             if (count <= 0) continue;
-            const item = Economy.shopItems[itemId];
-            if (!item || item.type !== "equipment") continue;
             
             const card = document.createElement("div");
             card.className = "bg-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/20 transition-all";
-            const statsText = item.stats ? Object.entries(item.stats).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join(" | ") : "";
+            const statsText = equip.stats ? Object.entries(equip.stats).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join(" | ") : "";
+            const bonusesText = equip.bonuses ? Object.entries(equip.bonuses).map(([k, v]) => `+${Math.round(v * 100)}% ${k}`).join(" | ") : "";
             card.innerHTML = `
-                <h4>${item.name}</h4>
+                <h4>${equip.emoji} ${equip.name}</h4>
+                <p class="text-xs opacity-70">${equip.type.toUpperCase()} | Tier ${equip.tier}</p>
                 <p class="text-xs">${statsText}</p>
-                <button onclick="UIManager.equipPet('${itemId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Equip</button>
+                <p class="text-xs opacity-70">${bonusesText}</p>
+                <p class="text-xs opacity-70">${equip.description}</p>
+                <button onclick="UIManager.equipPet('${equipId}')" class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white bg-green-800 m-1 transition-all duration-150 text-sm hover:-translate-y-0.5">Equip</button>
             `;
             card.onclick = (e) => {
                 if (e.target.tagName !== "BUTTON") {
-                    UIManager.equipPet(itemId);
+                    UIManager.equipPet(equipId);
                 }
             };
             grid.appendChild(card);
+        }
+        
+        if (grid.children.length === 0) {
+            grid.innerHTML = "<p>No equipment in inventory. Craft some first!</p>";
         }
         
         document.getElementById("equipOverlay").classList.remove("hidden");
@@ -5979,7 +5992,11 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 <span class="inline-block px-2.5 py-1 rounded-full text-xs m-0.5 ${this.getTypeColorClass(template.type)}">${template.type.toUpperCase()}</span>
                 ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 text-sm font-bold">⭐ Prestige ${pet.prestigeLevel}</div>` : ""}
                 ${pet.shiny ? `<div class="text-yellow-300 text-sm font-bold">✨ Shiny</div>` : ""}
-                ${Array.isArray(pet.equipment) && pet.equipment.length > 0 ? pet.equipment.map(itemId => `<div class="text-green-300 text-sm font-bold">🎒 ${Economy.shopItems[itemId]?.name || ""}</div>`).join("") : ""}
+                ${pet.equipmentSlots ? `
+                    ${pet.equipmentSlots.weapon ? `<div class="text-green-300 text-sm font-bold">⚔️ ${EquipmentSystem.equipment[pet.equipmentSlots.weapon]?.name || "Unknown"}</div>` : ""}
+                    ${pet.equipmentSlots.armor ? `<div class="text-green-300 text-sm font-bold">🛡️ ${EquipmentSystem.equipment[pet.equipmentSlots.armor]?.name || "Unknown"}</div>` : ""}
+                    ${pet.equipmentSlots.ring ? `<div class="text-green-300 text-sm font-bold">💍 ${EquipmentSystem.equipment[pet.equipmentSlots.ring]?.name || "Unknown"}</div>` : ""}
+                ` : ""}
                 <div class="opacity-90 text-sm">Tier: ${pet.tier} (+${pet.tierBonus} all stats)</div>
                 <div class="opacity-90 text-sm">Level ${pet.level}</div>
                 <div class="w-full h-5 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-red-400 to-red-500 transition-all duration-300" style="width: ${hpPercent}%"></div></div>
@@ -6246,20 +6263,31 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     renderCrafting() {
         const resourceGrid = document.getElementById("craftingResources");
         resourceGrid.innerHTML = "";
-        const resourceItems = ["woodStick", "rock", "leather", "ore", "herbs", "crystal", "darkRock"];
+        const resourceItems = ["woodStick", "rock", "leather", "ore", "herbs", "crystal", "darkRock", "fireEssence", "waterOrb", "electricSpark", "iceShard", "poisonVial", "darkFragment", "fairyDust", "psychicGem", "groundStone", "flyingFeather", "ghostEssence", "bugShell", "steelIngot", "fightingBand", "magicCrystal", "ancientScroll", "mysticRune", "starFragment", "moonStone", "sunStone", "thunderStone", "waterStone", "fireStone", "leafStone", "monsterHorn", "beastFur", "snakeScale", "birdWing", "wolfFang", "bearClaw", "spiderSilk", "turtleShell", "goldNugget", "silverOre", "platinumBar", "diamond", "ruby", "sapphire", "emerald", "topaz", "amethyst", "chaosOrb", "timeCrystal", "soulStone", "divineFeather", "voidEssence"];
         const resourceEmojis = {
             woodStick: "🪵", rock: "🪨", leather: "🥾", ore: "⛏️",
-            herbs: "🌿", crystal: "💎", darkRock: "🟣"
+            herbs: "🌿", crystal: "💎", darkRock: "🟣", fireEssence: "🔥",
+            waterOrb: "💧", electricSpark: "⚡", iceShard: "❄️", poisonVial: "☠️",
+            darkFragment: "🌑", fairyDust: "✨", psychicGem: "🔮", groundStone: "🏔️",
+            flyingFeather: "🪶", ghostEssence: "👻", bugShell: "🐛", steelIngot: "🔩",
+            fightingBand: "🥊", magicCrystal: "🌟", ancientScroll: "📜", mysticRune: "🔱",
+            starFragment: "⭐", moonStone: "🌙", sunStone: "☀️", thunderStone: "⚡",
+            waterStone: "💧", fireStone: "🔥", leafStone: "🍃", monsterHorn: "🦴",
+            beastFur: "🐾", snakeScale: "🐍", birdWing: "🪶", wolfFang: "🐺",
+            bearClaw: "🐻", spiderSilk: "🕸️", turtleShell: "🐢", goldNugget: "🥇",
+            silverOre: "🥈", platinumBar: "⚪", diamond: "💎", ruby: "❤️",
+            sapphire: "💙", emerald: "💚", topaz: "💛", amethyst: "💜",
+            chaosOrb: "🌀", timeCrystal: "⏰", soulStone: "👻", divineFeather: "🕊️",
+            voidEssence: "⬛"
         };
         resourceItems.forEach(itemId => {
-            const item = Economy.shopItems[itemId];
-            if (!item) return;
             const count = Economy.inventory[itemId] || 0;
+            if (count === 0) return;
             const card = document.createElement("div");
             card.className = "bg-white/10 rounded-xl p-2.5 text-center";
             card.innerHTML = `
-                <div class="text-2xl">${resourceEmojis[itemId]}</div>
-                <div class="text-xs mt-1">${item.name}</div>
+                <div class="text-2xl">${resourceEmojis[itemId] || "📦"}</div>
+                <div class="text-xs mt-1">${itemId}</div>
                 <div class="text-yellow-400 font-bold text-sm">${count}</div>
             `;
             resourceGrid.appendChild(card);
@@ -6270,17 +6298,17 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         for (const [recipeId, recipe] of Object.entries(CraftingSystem.recipes)) {
             const canCraft = CraftingSystem.canCraft(recipeId);
             const costText = Object.entries(recipe.cost).map(([itemId, qty]) => {
-                const rItem = Economy.shopItems[itemId];
                 const owned = Economy.inventory[itemId] || 0;
                 const has = owned >= qty;
-                const emojis = { woodStick: "🪵", rock: "🪨", leather: "🥾", ore: "⛏️", herbs: "🌿", crystal: "💎", darkRock: "🟣" };
-                return `<span class="${has ? "text-green-400" : "text-red-400"}">${emojis[itemId] || ""} ${qty}/${owned}</span>`;
+                const emojis = { woodStick: "🪵", rock: "🪨", leather: "🥾", ore: "⛏️", herbs: "🌿", crystal: "💎", darkRock: "🟣", fireEssence: "🔥", waterOrb: "💧", electricSpark: "⚡", iceShard: "❄️", poisonVial: "☠️", darkFragment: "🌑", fairyDust: "✨", psychicGem: "🔮", groundStone: "🏔️", flyingFeather: "🪶", ghostEssence: "👻", bugShell: "🐛", steelIngot: "🔩", fightingBand: "🥊", magicCrystal: "🌟", ancientScroll: "📜", mysticRune: "🔱", starFragment: "⭐", moonStone: "🌙", sunStone: "☀️", thunderStone: "⚡", waterStone: "💧", fireStone: "🔥", leafStone: "🍃", monsterHorn: "🦴", beastFur: "🐾", snakeScale: "🐍", birdWing: "🪶", wolfFang: "🐺", bearClaw: "🐻", spiderSilk: "🕸️", turtleShell: "🐢", goldNugget: "🥇", silverOre: "🥈", platinumBar: "⚪", diamond: "💎", ruby: "❤️", sapphire: "💙", emerald: "💚", topaz: "💛", amethyst: "💜", chaosOrb: "🌀", timeCrystal: "⏰", soulStone: "👻", divineFeather: "🕊️", voidEssence: "⬛" };
+                return `<span class="${has ? "text-green-400" : "text-red-400"}">${emojis[itemId] || "📦"} ${qty}/${owned}</span>`;
             }).join(" ");
 
             const card = document.createElement("div");
             card.className = "bg-white/10 rounded-xl p-4 text-center";
+            const typeLabel = recipe.type === "equipment" ? "⚔️ Equipment" : "📦 Item";
             card.innerHTML = `
-                <h4>${recipe.name}</h4>
+                <h4>${recipe.name} <span class="text-xs opacity-60">${typeLabel}</span></h4>
                 <div class="text-xs my-2 opacity-80">${costText}</div>
                 <button onclick="UIManager.craftItem('${recipeId}')" ${canCraft ? "" : "disabled"} class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white m-1 transition-all duration-150 text-sm hover:-translate-y-0.5 ${canCraft ? "bg-yellow-800" : "bg-gray-600 opacity-50 cursor-not-allowed"}">Craft</button>
             `;

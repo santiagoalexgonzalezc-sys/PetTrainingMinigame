@@ -43,13 +43,16 @@ const DataManager = {
             PetManager.pets = data.pets || [];
             PetManager.storage = data.storage || [];
             Economy.money = data.money || 100;
-            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, bandOfSwiftness: 0, toughCollar: 0, focusBand: 0, lifeBangle: 0, attackSunglasses: 0, woodStick: 0, rock: 0, leather: 0, ore: 0, herbs: 0, crystal: 0, darkRock: 0, gem: 0, bossKey: 0, dragonScale: 0, phoenixFeather: 0, abyssalPearl: 0, ancientRoot: 0, stormEssence: 0, shadowEssence: 0, prismShard: 0, venomSac: 0, titaniumPlate: 0, mithrilThread: 0, frostCrystal: 0, shadowCloth: 0, thunderShard: 0, natureEssence: 0, obsidianBlade: 0, starMetal: 0, phoenixEmber: 0, tidalGem: 0, stormCore: 0, abyssalStone: 0, prismLens: 0, toxicFang: 0, spiritOrb: 0, ancientRune: 0, soulFragment: 0, timeDust: 0, eternalEssence: 0, voidCrystal: 0, celestialDust: 0 };
+            Economy.inventory = data.inventory || { basicBall: 5, potion: 3, tierStone: 0, xpOrb: 0, rareXpOrb: 0, precisionGuide: 0, focusIncense: 0, woodStick: 0, rock: 0, leather: 0, ore: 0, herbs: 0, crystal: 0, darkRock: 0, gem: 0, bossKey: 0, dragonScale: 0, phoenixFeather: 0, abyssalPearl: 0, ancientRoot: 0, stormEssence: 0, shadowEssence: 0, prismShard: 0, venomSac: 0, titaniumPlate: 0, mithrilThread: 0, frostCrystal: 0, shadowCloth: 0, thunderShard: 0, natureEssence: 0, obsidianBlade: 0, starMetal: 0, phoenixEmber: 0, tidalGem: 0, stormCore: 0, abyssalStone: 0, prismLens: 0, toxicFang: 0, spiritOrb: 0, ancientRune: 0, soulFragment: 0, timeDust: 0, eternalEssence: 0, voidCrystal: 0, celestialDust: 0, fireEssence: 0, waterOrb: 0, grassSeed: 0, electricSpark: 0, iceShard: 0, poisonVial: 0, darkFragment: 0, fairyDust: 0, psychicGem: 0, groundStone: 0, flyingFeather: 0, ghostEssence: 0, bugShell: 0, steelIngot: 0, fightingBand: 0, magicCrystal: 0, ancientScroll: 0, mysticRune: 0, starFragment: 0, moonStone: 0, sunStone: 0, thunderStone: 0, waterStone: 0, fireStone: 0, leafStone: 0, monsterHorn: 0, beastFur: 0, snakeScale: 0, birdWing: 0, wolfFang: 0, bearClaw: 0, spiderSilk: 0, turtleShell: 0, goldNugget: 0, silverOre: 0, platinumBar: 0, diamond: 0, ruby: 0, sapphire: 0, emerald: 0, topaz: 0, amethyst: 0, chaosOrb: 0, timeCrystal: 0, soulStone: 0, divineFeather: 0, voidEssence: 0 };
             PetManager.pets.forEach(p => {
                 if (p.prestigeLevel === undefined) p.prestigeLevel = 0;
                 if (p.bonusStats === undefined) p.bonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (p.levelBonusStats === undefined) p.levelBonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (p.shiny === undefined) p.shiny = false;
                 if (p.shinyBonus === undefined) p.shinyBonus = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+                if (!p.equipmentSlots) {
+                    p.equipmentSlots = { weapon: null, armor: null, ring: null };
+                }
                 if (!Array.isArray(p.equipment)) {
                     if (p.equipment && typeof p.equipment === "string") {
                         p.equipment = [p.equipment];
@@ -80,6 +83,9 @@ const DataManager = {
                 if (p.levelBonusStats === undefined) p.levelBonusStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
                 if (p.shiny === undefined) p.shiny = false;
                 if (p.shinyBonus === undefined) p.shinyBonus = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
+                if (!p.equipmentSlots) {
+                    p.equipmentSlots = { weapon: null, armor: null, ring: null };
+                }
                 if (!Array.isArray(p.equipment)) {
                     if (p.equipment && typeof p.equipment === "string") {
                         p.equipment = [p.equipment];
@@ -1101,7 +1107,54 @@ const Economy = {
         timeDust: 0,
         eternalEssence: 0,
         voidCrystal: 0,
-        celestialDust: 0
+        celestialDust: 0,
+        fireEssence: 0,
+        waterOrb: 0,
+        grassSeed: 0,
+        electricSpark: 0,
+        iceShard: 0,
+        poisonVial: 0,
+        darkFragment: 0,
+        fairyDust: 0,
+        psychicGem: 0,
+        groundStone: 0,
+        flyingFeather: 0,
+        ghostEssence: 0,
+        bugShell: 0,
+        steelIngot: 0,
+        fightingBand: 0,
+        magicCrystal: 0,
+        ancientScroll: 0,
+        mysticRune: 0,
+        starFragment: 0,
+        moonStone: 0,
+        sunStone: 0,
+        thunderStone: 0,
+        waterStone: 0,
+        fireStone: 0,
+        leafStone: 0,
+        monsterHorn: 0,
+        beastFur: 0,
+        snakeScale: 0,
+        birdWing: 0,
+        wolfFang: 0,
+        bearClaw: 0,
+        spiderSilk: 0,
+        turtleShell: 0,
+        goldNugget: 0,
+        silverOre: 0,
+        platinumBar: 0,
+        diamond: 0,
+        ruby: 0,
+        sapphire: 0,
+        emerald: 0,
+        topaz: 0,
+        amethyst: 0,
+        chaosOrb: 0,
+        timeCrystal: 0,
+        soulStone: 0,
+        divineFeather: 0,
+        voidEssence: 0
     },
     shopItems: {
         greatBall: { name: "Great Ball", price: 150, type: "catch", power: 2 },
@@ -1200,6 +1253,186 @@ const PlayerSystem = {
     selectedTitle: null,
     dailyQuests: [],
     lastQuestReset: null
+};
+
+// ==================== EQUIPMENT SYSTEM ====================
+const EquipmentSystem = {
+    equipment: {
+        // Weapons
+        flameSword: {
+            id: "flameSword",
+            name: "Flame Sword",
+            type: "weapon",
+            tier: 1,
+            emoji: "⚔️",
+            stats: { attack: 15 },
+            bonuses: { fireDamage: 1.2 },
+            description: "+15 Attack, +20% Fire damage",
+            recipe: { woodStick: 5, fireEssence: 3, ore: 2 }
+        },
+        waterStaff: {
+            id: "waterStaff",
+            name: "Water Staff",
+            type: "weapon",
+            tier: 1,
+            emoji: "🔮",
+            stats: { special: 12 },
+            bonuses: { waterDamage: 1.2 },
+            description: "+12 Special, +20% Water damage",
+            recipe: { woodStick: 5, waterOrb: 3, crystal: 2 }
+        },
+        thunderDagger: {
+            id: "thunderDagger",
+            name: "Thunder Dagger",
+            type: "weapon",
+            tier: 1,
+            emoji: "⚡",
+            stats: { attack: 10, speed: 5 },
+            bonuses: { electricDamage: 1.15 },
+            description: "+10 Attack, +5 Speed, +15% Electric damage",
+            recipe: { electricSpark: 3, steelIngot: 2, thunderShard: 1 }
+        },
+        // Armor
+        leatherVest: {
+            id: "leatherVest",
+            name: "Leather Vest",
+            type: "armor",
+            tier: 1,
+            emoji: "🥋",
+            stats: { hp: 20, defense: 5 },
+            description: "+20 HP, +5 Defense",
+            recipe: { leather: 5, beastFur: 3 }
+        },
+        scaleArmor: {
+            id: "scaleArmor",
+            name: "Scale Armor",
+            type: "armor",
+            tier: 1,
+            emoji: "🛡️",
+            stats: { defense: 15, hp: 10 },
+            description: "+15 Defense, +10 HP",
+            recipe: { snakeScale: 5, turtleShell: 3 }
+        },
+        ironPlate: {
+            id: "ironPlate",
+            name: "Iron Plate",
+            type: "armor",
+            tier: 1,
+            emoji: "🔩",
+            stats: { defense: 25 },
+            description: "+25 Defense",
+            recipe: { ore: 5, steelIngot: 2 }
+        }
+    },
+
+    craftEquipment(equipmentId) {
+        const equip = this.equipment[equipmentId];
+        if (!equip) return { success: false, reason: "Equipment not found!" };
+
+        // Check if player has required materials
+        for (const [material, qty] of Object.entries(equip.recipe)) {
+            if ((Economy.inventory[material] || 0) < qty) {
+                return { success: false, reason: `Need ${qty}x ${material}` };
+            }
+        }
+
+        // Deduct materials
+        for (const [material, qty] of Object.entries(equip.recipe)) {
+            Economy.inventory[material] -= qty;
+        }
+
+        // Add equipment to inventory
+        Economy.inventory[equipmentId] = (Economy.inventory[equipmentId] || 0) + 1;
+
+        PlayerSystem.totalCrafts++;
+        DataManager.save();
+        return { success: true, equipment: equip };
+    },
+
+    canCraft(equipmentId) {
+        const equip = this.equipment[equipmentId];
+        if (!equip) return false;
+
+        for (const [material, qty] of Object.entries(equip.recipe)) {
+            if ((Economy.inventory[material] || 0) < qty) {
+                return false;
+            }
+        }
+        return true;
+    },
+
+    equipToPet(petId, equipmentId) {
+        const pet = PetManager.pets.find(p => String(p.id) === String(petId));
+        if (!pet) return { success: false, reason: "Pet not found!" };
+
+        const equip = this.equipment[equipmentId];
+        if (!equip) return { success: false, reason: "Equipment not found!" };
+
+        if ((Economy.inventory[equipmentId] || 0) < 1) {
+            return { success: false, reason: "You don't have this equipment!" };
+        }
+
+        // Check slot limits
+        if (!pet.equipmentSlots) {
+            pet.equipmentSlots = { weapon: null, armor: null, ring: null };
+        }
+
+        if (pet.equipmentSlots[equip.type]) {
+            return { success: false, reason: `Already equipped a ${equip.type}!` };
+        }
+
+        // Equip the item
+        pet.equipmentSlots[equip.type] = equipmentId;
+        Economy.inventory[equipmentId]--;
+
+        // Apply stats
+        if (equip.stats) {
+            for (const [stat, value] of Object.entries(equip.stats)) {
+                pet.bonusStats[stat] = (pet.bonusStats[stat] || 0) + value;
+            }
+        }
+
+        // Recalculate stats
+        const template = PetTypes[pet.typeId];
+        if (template) {
+            pet.stats = PetManager.calculateStats(template, pet.level, pet);
+        }
+
+        DataManager.save();
+        return { success: true, equipment: equip };
+    },
+
+    unequipFromPet(petId, slot) {
+        const pet = PetManager.pets.find(p => String(p.id) === String(petId));
+        if (!pet) return { success: false, reason: "Pet not found!" };
+
+        if (!pet.equipmentSlots || !pet.equipmentSlots[slot]) {
+            return { success: false, reason: "Nothing equipped in this slot!" };
+        }
+
+        const equipmentId = pet.equipmentSlots[slot];
+        const equip = this.equipment[equipmentId];
+
+        // Remove stats
+        if (equip && equip.stats) {
+            for (const [stat, value] of Object.entries(equip.stats)) {
+                pet.bonusStats[stat] = Math.max(0, (pet.bonusStats[stat] || 0) - value);
+            }
+        }
+
+        // Return to inventory
+        Economy.inventory[equipmentId] = (Economy.inventory[equipmentId] || 0) + 1;
+        pet.equipmentSlots[slot] = null;
+
+        // Recalculate stats
+        const template = PetTypes[pet.typeId];
+        if (template) {
+            pet.stats = PetManager.calculateStats(template, pet.level, pet);
+        }
+
+        DataManager.save();
+        return { success: true };
+    }
 };
 
 // ==================== ACHIEVEMENT SYSTEM ====================

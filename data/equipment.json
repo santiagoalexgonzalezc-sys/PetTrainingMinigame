@@ -1,0 +1,153 @@
+{
+  "flameSword": {
+    "id": "flameSword",
+    "name": "Flame Sword",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "⚔️",
+    "stats": { "attack": 15 },
+    "bonuses": { "fireDamage": 1.2 },
+    "description": "+15 Attack, +20% Fire damage",
+    "recipe": { "woodStick": 5, "fireEssence": 3, "ore": 2 }
+  },
+  "waterStaff": {
+    "id": "waterStaff",
+    "name": "Water Staff",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "🔮",
+    "stats": { "special": 12 },
+    "bonuses": { "waterDamage": 1.2 },
+    "description": "+12 Special, +20% Water damage",
+    "recipe": { "woodStick": 5, "waterOrb": 3, "crystal": 2 }
+  },
+  "thunderDagger": {
+    "id": "thunderDagger",
+    "name": "Thunder Dagger",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "⚡",
+    "stats": { "attack": 10, "speed": 5 },
+    "bonuses": { "electricDamage": 1.15 },
+    "description": "+10 Attack, +5 Speed, +15% Electric damage",
+    "recipe": { "electricSpark": 3, "steelIngot": 2, "thunderShard": 1 }
+  },
+  "leatherVest": {
+    "id": "leatherVest",
+    "name": "Leather Vest",
+    "type": "armor",
+    "tier": 1,
+    "emoji": "🥋",
+    "stats": { "hp": 20, "defense": 5 },
+    "description": "+20 HP, +5 Defense",
+    "recipe": { "leather": 5, "beastFur": 3 }
+  },
+  "scaleArmor": {
+    "id": "scaleArmor",
+    "name": "Scale Armor",
+    "type": "armor",
+    "tier": 1,
+    "emoji": "🛡️",
+    "stats": { "defense": 15, "hp": 10 },
+    "description": "+15 Defense, +10 HP",
+    "recipe": { "snakeScale": 5, "turtleShell": 3 }
+  },
+  "ironPlate": {
+    "id": "ironPlate",
+    "name": "Iron Plate",
+    "type": "armor",
+    "tier": 1,
+    "emoji": "🔩",
+    "stats": { "defense": 25 },
+    "description": "+25 Defense",
+    "recipe": { "ore": 5, "steelIngot": 2 }
+  },
+  "ringOfSwiftness": {
+    "id": "ringOfSwiftness",
+    "name": "Ring of Swiftness",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "💨",
+    "stats": { "speed": 15 },
+    "bonuses": { "evasion": 0.05 },
+    "description": "+15 Speed, +5% Evasion",
+    "recipe": { "flyingFeather": 5, "electricSpark": 2, "timeCrystal": 1 }
+  },
+  "ringOfPower": {
+    "id": "ringOfPower",
+    "name": "Ring of Power",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "💪",
+    "stats": { "attack": 20 },
+    "bonuses": { "critChance": 0.1 },
+    "description": "+20 Attack, +10% Crit Chance",
+    "recipe": { "monsterHorn": 5, "dragonScale": 2, "chaosOrb": 1 }
+  },
+  "ringOfVitality": {
+    "id": "ringOfVitality",
+    "name": "Ring of Vitality",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "❤️",
+    "stats": { "hp": 40 },
+    "bonuses": { "healingBonus": 0.05 },
+    "description": "+40 HP, +5% Healing Received",
+    "recipe": { "turtleShell": 5, "soulStone": 2, "divineFeather": 1 }
+  },
+  "ringOfElements": {
+    "id": "ringOfElements",
+    "name": "Ring of Elements",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "🌟",
+    "stats": { "special": 15 },
+    "bonuses": { "elementalDamage": 0.1 },
+    "description": "+15 Special, +10% All Elemental Damage",
+    "recipe": { "magicCrystal": 5, "mysticRune": 2, "starFragment": 1 }
+  },
+  "ringOfProtection": {
+    "id": "ringOfProtection",
+    "name": "Ring of Protection",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "🛡️",
+    "stats": { "defense": 15 },
+    "bonuses": { "damageReduction": 0.1 },
+    "description": "+15 Defense, +10% Damage Reduction",
+    "recipe": { "steelIngot": 5, "obsidianBlade": 2, "ancientRune": 1 }
+  },
+  "ringOfGathering": {
+    "id": "ringOfGathering",
+    "name": "Ring of Gathering",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "🎒",
+    "stats": { "speed": 5 },
+    "bonuses": { "materialDropChance": 0.05 },
+    "description": "+5 Speed, +5% Material Drop Chance",
+    "recipe": { "woodStick": 5, "leather": 3, "herbs": 2 }
+  },
+  "ringOfSurvival": {
+    "id": "ringOfSurvival",
+    "name": "Ring of Survival",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "🛡️",
+    "stats": { "hp": 15, "defense": 5 },
+    "bonuses": { "hpRegeneration": 0.03 },
+    "description": "+15 HP, +5 Defense, +3% HP Regeneration",
+    "recipe": { "leather": 5, "ore": 3, "crystal": 2 }
+  },
+  "ringOfTraining": {
+    "id": "ringOfTraining",
+    "name": "Ring of Training",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "📚",
+    "stats": { "attack": 5, "special": 5 },
+    "bonuses": { "xpGain": 0.05 },
+    "description": "+5 Attack, +5 Special, +5% XP Gain",
+    "recipe": { "woodStick": 5, "herbs": 3, "crystal": 2 }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "firstCatch": { "id": "firstCatch", "name": "First Catch", "description": "Catch your first pet", "icon": "🎱", "reward": 100, "tier": "bronze" },
+  "defeat10": { "id": "defeat10", "name": "Novice Trainer", "description": "Defeat 10 pets in battle", "icon": "⚔️", "reward": 200, "tier": "bronze" },
+  "defeat50": { "id": "defeat50", "name": "Skilled Trainer", "description": "Defeat 50 pets in battle", "icon": "🗡️", "reward": 500, "tier": "silver" },
+  "defeat100": { "id": "defeat100", "name": "Master Trainer", "description": "Defeat 100 pets in battle", "icon": "🏆", "reward": 1000, "tier": "gold" },
+  "catch10": { "id": "catch10", "name": "Collector", "description": "Catch 10 different pets", "icon": "📦", "reward": 300, "tier": "bronze" },
+  "catch25": { "id": "catch25", "name": "Hoarder", "description": "Catch 25 different pets", "icon": "📦", "reward": 500, "tier": "silver" },
+  "catch50": { "id": "catch50", "name": "Archivist", "description": "Catch 50 different pets", "icon": "📚", "reward": 1000, "tier": "gold" },
+  "train10": { "id": "train10", "name": "Disciplined", "description": "Train 10 times", "icon": "💪", "reward": 300, "tier": "bronze" },
+  "train50": { "id": "train50", "name": "Dedicated", "description": "Train 50 times", "icon": "💪", "reward": 800, "tier": "silver" },
+  "explore10": { "id": "explore10", "name": "Explorer", "description": "Explore 10 times", "icon": "🗺️", "reward": 300, "tier": "bronze" },
+  "explore50": { "id": "explore50", "name": "Adventurer", "description": "Explore 50 times", "icon": "🗺️", "reward": 800, "tier": "silver" },
+  "craft10": { "id": "craft10", "name": "Craftsman", "description": "Craft 10 items", "icon": "🔨", "reward": 300, "tier": "bronze" },
+  "craft50": { "id": "craft50", "name": "Artisan", "description": "Craft 50 items", "icon": "🔨", "reward": 800, "tier": "silver" },
+  "streak5": { "id": "streak5", "name": "On Fire", "description": "Achieve 5 battle streak", "icon": "🔥", "reward": 500, "tier": "bronze" },
+  "streak10": { "id": "streak10", "name": "Unstoppable", "description": "Achieve 10 battle streak", "icon": "⚡", "reward": 1000, "tier": "gold" },
+  "prestige1": { "id": "prestige1", "name": "First Fusion", "description": "Perform your first prestige fusion", "icon": "✨", "reward": 1000, "tier": "gold" },
+  "bossSlayer1": { "id": "bossSlayer1", "name": "Boss Slayer I", "description": "Defeat 5 bosses", "icon": "👑", "reward": 1500, "tier": "silver" },
+  "bossSlayer2": { "id": "bossSlayer2", "name": "Boss Slayer II", "description": "Defeat 20 bosses", "icon": "👑", "reward": 3000, "tier": "gold" },
+  "dragonSlayer": { "id": "dragonSlayer", "name": "Dragon Slayer", "description": "Defeat the Dragon Lord", "icon": "🐉", "reward": 5000, "tier": "platinum" }
+}

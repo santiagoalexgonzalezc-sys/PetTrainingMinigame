@@ -1,0 +1,123 @@
+{
+  "forest": {
+    "name": "Forest",
+    "emoji": "🌲",
+    "unlockLevel": 1,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["leafBunny", "vineSnake", "mossBear", "glimmerMoth", "moonPixie"],
+    "rarePets": ["mindCat", "dreamOwl", "fieldDeer", "thornHog"],
+    "encounterRate": 1,
+    "ambientColor": "rgba(34, 139, 34, 0.15)"
+  },
+  "cave": {
+    "name": "Cave",
+    "emoji": "⛰️",
+    "unlockLevel": 1,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["scaleLizard", "sparkDog"],
+    "rarePets": ["drakeWhelp", "frostPenguin", "crystalSeal", "frostBear", "crystalWyrm", "mindApe"],
+    "encounterRate": 1,
+    "ambientColor": "rgba(105, 105, 105, 0.15)"
+  },
+  "lake": {
+    "name": "Lake",
+    "emoji": "💧",
+    "unlockLevel": 1,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["aquaTurtle", "mistFrog", "waveWhale"],
+    "rarePets": ["shockEel", "boltMouse"],
+    "encounterRate": 1,
+    "ambientColor": "rgba(30, 144, 255, 0.15)"
+  },
+  "mountain": {
+    "name": "Mountain",
+    "emoji": "🏔️",
+    "unlockLevel": 5,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["flameCat", "zapBird", "scaleLizard", "frostBear", "cloudSheep", "glacierFox"],
+    "rarePets": ["drakeWhelp", "cosmicFox", "crystalWyrm", "voltageOx"],
+    "encounterRate": 1,
+    "ambientColor": "rgba(139, 137, 112, 0.15)"
+  },
+  "desert": {
+    "name": "Desert",
+    "emoji": "🏜️",
+    "unlockLevel": 10,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["emberFox", "sparkDog", "scaleLizard", "cinderScorpion", "duneLion"],
+    "rarePets": ["flameCat", "drakeWhelp"],
+    "encounterRate": 1,
+    "ambientColor": "rgba(210, 180, 140, 0.15)"
+  },
+  "ocean": {
+    "name": "Ocean",
+    "emoji": "🌊",
+    "unlockLevel": 15,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["waveWhale", "shockEel", "crystalSeal", "tidalCrab"],
+    "rarePets": ["aquaTurtle", "frostPenguin"],
+    "encounterRate": 1,
+    "ambientColor": "rgba(0, 105, 148, 0.15)"
+  },
+  "volcano": {
+    "name": "Volcano",
+    "emoji": "🌋",
+    "unlockLevel": 20,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["flameCat", "emberFox", "sparkDog"],
+    "rarePets": ["drakeWhelp", "scaleLizard", "cinderScorpion", "cinderHawk"],
+    "encounterRate": 1,
+    "ambientColor": "rgba(178, 34, 34, 0.15)"
+  },
+  "swamp": {
+    "name": "Swamp",
+    "emoji": "🐊",
+    "unlockLevel": 25,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["mistFrog", "vineSnake", "mossBear", "glimmerMoth", "marshCroc", "sunstoneBeetle"],
+    "rarePets": ["waveWhale", "dreamOwl", "frostBear"],
+    "encounterRate": 1,
+    "ambientColor": "rgba(85, 107, 47, 0.15)"
+  },
+  "sky": {
+    "name": "Sky",
+    "emoji": "☁️",
+    "unlockLevel": 30,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["zapBird", "boltMouse", "dreamOwl", "cloudSheep"],
+    "rarePets": ["cosmicFox", "shockEel"],
+    "encounterRate": 1,
+    "ambientColor": "rgba(135, 206, 250, 0.15)"
+  },
+  "toxicMarsh": {
+    "name": "Toxic Marsh",
+    "emoji": "🧪",
+    "unlockLevel": 35,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["venomAsp", "bogToad", "mistFrog", "vineSnake"],
+    "rarePets": ["cosmicFox", "moonPixie"],
+    "encounterRate": 1,
+    "ambientColor": "rgba(128, 0, 128, 0.15)"
+  },
+  "darkforest": {
+    "name": "Dark Forest",
+    "emoji": "🌑",
+    "unlockLevel": 20,
+    "floorSize": 5,
+    "maxFloor": 200,
+    "commonPets": ["shadowWolf", "duskBat"],
+    "rarePets": [],
+    "encounterRate": 1,
+    "ambientColor": "rgba(47, 79, 79, 0.15)"
+  }
+}

@@ -1,0 +1,527 @@
+{
+  "emberFox": {
+    "name": "Ember Fox",
+    "emoji": "🦊",
+    "type": "fire",
+    "baseStats": { "hp": 65, "attack": 52, "defense": 43, "speed": 65, "special": 60 },
+    "passive": "Blaze - Low HP increases Fire damage",
+    "ability": {
+      "name": "Fireball",
+      "type": "fire",
+      "cooldown": 2,
+      "description": "Deals based on special + 5 flat. Leaves the opponent burning for the rest of the battle (25% of initial damage per turn).",
+      "burn": true
+    },
+    "evolution": ["Ember Fox", "Inferno Fox", "Phoenix Lord"]
+  },
+  "flameCat": {
+    "name": "Flame Cat",
+    "emoji": "🐱",
+    "type": "fire",
+    "baseStats": { "hp": 68, "attack": 55, "defense": 40, "speed": 60, "special": 55 },
+    "passive": "Intimidate - Lowers enemy attack by 1 stage on switch in",
+    "ability": {
+      "name": "Ember Surge",
+      "type": "fire",
+      "cooldown": 3,
+      "description": "Hits with fire power + 3 flat. Burns the enemy (25% of initial dmg/turn for 3 turns).",
+      "burn": true,
+      "burnDuration": 3
+    },
+    "evolution": ["Flame Cat", "Blaze Cat", "Magma Tiger"]
+  },
+  "sparkDog": {
+    "name": "Spark Dog",
+    "emoji": "🐶",
+    "type": "fire",
+    "baseStats": { "hp": 70, "attack": 50, "defense": 45, "speed": 55, "special": 50 },
+    "passive": "Kindling Core - Immune to Fire; absorbs Fire moves for a 1.15x Fire power boost",
+    "evolution": ["Spark Dog", "Fire Hound", "Inferno Wolf"]
+  },
+  "cinderHawk": {
+    "name": "Cinder Hawk",
+    "emoji": "🦅",
+    "type": "fire",
+    "baseStats": { "hp": 68, "attack": 58, "defense": 42, "speed": 62, "special": 58 },
+    "passive": "Meltdown - Fire damage increases by 1.25x when HP drops below 25%",
+    "evolution": ["Ember Hawk", "Cinder Hawk", "Solar Phoenix"]
+  },
+  "aquaTurtle": {
+    "name": "Aqua Turtle",
+    "emoji": "🐢",
+    "type": "water",
+    "baseStats": { "hp": 75, "attack": 40, "defense": 65, "speed": 35, "special": 50 },
+    "passive": "Tide Pools - Heals 3% max HP each turn; healing doubles in rain",
+    "evolution": ["Aqua Turtle", "Hydro Turtle", "Ocean Guardian"]
+  },
+  "mistFrog": {
+    "name": "Mist Frog",
+    "emoji": "🐸",
+    "type": "water",
+    "baseStats": { "hp": 70, "attack": 45, "defense": 50, "speed": 55, "special": 55 },
+    "passive": "Misty Agility - Speed doubles in rain; Water moves gain 10% accuracy",
+    "evolution": ["Mist Frog", "Storm Frog", "Tidal King"]
+  },
+  "waveWhale": {
+    "name": "Wave Whale",
+    "emoji": "🐋",
+    "type": "water",
+    "baseStats": { "hp": 80, "attack": 45, "defense": 55, "speed": 40, "special": 60 },
+    "passive": "Aqua Vein - Absorbs Water moves; converts 50% of absorbed damage into HP",
+    "evolution": ["Wave Whale", "Tsunami Whale", "Leviathan"]
+  },
+  "tidalCrab": {
+    "name": "Tidal Crab",
+    "emoji": "🦀",
+    "type": "water",
+    "baseStats": { "hp": 70, "attack": 55, "defense": 60, "speed": 38, "special": 48 },
+    "passive": "Riptide - Water damage increases by 50% when HP is below 25%",
+    "evolution": ["Tide Crab", "Tidal Crab", "Abyssal Crustacean"]
+  },
+  "cinderCrab": {
+    "name": "Cinder Crab",
+    "emoji": "🦀",
+    "type": "fire",
+    "baseStats": { "hp": 65, "attack": 60, "defense": 52, "speed": 40, "special": 50 },
+    "passive": "Molten Shell - Contact attackers take Fire damage equal to 8% of their max HP",
+    "evolution": ["Ash Claw", "Cinder Crab", "Magma Guardian"]
+  },
+  "leafBunny": {
+    "name": "Leaf Bunny",
+    "emoji": "🐰",
+    "type": "grass",
+    "baseStats": { "hp": 65, "attack": 50, "defense": 45, "speed": 70, "special": 45 },
+    "passive": "Bloom Burst - Grass damage increases by 40% when HP is below 25%",
+    "evolution": ["Leaf Bunny", "Forest Bunny", "Nature Spirit"]
+  },
+  "vineSnake": {
+    "name": "Vine Snake",
+    "emoji": "🐍",
+    "type": "grass",
+    "baseStats": { "hp": 68, "attack": 55, "defense": 40, "speed": 60, "special": 50 },
+    "passive": "Photosynthetic Surge - Speed doubles in sunlight; vine lashes slow the enemy",
+    "ability": {
+      "name": "Vine Lash",
+      "type": "grass",
+      "cooldown": 2,
+      "description": "Deals grass-based special damage and reduces the enemy's speed by 1 stage.",
+      "speedDrop": true
+    },
+    "evolution": ["Vine Snake", "Thorn Snake", "Jungle Serpent"]
+  },
+  "mossBear": {
+    "name": "Moss Bear",
+    "emoji": "🐻",
+    "type": "grass",
+    "baseStats": { "hp": 80, "attack": 55, "defense": 50, "speed": 35, "special": 45 },
+    "passive": "Dense Fur - Reduces Fire and Ice damage by 30%",
+    "evolution": ["Moss Bear", "Forest Bear", "Earth Guardian"]
+  },
+  "thornHog": {
+    "name": "Thorn Hog",
+    "emoji": "🦔",
+    "type": "grass",
+    "baseStats": { "hp": 75, "attack": 60, "defense": 48, "speed": 45, "special": 45 },
+    "passive": "Overgrow - Low HP increases Grass damage",
+    "evolution": ["Bramble Pig", "Thorn Hog", "Verdant Behemoth"]
+  },
+  "boltMouse": {
+    "name": "Bolt Mouse",
+    "emoji": "🐭",
+    "type": "electric",
+    "baseStats": { "hp": 60, "attack": 45, "defense": 40, "speed": 80, "special": 55 },
+    "passive": "Fast feet - 10% of  dodging an attack",
+    "ability": {
+      "name": "Electric Ball",
+      "type": "electric",
+      "cooldown": 2,
+      "description": "Paralizes enemy, making them lose their turn"
+    },
+    "evolution": ["Bolt Mouse", "Volt Mouse", "Thunder Lord"]
+  },
+  "shockEel": {
+    "name": "Shock Eel",
+    "emoji": "🐟",
+    "type": "electric",
+    "baseStats": { "hp": 70, "attack": 50, "defense": 45, "speed": 65, "special": 50 },
+    "passive": "Volt Absorb - Heals from Electric moves",
+    "evolution": ["Shock Eel", "Storm Eel", "Lightning Serpent"]
+  },
+  "zapBird": {
+    "name": "Zap Bird",
+    "emoji": "🐦",
+    "type": "electric",
+    "baseStats": { "hp": 65, "attack": 48, "defense": 42, "speed": 70, "special": 55 },
+    "passive": "Motor Drive - Speed boosts from Electric moves",
+    "evolution": ["Zap Bird", "Storm Bird", "Thunder Hawk"]
+  },
+  "voltageOx": {
+    "name": "Voltage Ox",
+    "emoji": "🐂",
+    "type": "electric",
+    "baseStats": { "hp": 72, "attack": 58, "defense": 50, "speed": 45, "special": 48 },
+    "passive": "Static - Paralyzes on contact",
+    "evolution": ["Spark Calf", "Voltage Ox", "Thunder Beast"]
+  },
+  "mindCat": {
+    "name": "Mind Cat",
+    "emoji": "😺",
+    "type": "psychic",
+    "baseStats": { "hp": 65, "attack": 40, "defense": 45, "speed": 60, "special": 70 },
+    "passive": "Synchronize - Shares burn/burning/bleeding status with attacker on contact",
+    "ability": {
+      "name": "Psychic Burst",
+      "type": "psychic",
+      "cooldown": 2,
+      "description": "Deals special-based damage. 30% chance to confuse the enemy (skip their next turn).",
+      "confuse": true,
+      "confuseChance": 0.3
+    },
+    "evolution": ["Mind Cat", "Psi Cat", "Telepath Master"]
+  },
+  "dreamOwl": {
+    "name": "Dream Owl",
+    "emoji": "🦉",
+    "type": "psychic",
+    "baseStats": { "hp": 70, "attack": 42, "defense": 48, "speed": 55, "special": 65 },
+    "passive": "Lucid Mind - Cannot be put to sleep or confused; Nightmare causes enemies to skip turns",
+    "ability": {
+      "name": "Hypnosis",
+      "type": "psychic",
+      "cooldown": 3,
+      "description": "Deals psychic special damage. 50% chance to put the enemy to sleep (skip their next turn).",
+      "confuse": true,
+      "confuseChance": 0.5
+    },
+    "evolution": ["Dream Owl", "Night Owl", "Vision Sage"]
+  },
+  "cosmicFox": {
+    "name": "Cosmic Fox",
+    "emoji": "🦊",
+    "type": "psychic",
+    "baseStats": { "hp": 68, "attack": 45, "defense": 42, "speed": 65, "special": 68 },
+    "passive": "Magic Guard - Only takes direct damage",
+    "evolution": ["Cosmic Fox", "Star Fox", "Galaxy Lord"]
+  },
+  "mindApe": {
+    "name": "Mind Ape",
+    "emoji": "🙉",
+    "type": "psychic",
+    "baseStats": { "hp": 68, "attack": 45, "defense": 45, "speed": 58, "special": 68 },
+    "passive": "Magic Guard - Only takes direct damage",
+    "evolution": ["Thought Chimp", "Mind Ape", "Enlightened Sage"]
+  },
+  "frostPenguin": {
+    "name": "Frost Penguin",
+    "emoji": "🐧",
+    "type": "ice",
+    "baseStats": { "hp": 72, "attack": 48, "defense": 50, "speed": 45, "special": 55 },
+    "passive": "Snow Cloak - Evasion in snow",
+    "evolution": ["Frost Penguin", "Glacier Penguin", "Ice Emperor"]
+  },
+  "crystalSeal": {
+    "name": "Crystal Seal",
+    "emoji": "🦭",
+    "type": "ice",
+    "baseStats": { "hp": 75, "attack": 45, "defense": 55, "speed": 40, "special": 50 },
+    "passive": "Ice Body - Heals 5% max HP each turn",
+    "ability": {
+      "name": "Aurora Guard",
+      "type": "ice",
+      "cooldown": 2,
+      "description": "Deals ice damage and shields the user for 2 turns (blocks 30% of incoming damage).",
+      "shield": true,
+      "shieldDuration": 2,
+      "shieldPercent": 0.3
+    },
+    "evolution": ["Crystal Seal", "Diamond Seal", "Frost Guardian"]
+  },
+  "scaleLizard": {
+    "name": "Scale Lizard",
+    "emoji": "🦎",
+    "type": "dragon",
+    "baseStats": { "hp": 70, "attack": 55, "defense": 45, "speed": 50, "special": 50 },
+    "passive": "Rough Skin - Damages attackers",
+    "evolution": ["Scale Lizard", "Dragon Lizard", "Wyvern King"]
+  },
+  "drakeWhelp": {
+    "name": "Drake Whelp",
+    "emoji": "🐉",
+    "type": "dragon",
+    "baseStats": { "hp": 75, "attack": 60, "defense": 50, "speed": 45, "special": 55 },
+    "passive": "Multiscale - Reduces damage taken by 25% when at full HP",
+    "ability": {
+      "name": "Dragon Rampage",
+      "type": "dragon",
+      "cooldown": 3,
+      "description": "High-risk/high-reward attack. Deals 2x damage at 50% chance, or 0.5x damage at 50% chance.",
+      "rampage": true,
+      "critChance": 0.5
+    },
+    "evolution": ["Drake Whelp", "Storm Drake", "Dragon Emperor"]
+  },
+  "cinderScorpion": {
+    "name": "Cinder Scorpion",
+    "emoji": "🦂",
+    "type": "fire",
+    "baseStats": { "hp": 68, "attack": 60, "defense": 52, "speed": 55, "special": 50 },
+    "passive": "Scorpion Sting - Contact attacks have a 25% chance to inflict burn",
+    "evolution": ["Spark Tail", "Cinder Scorpion", "Inferno Stinger"]
+  },
+  "frostBear": {
+    "name": "Frost Bear",
+    "emoji": "🐻‍❄️",
+    "type": "ice",
+    "baseStats": { "hp": 85, "attack": 58, "defense": 55, "speed": 35, "special": 50 },
+    "passive": "Slush Rush - Speed doubles in hail",
+    "evolution": ["Ice Cub", "Frost Bear", "Tundra King"]
+  },
+  "glacierFox": {
+    "name": "Glacier Fox",
+    "emoji": "🦊",
+    "type": "ice",
+    "baseStats": { "hp": 70, "attack": 48, "defense": 48, "speed": 60, "special": 55 },
+    "passive": "Snow Cloak - Evasion in snow",
+    "evolution": ["Frost Kit", "Glacier Fox", "Permafrost Spirit"]
+  },
+  "crystalWyrm": {
+    "name": "Crystal Wyrm",
+    "emoji": "🐉",
+    "type": "dragon",
+    "baseStats": { "hp": 75, "attack": 58, "defense": 52, "speed": 50, "special": 62 },
+    "passive": "Levitate - Immune to ground moves",
+    "evolution": ["Shard Hatchling", "Crystal Wyrm", "Geode Leviathan"]
+  },
+  "marshCroc": {
+    "name": "Marsh Croc",
+    "emoji": "🐊",
+    "type": "dragon",
+    "baseStats": { "hp": 80, "attack": 64, "defense": 55, "speed": 42, "special": 48 },
+    "passive": "Strong Jaw - Boosts bite moves",
+    "evolution": ["Mud Wader", "Marsh Croc", "Bog Tyrant"]
+  },
+  "shadowWolf": {
+    "name": "Shadow Wolf",
+    "emoji": "🐺",
+    "type": "dark",
+    "baseStats": { "hp": 70, "attack": 55, "defense": 45, "speed": 62, "special": 60 },
+    "passive": "Alpha Hunter - Boosts attack when facing an stronger foe. Deals 1.5x damage if foe has higher total power. Bleeding Claw (Ability) - Leaves the enemy bleeding for the rest of the battle.",
+    "ability": {
+      "name": "Bleeding Claw",
+      "type": "normal",
+      "cooldown": 3,
+      "description": "Deals based on special stat. Leaves the opponent bleeding for the rest of the battle (25% of initial damage per turn).",
+      "bleed": true
+    },
+    "evolution": ["Shadow Pup", "Alpha Wolf", "Solo hunter"]
+  },
+  "duskBat": {
+    "name": "Dusk Bat",
+    "emoji": "🦇",
+    "type": "dark",
+    "baseStats": { "hp": 65, "attack": 55, "defense": 42, "speed": 72, "special": 55 },
+    "passive": "Sanguine Drain - Heals a portion of damage dealt back as HP; Dark moves amplify at low HP",
+    "ability": {
+      "name": "Life Drain",
+      "type": "dark",
+      "cooldown": 2,
+      "description": "Deals dark-based special damage and heals the user for 25% of the damage dealt.",
+      "heal": true,
+      "healPercent": 0.5
+    },
+    "evolution": ["Dusk Bat", "Vampire", "Vampire Emperor"]
+  },
+  "moonPixie": {
+    "name": "Moon Pixie",
+    "emoji": "🦄",
+    "type": "fairy",
+    "baseStats": { "hp": 68, "attack": 42, "defense": 48, "speed": 60, "special": 75 },
+    "passive": "Magic Guard - Only takes direct damage, ignores burn/bleed debuffs",
+    "ability": {
+      "name": "Moonbeam Heal",
+      "type": "fairy",
+      "cooldown": 2,
+      "description": "Deals fairy damage and heals user for 50% of damage dealt.",
+      "heal": true,
+      "healPercent": 0.5
+    },
+    "evolution": ["Star Fawn", "Moon Pixie", "Astral Spirit"]
+  },
+  "glimmerMoth": {
+    "name": "Glimmer Moth",
+    "emoji": "🦋",
+    "type": "fairy",
+    "baseStats": { "hp": 62, "attack": 40, "defense": 45, "speed": 72, "special": 65 },
+    "passive": "Shield Dust - Blocks secondary move effects",
+    "evolution": ["Dust Wisp", "Glimmer Moth", "Prism Sovereign"]
+  },
+  "sunstoneBeetle": {
+    "name": "Sunstone Beetle",
+    "emoji": "🪲",
+    "type": "fairy",
+    "baseStats": { "hp": 64, "attack": 42, "defense": 48, "speed": 65, "special": 62 },
+    "passive": "Shield Dust - Blocks secondary move effects",
+    "evolution": ["Glow Grub", "Sunstone Beetle", "Aurora Scarab"]
+  },
+  "cloudSheep": {
+    "name": "Cloud Sheep",
+    "emoji": "🐑",
+    "type": "normal",
+    "baseStats": { "hp": 82, "attack": 42, "defense": 58, "speed": 38, "special": 50 },
+    "passive": "Cotton Cloud - Contact damage halved; special damage reduced by 25%",
+    "ability": {
+      "name": "Fluffy Guard",
+      "type": "normal",
+      "cooldown": 2,
+      "description": "Deals normal special damage and shields the user for 1 turn (blocks 50% of incoming damage).",
+      "shield": true,
+      "shieldDuration": 1,
+      "shieldPercent": 0.5
+    },
+    "evolution": ["Wool Lamb", "Cloud Sheep", "Sky Shepherd"]
+  },
+  "fieldDeer": {
+    "name": "Field Deer",
+    "emoji": "🦌",
+    "type": "normal",
+    "baseStats": { "hp": 70, "attack": 48, "defense": 45, "speed": 62, "special": 50 },
+    "passive": "Run Away - Guaranteed to flee wild battles",
+    "evolution": ["Spotted Fawn", "Field Deer", "Forest Monarch"]
+  },
+  "duneLion": {
+    "name": "Dune Lion",
+    "emoji": "🦁",
+    "type": "normal",
+    "baseStats": { "hp": 75, "attack": 60, "defense": 48, "speed": 55, "special": 45 },
+    "passive": "Intimidate - Lowers enemy attack on switch",
+    "evolution": ["Sand Cub", "Dune Lion", "Savanna King"]
+  },
+  "venomAsp": {
+    "name": "Venom Asp",
+    "emoji": "🐍",
+    "type": "poison",
+    "baseStats": { "hp": 65, "attack": 52, "defense": 48, "speed": 68, "special": 60 },
+    "passive": "Acidic Blood - Melts through enemy defenses; Corrosive Bolt poisons the enemy",
+    "ability": {
+      "name": "Corrosive Bolt",
+      "type": "poison",
+      "cooldown": 3,
+      "description": "Deals poison-based special damage and poisons the enemy (10% max HP damage per turn for 3 turns).",
+      "poison": true,
+      "poisonDuration": 3
+    },
+    "evolution": ["Venom Asp", "Toxic Serpent", "Plague Sovereign"]
+  },
+  "bogToad": {
+    "name": "Bog Toad",
+    "emoji": "🐸",
+    "type": "poison",
+    "baseStats": { "hp": 78, "attack": 50, "defense": 55, "speed": 40, "special": 52 },
+    "passive": "Corrosion - Acidic strikes ignore half defense",
+    "evolution": ["Muck Tadpole", "Bog Toad", "Blight Matriarch"]
+  },
+  "infernoEmperor": {
+    "name": "Inferno Emperor",
+    "emoji": "🔥",
+    "type": "fire",
+    "baseStats": { "hp": 120, "attack": 110, "defense": 95, "speed": 100, "special": 115 },
+    "passive": "Magma Shield - 15% damage reflection",
+    "ability": {
+      "name": "Inferno Rage",
+      "type": "fire",
+      "cooldown": 3,
+      "description": "Deals 1.5x damage when HP below 50%"
+    }
+  },
+  "tidalTitan": {
+    "name": "Tidal Titan",
+    "emoji": "🌊",
+    "type": "water",
+    "baseStats": { "hp": 130, "attack": 95, "defense": 110, "speed": 90, "special": 105 },
+    "passive": "Tidal Wave - Heals 10% HP each turn",
+    "ability": {
+      "name": "Pressure",
+      "type": "water",
+      "cooldown": 2,
+      "description": "Reduces enemy speed by 25%"
+    }
+  },
+  "forestGuardian": {
+    "name": "Forest Guardian",
+    "emoji": "🌳",
+    "type": "grass",
+    "baseStats": { "hp": 140, "attack": 90, "defense": 120, "speed": 85, "special": 100 },
+    "passive": "Thorn Armor - 10% damage to attacker on hit",
+    "ability": {
+      "name": "Regrowth",
+      "type": "grass",
+      "cooldown": 5,
+      "description": "Revives once at 25% HP"
+    }
+  },
+  "stormSovereign": {
+    "name": "Storm Sovereign",
+    "emoji": "⚡",
+    "type": "electric",
+    "baseStats": { "hp": 110, "attack": 115, "defense": 90, "speed": 120, "special": 110 },
+    "passive": "Chain Lightning - 20% chance to attack twice",
+    "ability": {
+      "name": "Static Field",
+      "type": "electric",
+      "cooldown": 3,
+      "description": "20% chance to paralyze for 1 turn"
+    }
+  },
+  "shadowMonarch": {
+    "name": "Shadow Monarch",
+    "emoji": "👑",
+    "type": "dark",
+    "baseStats": { "hp": 115, "attack": 120, "defense": 100, "speed": 110, "special": 115 },
+    "passive": "Shadow Clone - 15% chance to create attacking copy",
+    "ability": {
+      "name": "Soul Drain",
+      "type": "dark",
+      "cooldown": 3,
+      "description": "Reduces enemy attack by 10%"
+    }
+  },
+  "crystalEmpress": {
+    "name": "Crystal Empress",
+    "emoji": "❄️",
+    "type": "ice",
+    "baseStats": { "hp": 120, "attack": 105, "defense": 115, "speed": 95, "special": 120 },
+    "passive": "Crystal Prison - 15% freeze chance for 1 turn",
+    "ability": {
+      "name": "Prism Beam",
+      "type": "ice",
+      "cooldown": 3,
+      "description": "+25% damage, ignores 25% defense"
+    }
+  },
+  "venomKing": {
+    "name": "Venom King",
+    "emoji": "☠️",
+    "type": "poison",
+    "baseStats": { "hp": 125, "attack": 110, "defense": 105, "speed": 100, "special": 115 },
+    "passive": "Toxic Cloud - 5% max HP damage per turn",
+    "ability": {
+      "name": "Venomous Bite",
+      "type": "poison",
+      "cooldown": 2,
+      "description": "50% healing reduction"
+    }
+  },
+  "dragonLord": {
+    "name": "Dragon Lord",
+    "emoji": "🐉",
+    "type": "dragon",
+    "baseStats": { "hp": 150, "attack": 140, "defense": 130, "speed": 125, "special": 135 },
+    "passive": "Dragon Breath - Small damage to all party pets",
+    "ability": {
+      "name": "Ancient Power",
+      "type": "dragon",
+      "cooldown": 4,
+      "description": "+15% to all stats"
+    }
+  }
+}

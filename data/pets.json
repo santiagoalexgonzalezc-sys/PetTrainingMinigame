@@ -304,7 +304,7 @@
     "name": "Shadow Wolf",
     "emoji": "🐺",
     "type": "dark",
-    "baseStats": { "hp": 70, "attack": 55, "defense": 45, "speed": 62, "special": 60 },
+    "baseStats": { "hp": 50, "attack": 80, "defense": 45, "speed": 62, "special": 70 },
     "passive": "Alpha Hunter - Boosts attack when facing an stronger foe. Deals 1.5x damage if foe has higher total power. Bleeding Claw (Ability) - Leaves the enemy bleeding for the rest of the battle.",
     "ability": {
       "name": "Bleeding Claw",

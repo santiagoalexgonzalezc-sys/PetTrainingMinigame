@@ -1,7 +1,10 @@
 # Pet Training Minigame - Future Improvements
 
+ALL coming very soon
+
+
+
 ## 🎮 Gameplay Mechanics
-- Daily quests — "Defeat 5 grass-type pets", "Craft 3 potions", etc. with small rewards (gold/gems)
 - Shiny/hex color variants — Shiny pets already exist but add a visible sparkle animation and a "shiny checker" tooltip
 - Pet training mini-games — Instead of just XP, add a quick reflex minigame (click targets) for bonus training points
 - Auto-heal toggle — During auto-explore, option to auto-use potions when HP drops below 50%

@@ -1435,6 +1435,9 @@ const BattleSystem = {
     },
 
     tryCatch(wildPet) {
+        if (this.isBossBattle) {
+            return { success: false, reason: "Bosses cannot be caught!" };
+        }
         const catchRate = (1 - (wildPet.currentHP / PetManager.calculateMaxHP(PetTypes[wildPet.typeId], wildPet.level, wildPet))) * 0.5 + 0.1;
         
         // Check for catch items

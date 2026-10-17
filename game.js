@@ -2523,6 +2523,13 @@ const BossSystem = {
         }
     },
 
+    explorationBossIds: [
+        "infernoEmperor",
+        "tidalTitan",
+        "forestGuardian",
+        "stormSovereign"
+    ],
+
     dropBossKey() {
         // 5% chance to drop a boss key when defeating a wild pet
         if (Math.random() < 0.05) {
@@ -2535,7 +2542,7 @@ const BossSystem = {
     checkRandomBossEncounter() {
         // 5% chance for random boss encounter during exploration
         if (Math.random() < 0.05) {
-            const bossIds = Object.keys(this.bosses);
+            const bossIds = this.explorationBossIds;
             const randomBossId = bossIds[Math.floor(Math.random() * bossIds.length)];
             return this.bosses[randomBossId];
         }
@@ -4086,7 +4093,9 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 switchBtn.style.opacity = BattleSystem.isPlayerTurn ? "1" : "0.5";
             }
             if (catchBtn) {
-                catchBtn.style.display = BattleSystem.active ? "inline-block" : "none";
+                catchBtn.style.display = BattleSystem.active && !BattleSystem.isBossBattle
+                    ? "inline-block"
+                    : "none";
             }
             if (autoStopBtn) {
                 autoStopBtn.classList.add("hidden");
@@ -4181,6 +4190,10 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     },
 
     tryCatch() {
+        if (BattleSystem.isBossBattle) {
+            this.showToast("Bosses cannot be caught!");
+            return;
+        }
         if (!BattleSystem.active || !BattleSystem.isPlayerTurn) {
             this.showToast("Can only catch during your turn!");
             return;

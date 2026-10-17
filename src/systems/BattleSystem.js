@@ -1449,9 +1449,20 @@ const BattleSystem = {
         
         DataManager.save();
         UIManager.updateBattleScreen();
+        if (Exploration.autoExplore.active) {
+            UIManager.updateCurrency();
+            UIManager.updateTeamPower();
+            UIManager.updatePlayerLevelDisplay();
+        }
         
         this.scheduleBattleAction(() => {
-            if (Exploration.autoExplore.active && playerWon) {
+            if (Exploration.autoExplore.active && Exploration.autoExplore.mode === "boss" && playerWon) {
+                UIManager.showAutoExploreNotification(`Boss victory! +${moneyReward} gold and boss rewards`, "success");
+                UIManager.startNextAutoBoss();
+            } else if (Exploration.autoExplore.active && Exploration.autoExplore.mode === "boss" && !playerWon) {
+                UIManager.showAutoExploreNotification("Defeat! Auto boss farming stopped.", "error");
+                UIManager.stopAutoBossFarm("Auto boss farming stopped after a defeat.");
+            } else if (Exploration.autoExplore.active && playerWon) {
                 UIManager.showAutoExploreNotification(`Victory! +${petXPReward} pet XP, +${moneyReward} gold`, "success");
                 UIManager.startNextAutoExplore();
             } else if (Exploration.autoExplore.active && !playerWon) {

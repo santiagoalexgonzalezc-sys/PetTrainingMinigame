@@ -2174,9 +2174,11 @@ const Exploration = {
     },
     autoExplore: {
         active: false,
+        mode: "explore",
         zoneId: null,
         floorIndex: null,
         petId: null,
+        bossId: null,
         speedMultiplier: 1,
         floorPage: 0
     }
@@ -2856,29 +2858,46 @@ const BossSystem = {
         return (Economy.inventory.bossKey || 0) >= boss.keyCost;
     },
 
-    startBossFight(bossId) {
+    startBossFight(bossId, playerPet = PetManager.selectedPet || PetManager.pets[0]) {
         const boss = this.bosses[bossId];
-        if (!boss || !this.canFightBoss(bossId)) {
+        if (!boss) {
+            UIManager.showToast("Boss not found!");
+            return false;
+        }
+        if (!playerPet || playerPet.currentHP <= 0) {
+            UIManager.showToast("Select a healthy pet before starting a boss fight!");
+            return false;
+        }
+        if (!this.canFightBoss(bossId)) {
             UIManager.showToast("Not enough Boss Keys!");
             return false;
         }
-
-        // Deduct keys
-        Economy.inventory.bossKey -= boss.keyCost;
-        DataManager.save();
 
         // Create boss pet
         const bossPet = PetManager.createPet(boss.typeId, boss.level, {
             tier: boss.tier,
             shiny: false
         });
+        if (!bossPet) {
+            console.error(`Unable to create boss pet for ${boss.name}.`);
+            UIManager.showToast(`Could not start the ${boss.name} fight.`);
+            return false;
+        }
+
+        Economy.inventory.bossKey -= boss.keyCost;
+        DataManager.save();
 
         // Start battle
-        BattleSystem.playerPet = PetManager.selectedPet ? { ...PetManager.selectedPet } : PetManager.pets[0];
+        BattleSystem.playerPet = { ...playerPet };
         BattleSystem.enemyPet = bossPet;
         BattleSystem.isBossBattle = true;
         BattleSystem.currentBoss = boss;
         BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
+        if (!BattleSystem.active) {
+            Economy.inventory.bossKey += boss.keyCost;
+            DataManager.save();
+            return false;
+        }
         UIManager.showScreen("battleScreen");
 
         return true;
@@ -5447,14 +5466,75 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             return;
         }
         Exploration.autoExplore.active = false;
+        Exploration.autoExplore.mode = "explore";
         Exploration.autoExplore.zoneId = null;
         Exploration.autoExplore.floorIndex = null;
         Exploration.autoExplore.petId = null;
+        Exploration.autoExplore.bossId = null;
         Exploration.autoExplore.floorPage = 0;
+        document.getElementById("autoExploreMode").value = "explore";
+        document.getElementById("autoExploreWildSetup").classList.remove("hidden");
+        document.getElementById("autoBossSetup").classList.add("hidden");
+        document.getElementById("autoExplorePetSetup").classList.add("hidden");
+        document.getElementById("autoExplorePetHeading").textContent = "Select Pet";
+        document.getElementById("autoExploreStartBtn").textContent = "▶ Start Auto Explore";
+        document.getElementById("autoExploreStartBtn").disabled = true;
         document.getElementById("autoExploreSpeed").value = String(Exploration.autoExplore.speedMultiplier || 1);
         document.getElementById("autoExploreOverlay").classList.remove("hidden");
         this.renderAutoExploreZones();
         document.getElementById("autoExploreInfo").innerHTML = "<p class='text-center opacity-80'>Step 1: Select a zone</p>";
+    },
+
+    setAutoExploreMode(mode) {
+        if (mode !== "explore" && mode !== "boss") return;
+        Exploration.autoExplore.mode = mode;
+        Exploration.autoExplore.zoneId = null;
+        Exploration.autoExplore.floorIndex = null;
+        Exploration.autoExplore.petId = null;
+        Exploration.autoExplore.bossId = null;
+        document.getElementById("autoExploreStartBtn").disabled = true;
+        document.getElementById("autoExplorePetSetup").classList.add("hidden");
+        document.getElementById("autoExploreWildSetup").classList.toggle("hidden", mode === "boss");
+        document.getElementById("autoBossSetup").classList.toggle("hidden", mode !== "boss");
+        document.getElementById("autoExploreFloorNav").classList.add("hidden");
+        document.getElementById("autoExploreFloorGrid").replaceChildren();
+        if (mode === "boss") {
+            this.renderAutoBosses();
+            document.getElementById("autoExploreInfo").innerHTML = "<p class='text-center opacity-80'>Step 1: Select a boss to farm</p>";
+        } else {
+            this.renderAutoExploreZones();
+            document.getElementById("autoExploreInfo").innerHTML = "<p class='text-center opacity-80'>Step 1: Select a zone</p>";
+        }
+    },
+
+    renderAutoBosses() {
+        const grid = document.getElementById("autoBossGrid");
+        grid.replaceChildren();
+        const bossKeys = Economy.inventory.bossKey || 0;
+
+        for (const [bossId, boss] of Object.entries(BossSystem.bosses)) {
+            const card = document.createElement("button");
+            card.type = "button";
+            card.className = `bg-white/10 rounded-xl p-4 text-center text-white cursor-pointer transition-all duration-150 hover:bg-white/20 ${bossKeys < boss.keyCost ? "opacity-70" : ""}`;
+            card.innerHTML = `
+                <div class="text-3xl">${boss.emoji}</div>
+                <h4 class="font-bold">${boss.name}</h4>
+                <p class="text-xs opacity-75">Lv ${boss.level} · Tier ${boss.tier}</p>
+                <p class="text-xs ${bossKeys >= boss.keyCost ? "text-green-400" : "text-red-400"}">Costs ${boss.keyCost} 🔑 · You have ${bossKeys}</p>
+            `;
+            card.onclick = () => {
+                Exploration.autoExplore.bossId = bossId;
+                Exploration.autoExplore.petId = null;
+                document.getElementById("autoExplorePetSetup").classList.remove("hidden");
+                document.getElementById("autoExplorePetHeading").textContent = `Select a pet for ${boss.name}`;
+                document.getElementById("autoExplorePetInfo").textContent = "";
+                document.getElementById("autoExploreStartBtn").textContent = `▶ Farm ${boss.name}`;
+                document.getElementById("autoExploreStartBtn").disabled = true;
+                this.renderAutoExplorePets();
+                document.getElementById("autoExploreInfo").innerHTML = `<p class='text-center opacity-80'>Step 2: Select a healthy pet for ${boss.name}</p>`;
+            };
+            grid.appendChild(card);
+        }
     },
 
     renderAutoExploreZones() {
@@ -5507,6 +5587,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             if (!isLocked) {
                 card.onclick = () => {
                     Exploration.autoExplore.floorIndex = i;
+                    document.getElementById("autoExplorePetSetup").classList.remove("hidden");
                     this.renderAutoExplorePets();
                     document.getElementById("autoExploreInfo").innerHTML = `<p class='text-center opacity-80'>Step 3: Select a pet for ${zone.emoji} ${zone.name} Floor ${i} (Lv ${floorMin}-${floorMax})</p>`;
                 };
@@ -5521,10 +5602,11 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
     renderAutoExplorePets() {
         const grid = document.getElementById("autoExplorePetGrid");
-        grid.innerHTML = "";
+        grid.replaceChildren();
         const zone = Exploration.zones[Exploration.autoExplore.zoneId];
         const selectedFloor = Exploration.autoExplore.floorIndex;
-        const floorMinLevel = zone && selectedFloor
+        const isBossMode = Exploration.autoExplore.mode === "boss";
+        const floorMinLevel = !isBossMode && zone && selectedFloor
             ? (selectedFloor - 1) * zone.floorSize + 1
             : 1;
         PetManager.pets.forEach(pet => {
@@ -5555,11 +5637,17 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         });
 
         if (grid.children.length === 0) {
-            grid.innerHTML = `<p class="col-span-full opacity-75">No healthy pets are level ${floorMinLevel} or higher. Choose a lower floor or level up a pet first.</p>`;
+            grid.innerHTML = isBossMode
+                ? `<p class="col-span-full opacity-75">No healthy pets are available to farm this boss.</p>`
+                : `<p class="col-span-full opacity-75">No healthy pets are level ${floorMinLevel} or higher. Choose a lower floor or level up a pet first.</p>`;
         }
     },
 
     startAutoExplore() {
+        if (Exploration.autoExplore.mode === "boss") {
+            this.startAutoBossFarm();
+            return;
+        }
         if (!Exploration.autoExplore.zoneId || !Exploration.autoExplore.floorIndex || !Exploration.autoExplore.petId) {
             this.showToast("Please select zone, floor, and pet!");
             return;
@@ -5584,7 +5672,90 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         this.doExploreWithFloor(Exploration.autoExplore.zoneId, Exploration.autoExplore.floorIndex);
     },
 
+    startAutoBossFarm() {
+        const bossId = Exploration.autoExplore.bossId;
+        const pet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
+        if (!bossId || !pet) {
+            this.showToast("Please select a boss and a pet!");
+            return;
+        }
+        if (pet.currentHP <= 0) {
+            this.showToast("Selected pet has no HP!");
+            return;
+        }
+        if (!BossSystem.canFightBoss(bossId)) {
+            this.showToast("Not enough Boss Keys to start farming this boss!");
+            return;
+        }
+
+        Exploration.autoExplore.active = true;
+        this.setAutoExploreRunningUI(true);
+        if (!BossSystem.startBossFight(bossId, pet)) {
+            Exploration.autoExplore.active = false;
+            BattleSystem.autoExploreActive = false;
+            BattleSystem.autoExplorePetId = null;
+            this.setAutoExploreRunningUI(false);
+        }
+    },
+
+    setAutoExploreRunningUI(isRunning) {
+        const overlay = document.getElementById("autoExploreOverlay");
+        const floatingBtn = document.getElementById("autoExploreFloatingStop");
+        if (overlay) overlay.classList.toggle("hidden", isRunning);
+        if (floatingBtn) floatingBtn.classList.toggle("hidden", !isRunning);
+    },
+
+    startNextAutoBoss() {
+        if (!Exploration.autoExplore.active || Exploration.autoExplore.mode !== "boss") return;
+
+        const boss = BossSystem.bosses[Exploration.autoExplore.bossId];
+        const pet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
+        if (!boss || !pet || pet.currentHP <= 0 || !BossSystem.canFightBoss(boss.id)) {
+            const reason = !boss
+                ? "Auto boss farming stopped: boss not found."
+                : !pet || pet.currentHP <= 0
+                    ? "Auto boss farming stopped: your pet has fainted."
+                    : "Auto boss farming stopped: not enough Boss Keys for another fight.";
+            this.stopAutoBossFarm(reason);
+            return;
+        }
+
+        const speed = Math.min(5, Math.max(1, Number(Exploration.autoExplore.speedMultiplier) || 1));
+        setTimeout(() => {
+            if (!Exploration.autoExplore.active || Exploration.autoExplore.mode !== "boss") return;
+            const currentPet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
+            if (!currentPet || currentPet.currentHP <= 0) {
+                this.stopAutoBossFarm("Auto boss farming stopped: your pet has fainted.");
+                return;
+            }
+            if (!BossSystem.canFightBoss(boss.id)) {
+                this.stopAutoBossFarm("Auto boss farming stopped: not enough Boss Keys for another fight.");
+                return;
+            }
+            if (!BossSystem.startBossFight(boss.id, currentPet)) {
+                this.stopAutoBossFarm("Auto boss farming stopped because the next fight could not start.");
+            }
+        }, 1000 / speed);
+    },
+
+    stopAutoBossFarm(reason) {
+        Exploration.autoExplore.active = false;
+        BattleSystem.autoExploreActive = false;
+        BattleSystem.autoExplorePetId = null;
+        this.setAutoExploreRunningUI(false);
+        this.showScreen("mainScreen");
+        this.renderPets();
+        this.updateCurrency();
+        this.updateTeamPower();
+        this.updatePlayerLevelDisplay();
+        if (reason) this.showToast(reason);
+    },
+
     startNextAutoExplore() {
+        if (Exploration.autoExplore.mode === "boss") {
+            this.startNextAutoBoss();
+            return;
+        }
         if (!Exploration.autoExplore.active) return;
         const zone = Exploration.zones[Exploration.autoExplore.zoneId];
         if (!zone) {

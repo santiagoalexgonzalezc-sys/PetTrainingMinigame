@@ -4448,6 +4448,97 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         document.getElementById("newsOverlay").classList.add("hidden");
     },
 
+    openInformation() {
+        const materialSources = new Map();
+        const addSource = (materialId, source) => {
+            if (!materialSources.has(materialId)) materialSources.set(materialId, []);
+            materialSources.get(materialId).push(source);
+        };
+
+        for (const [element, materialId] of Object.entries(BattleSystem.primaryMaterialDrops)) {
+            addSource(materialId, `Win a battle against a ${element}-type pet (60% chance, 1–2 materials).`);
+        }
+        for (const [element, materials] of Object.entries(BattleSystem.specialMaterialDrops)) {
+            for (const materialId of materials) {
+                addSource(materialId, `Win a battle against a ${element}-type pet (10% chance per material).`);
+            }
+        }
+        for (const [zoneId, materialId] of Object.entries(BattleSystem.zoneMaterialDrops)) {
+            const zoneName = Exploration.zones[zoneId]?.name || zoneId;
+            addSource(materialId, `Win a battle in ${zoneName} (40% chance).`);
+        }
+        for (const boss of Object.values(BossSystem.bosses)) {
+            for (const [materialId, quantity] of Object.entries(boss.rewards.materials)) {
+                addSource(materialId, `Defeat ${boss.name} (boss reward: ${quantity}x).`);
+            }
+            for (const [materialId, quantity] of Object.entries(boss.rewards.common)) {
+                addSource(materialId, `Defeat ${boss.name} (common reward: ${quantity}x).`);
+            }
+        }
+        for (const quest of Object.values(DailyQuestSystem.questTypes)) {
+            if (quest.reward.material) {
+                addSource(
+                    quest.reward.material,
+                    `Complete the ${quest.name} daily quest (${quest.reward.qty}x reward).`
+                );
+            }
+        }
+        addSource("bossKey", "Win a battle against a wild pet (5% chance).");
+
+        const excludedItems = new Set([
+            ...Object.entries(Economy.shopItems)
+                .filter(([, item]) => !["resource", "evolution"].includes(item.type))
+                .map(([itemId]) => itemId),
+            ...Object.keys(EquipmentSystem.equipment),
+            ...Object.keys(CraftingSystem.recipes),
+            ...Object.keys(BossSystem.bosses).map(bossId => `${bossId}Key`)
+        ]);
+        const materialIds = Object.keys(Economy.inventory)
+            .filter(itemId => !excludedItems.has(itemId))
+            .sort((a, b) => {
+                const nameA = Economy.getItem(a)?.name || a;
+                const nameB = Economy.getItem(b)?.name || b;
+                return nameA.localeCompare(nameB);
+            });
+
+        const list = document.getElementById("materialInformationList");
+        list.innerHTML = "";
+        for (const materialId of materialIds) {
+            const item = Economy.getItem(materialId);
+            const sources = materialSources.get(materialId) || [];
+            const shopItem = Economy.shopItems[materialId];
+            if (shopItem && ["resource", "evolution"].includes(shopItem.type)) {
+                sources.push(`Buy from the shop for ${shopItem.price} gold.`);
+            }
+
+            const card = document.createElement("div");
+            card.className = "bg-white/10 rounded-xl p-4";
+            const heading = document.createElement("h3");
+            heading.className = "font-bold";
+            heading.textContent = item?.name || materialId;
+            card.appendChild(heading);
+
+            const sourceList = document.createElement("ul");
+            sourceList.className = "mt-2 text-sm opacity-85 list-disc list-inside";
+            const displayedSources = sources.length
+                ? sources
+                : ["No drop, quest, boss reward, or shop source is currently configured."];
+            for (const source of displayedSources) {
+                const sourceItem = document.createElement("li");
+                sourceItem.textContent = source;
+                sourceList.appendChild(sourceItem);
+            }
+            card.appendChild(sourceList);
+            list.appendChild(card);
+        }
+
+        document.getElementById("informationOverlay").classList.remove("hidden");
+    },
+
+    closeInformation() {
+        document.getElementById("informationOverlay").classList.add("hidden");
+    },
+
     // === STORAGE ===
     // Pet Storage Screen
     renderStorage(searchTerm = "") {

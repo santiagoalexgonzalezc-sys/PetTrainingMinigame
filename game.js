@@ -3947,6 +3947,8 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             }
 
             // Normal pet encounter
+            BattleSystem.isBossBattle = false;
+            BattleSystem.currentBoss = null;
             BattleSystem.enemyPet = result.pet;
             if (Exploration.autoExplore.active && Exploration.autoExplore.petId) {
                 const autoPet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
@@ -4460,7 +4462,11 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         }
         for (const [element, materials] of Object.entries(BattleSystem.specialMaterialDrops)) {
             for (const materialId of materials) {
-                addSource(materialId, `Win a battle against a ${element}-type pet (10% chance per material).`);
+                const chance = BattleSystem.specialMaterialDropChances[materialId] ?? 0.05;
+                addSource(
+                    materialId,
+                    `Win a battle against a ${element}-type pet (${Math.round(chance * 100)}% base chance; equipment can increase it).`
+                );
             }
         }
         for (const [zoneId, materialId] of Object.entries(BattleSystem.zoneMaterialDrops)) {

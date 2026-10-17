@@ -9,6 +9,7 @@ const DataManager = {
             selectedPet: PetManager.selectedPet?.id || null,
             hasStarter: Game.hasStarter,
             explorationCooldowns: Exploration.cooldowns,
+            explorationEncounterCount: Exploration.explorationEncounterCount,
             player: {
                 level: PlayerSystem.level,
                 xp: PlayerSystem.xp,
@@ -111,6 +112,9 @@ const DataManager = {
             PetManager.selectedPet = PetManager.pets.find(p => String(p.id) === String(data.selectedPet)) || null;
             Game.hasStarter = data.hasStarter || false;
             Exploration.cooldowns = data.explorationCooldowns || {};
+            Exploration.explorationEncounterCount = Number.isInteger(data.explorationEncounterCount)
+                ? data.explorationEncounterCount
+                : 0;
             
             // Migration: initialize PlayerSystem if missing
             if (data.player) {
@@ -1794,6 +1798,7 @@ const Exploration = {
     currentFloor: null,
     selectedZoneId: null,
     floorPage: 0,
+    explorationEncounterCount: 0,
 
     explore(zoneId, floorIndex) {
         const now = Date.now();
@@ -1809,15 +1814,18 @@ const Exploration = {
             return null;
         }
 
-        // Check for random boss encounter (5% chance)
-        const randomBoss = BossSystem.checkRandomBossEncounter();
-        if (randomBoss) {
-            const bossPet = PetManager.createPet(randomBoss.typeId, randomBoss.level, {
-                tier: randomBoss.tier,
+        this.explorationEncounterCount++;
+        DataManager.save();
+
+        // Trigger a boss encounter every 100 successful exploration encounters.
+        const explorationBoss = BossSystem.getScheduledExplorationBoss();
+        if (explorationBoss) {
+            const bossPet = PetManager.createPet(explorationBoss.typeId, explorationBoss.level, {
+                tier: explorationBoss.tier,
                 shiny: false
             });
             if (bossPet) {
-                return { boss: randomBoss, pet: bossPet };
+                return { boss: explorationBoss, pet: bossPet };
             }
         }
 
@@ -2539,14 +2547,12 @@ const BossSystem = {
         }
     },
 
-    checkRandomBossEncounter() {
-        // 1% chance for random boss encounter during exploration
-        if (Math.random() < 0.01) {
-            const bossIds = this.explorationBossIds;
-            const randomBossId = bossIds[Math.floor(Math.random() * bossIds.length)];
-            return this.bosses[randomBossId];
-        }
-        return null;
+    getScheduledExplorationBoss() {
+        if (Exploration.explorationEncounterCount % 100 !== 0) return null;
+
+        const bossIds = this.explorationBossIds;
+        const randomBossId = bossIds[Math.floor(Math.random() * bossIds.length)];
+        return this.bosses[randomBossId] || null;
     },
 
     canFightBoss(bossId) {

@@ -127,6 +127,11 @@ const BattleSystem = {
     },
 
     switchPet(newPet) {
+        if (!this.active || !this.isPlayerTurn || !newPet || newPet.currentHP <= 0) return false;
+
+        const partyPet = PetManager.pets.find(pet => String(pet.id) === String(newPet.id));
+        if (!partyPet || String(partyPet.id) === String(this.playerPet?.id)) return false;
+
         // Save current pet HP
         const actualCurrentPet = PetManager.pets.find(p => String(p.id) === String(this.playerPet.id));
         if (actualCurrentPet) {
@@ -134,7 +139,8 @@ const BattleSystem = {
         }
         
         // Switch to new pet
-        this.playerPet = { ...newPet };
+        this.isPlayerTurn = false;
+        this.playerPet = { ...partyPet };
         this.addLog(`${this.getPetName(this.playerPet)} was sent out!`);
         
         // Trigger switch abilities
@@ -143,8 +149,8 @@ const BattleSystem = {
         UIManager.updateBattleScreen();
         
         // Enemy gets their turn after switch
-        this.isPlayerTurn = false;
         setTimeout(() => this.enemyTurn(), 1000);
+        return true;
     },
 
     getPetName(pet) {

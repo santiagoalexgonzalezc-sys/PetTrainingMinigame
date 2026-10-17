@@ -4156,10 +4156,16 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
                 <div class="opacity-90 text-sm">HP ${pet.currentHP}/${maxHP}</div>
             `;
             card.onclick = () => {
-                BattleSystem.switchPet(pet);
-                this.closeSwitchOverlay();
+                if (BattleSystem.switchPet(pet)) {
+                    this.closeSwitchOverlay();
+                }
             };
+            grid.appendChild(card);
         });
+
+        if (grid.children.length === 0) {
+            grid.innerHTML = "<p class='col-span-full opacity-70'>No other healthy pets are available to switch in.</p>";
+        }
         
         document.getElementById("switchOverlay").classList.remove("hidden");
     },

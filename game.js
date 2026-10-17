@@ -18,6 +18,8 @@ const DataManager = {
                 unlockedZones: PlayerSystem.unlockedZones,
                 totalBattles: PlayerSystem.totalBattles,
                 totalWins: PlayerSystem.totalWins,
+                battleStats: PlayerSystem.battleStats,
+                battleHistory: PlayerSystem.battleHistory,
                 totalCatches: PlayerSystem.totalCatches,
                 totalTrainings: PlayerSystem.totalTrainings,
                 totalExplores: PlayerSystem.totalExplores,
@@ -130,6 +132,19 @@ const DataManager = {
                 PlayerSystem.totalCrafts = data.player.totalCrafts || 0;
                 PlayerSystem.totalPrestiges = data.player.totalPrestiges || 0;
                 PlayerSystem.totalWins = data.player.totalWins || 0;
+                PlayerSystem.battleStats = {
+                    totalBattles: data.player.battleStats?.totalBattles ?? PlayerSystem.totalBattles,
+                    wins: data.player.battleStats?.wins ?? PlayerSystem.totalWins,
+                    losses: data.player.battleStats?.losses ?? Math.max(0, PlayerSystem.totalBattles - PlayerSystem.totalWins),
+                    bossBattles: data.player.battleStats?.bossBattles ?? 0,
+                    bossWins: data.player.battleStats?.bossWins ?? 0,
+                    wildBattles: data.player.battleStats?.wildBattles ?? 0,
+                    wildWins: data.player.battleStats?.wildWins ?? 0,
+                    totalTurns: data.player.battleStats?.totalTurns ?? 0
+                };
+                PlayerSystem.battleHistory = Array.isArray(data.player.battleHistory)
+                    ? data.player.battleHistory.slice(0, 50)
+                    : [];
                 PlayerSystem.lastRareCatch = data.player.lastRareCatch || false;
                 PlayerSystem.lastDailyBonus = data.player.lastDailyBonus || null;
                 PlayerSystem.loginStreak = data.player.loginStreak || 0;
@@ -153,6 +168,11 @@ const DataManager = {
                 PlayerSystem.totalCrafts = 0;
                 PlayerSystem.totalPrestiges = 0;
                 PlayerSystem.totalWins = 0;
+                PlayerSystem.battleStats = {
+                    totalBattles: 0, wins: 0, losses: 0, bossBattles: 0,
+                    bossWins: 0, wildBattles: 0, wildWins: 0, totalTurns: 0
+                };
+                PlayerSystem.battleHistory = [];
                 PlayerSystem.lastDailyBonus = null;
                 PlayerSystem.loginStreak = 0;
                 PlayerSystem.lastLoginDate = null;
@@ -1048,6 +1068,17 @@ const PlayerSystem = {
     unlockedZones: ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh", "darkforest"],
     totalBattles: 0,
     totalWins: 0,
+    battleStats: {
+        totalBattles: 0,
+        wins: 0,
+        losses: 0,
+        bossBattles: 0,
+        bossWins: 0,
+        wildBattles: 0,
+        wildWins: 0,
+        totalTurns: 0
+    },
+    battleHistory: [],
     totalCatches: 0,
     totalTrainings: 0,
     totalExplores: 0,
@@ -2810,6 +2841,7 @@ const UIManager = {
                 btn.classList.add('bg-gray-700');
             }
         });
+        if (tabName === "battles") this.updateProfileBattleHistory();
     },
 
     updateProfileStats() {
@@ -2824,6 +2856,7 @@ const UIManager = {
         const achievementsUnlocked = PlayerSystem.achievements.size;
         const totalAchievements = Object.keys(AchievementSystem.achievements).length;
         const selectedTitle = TitleSystem.getSelectedTitle();
+        const battleStats = PlayerSystem.battleStats;
 
         const stats = [
             { label: "Level", value: PlayerSystem.level, color: "" },
@@ -2832,7 +2865,10 @@ const UIManager = {
             { label: "Party Pets", value: `${partyCount} / ${PetManager.maxPartySize}`, color: "" },
             { label: "Total Pets", value: `${totalCount} / ${PetManager.maxTotalPets}`, color: "" },
             { label: "Total Catches", value: PlayerSystem.totalCatches, color: "" },
-            { label: "Total Battles", value: PlayerSystem.totalBattles, color: "" },
+            { label: "Total Battles", value: battleStats.totalBattles, color: "" },
+            { label: "Battle Wins", value: battleStats.wins, color: "text-green-400" },
+            { label: "Battle Losses", value: battleStats.losses, color: "text-red-400" },
+            { label: "Win Rate", value: `${battleStats.totalBattles ? Math.round((battleStats.wins / battleStats.totalBattles) * 100) : 0}%`, color: "" },
             { label: "Best Streak", value: PlayerSystem.bestStreak, color: "" },
             { label: "Total Trainings", value: PlayerSystem.totalTrainings, color: "" },
             { label: "Total Explores", value: PlayerSystem.totalExplores, color: "" },
@@ -2845,6 +2881,73 @@ const UIManager = {
         container.innerHTML = stats
             .map(s => `<div class="flex justify-between"><span>${s.label}</span><span class="${s.color} font-bold">${s.value}</span></div>`)
             .join("");
+    },
+
+    updateProfileBattleHistory() {
+        const statsContainer = document.getElementById("battleHistoryStats");
+        const historyContainer = document.getElementById("battleHistoryList");
+        if (!statsContainer || !historyContainer) return;
+
+        const stats = PlayerSystem.battleStats;
+        const winRate = stats.totalBattles
+            ? Math.round((stats.wins / stats.totalBattles) * 100)
+            : 0;
+        const summary = [
+            { label: "Battles", value: stats.totalBattles },
+            { label: "Wins", value: stats.wins },
+            { label: "Losses", value: stats.losses },
+            { label: "Win Rate", value: `${winRate}%` },
+            { label: "Boss Wins", value: `${stats.bossWins}/${stats.bossBattles}` },
+            { label: "Wild Wins", value: `${stats.wildWins}/${stats.wildBattles}` },
+            { label: "Turns Played", value: stats.totalTurns }
+        ];
+        statsContainer.innerHTML = summary.map(item => `
+            <div class="bg-white/10 rounded-lg p-3 text-center">
+                <div class="text-xs opacity-70">${item.label}</div>
+                <div class="text-lg font-bold">${item.value}</div>
+            </div>
+        `).join("");
+
+        historyContainer.replaceChildren();
+        if (PlayerSystem.battleHistory.length === 0) {
+            const emptyMessage = document.createElement("p");
+            emptyMessage.className = "text-center opacity-70 py-6";
+            emptyMessage.textContent = "No completed battles yet. Your battle record will appear here.";
+            historyContainer.appendChild(emptyMessage);
+            return;
+        }
+
+        PlayerSystem.battleHistory.forEach(battle => {
+            const row = document.createElement("article");
+            row.className = "bg-white/10 rounded-xl p-4";
+            const heading = document.createElement("div");
+            heading.className = "flex flex-wrap justify-between gap-2 font-bold";
+            const result = document.createElement("span");
+            result.className = battle.won ? "text-green-400" : "text-red-400";
+            result.textContent = battle.won ? "Victory" : "Defeat";
+            const timestamp = document.createElement("time");
+            timestamp.className = "text-xs opacity-70 font-normal";
+            timestamp.dateTime = battle.date;
+            timestamp.textContent = new Date(battle.date).toLocaleString();
+            heading.append(result, timestamp);
+
+            const matchup = document.createElement("p");
+            matchup.className = "mt-2";
+            const playerShiny = battle.player.shiny ? " ✨" : "";
+            const opponentShiny = battle.opponent.shiny ? " ✨" : "";
+            matchup.textContent = `${battle.player.name}${playerShiny} (Lv ${battle.player.level}, ${battle.player.tier}) vs ${battle.opponent.name}${opponentShiny} (Lv ${battle.opponent.level}, ${battle.opponent.tier})`;
+
+            const details = document.createElement("p");
+            details.className = "text-sm opacity-75 mt-1";
+            const location = battle.zoneName
+                ? ` · ${battle.zoneName}${battle.floor ? ` Floor ${battle.floor}` : ""}`
+                : "";
+            const bossLabel = battle.bossName ? ` · ${battle.bossName}` : "";
+            details.textContent = `${battle.battleType} battle${bossLabel} · ${battle.turns} turns · HP ${battle.player.currentHP}/${battle.player.maxHP}${location}`;
+
+            row.append(heading, matchup, details);
+            historyContainer.appendChild(row);
+        });
     },
 
     updateProfileAchievements() {

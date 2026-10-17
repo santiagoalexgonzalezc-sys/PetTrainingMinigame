@@ -1262,6 +1262,7 @@ const BattleSystem = {
     endBattle(playerWon) {
         if (!this.active) return;
         this.active = false;
+        this.recordBattle(playerWon);
 
         // Trigger victory/defeat cinematics
         if (playerWon) {
@@ -1471,6 +1472,54 @@ const BattleSystem = {
                 UIManager.updatePlayerLevelDisplay();
             }
         }, 500, true);
+    },
+
+    recordBattle(playerWon) {
+        const isBossBattle = this.isBossBattle;
+        const zoneId = isBossBattle ? null : Exploration.currentFloor?.zoneId || null;
+        const zone = zoneId ? Exploration.zones[zoneId] : null;
+        const describePet = pet => {
+            const template = PetTypes[pet.typeId];
+            const maxHP = template
+                ? PetManager.calculateMaxHP(template, pet.level, pet)
+                : pet.currentHP;
+            return {
+                name: this.getPetName(pet),
+                typeId: pet.typeId,
+                level: pet.level,
+                tier: pet.tier || "D1",
+                shiny: Boolean(pet.shiny),
+                currentHP: pet.currentHP,
+                maxHP
+            };
+        };
+        const record = {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            date: new Date().toISOString(),
+            won: playerWon,
+            battleType: isBossBattle ? "Boss" : "Wild",
+            bossName: isBossBattle ? this.currentBoss?.name || this.getPetName(this.enemyPet) : null,
+            zoneId,
+            zoneName: zone?.name || null,
+            floor: zoneId ? Exploration.currentFloor?.floorIndex || null : null,
+            turns: this.turnCount,
+            player: describePet(this.playerPet),
+            opponent: describePet(this.enemyPet)
+        };
+        const stats = PlayerSystem.battleStats;
+        stats.totalBattles++;
+        stats.totalTurns += this.turnCount;
+        if (playerWon) stats.wins++;
+        else stats.losses++;
+        if (isBossBattle) {
+            stats.bossBattles++;
+            if (playerWon) stats.bossWins++;
+        } else {
+            stats.wildBattles++;
+            if (playerWon) stats.wildWins++;
+        }
+        PlayerSystem.battleHistory.unshift(record);
+        if (PlayerSystem.battleHistory.length > 50) PlayerSystem.battleHistory.length = 50;
     },
 
     tryCatch(wildPet) {

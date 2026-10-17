@@ -361,7 +361,7 @@ Team power = sum of all pet powers (party + storage).
 
 ## Save System
 
-Auto-saves to browser `localStorage` under key `petSimulator` after every meaningful action (battle, training, shop, crafting, inventory changes, prestige, tier upgrade, storage changes, quests, and exploration). Saved fields: pets, storage, money, inventory, selected pet, starter flag, exploration cooldowns, max party/total caps, and player data (level, XP, streaks, best streak, unlocked zones, activity counters, daily-login streak/date, daily activities, achievements, party presets, selected title, daily quests, and last quest reset).
+Auto-saves to browser `localStorage` under key `petSimulator` after every meaningful action (battle, training, shop, crafting, inventory changes, prestige, tier upgrade, storage changes, quests, and exploration). Saved fields: pets, storage, money, inventory, selected pet, starter flag, exploration cooldowns, max party/total caps, and player data (level, XP, streaks, best streak, unlocked zones, activity counters, battle statistics and the 50 most recent battle records, daily-login streak/date, daily activities, achievements, party presets, selected title, daily quests, and last quest reset).
 
 ## Player Profile
 
@@ -376,6 +376,8 @@ A **level button** in the top-right corner opens a profile overlay with comprehe
 | Total Pets | Total pets (party + storage) / max total |
 | Total Catches | Lifetime pets caught |
 | Total Battles | Lifetime battles fought |
+| Battle Wins / Losses | Lifetime completed battle results |
+| Win Rate | Lifetime wins as a percentage of completed battles |
 | Best Streak | Longest consecutive battle win streak |
 | Total Trainings | Lifetime training sessions completed |
 | Total Explores | Lifetime exploration attempts |
@@ -384,7 +386,7 @@ A **level button** in the top-right corner opens a profile overlay with comprehe
 | Total Power | Sum of all pet powers (party + storage) |
 | Party Power | Sum of party pet powers only |
 
-The overlay also shows an achievement badge grid and a title selector.
+The **Battles** tab also shows lifetime battle, win/loss, win-rate, boss, wild, and turn totals, plus the 50 most recent results with pet levels, tiers, shiny status, remaining HP, battle type, location, and date. Battle history and counters are saved with the game. The overlay also shows an achievement badge grid and a title selector.
 
 ### Unlockable Rewards (per level)
 - Every level: +1 to all stats on every owned pet

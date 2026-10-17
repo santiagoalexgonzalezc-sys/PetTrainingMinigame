@@ -163,7 +163,7 @@
 
     <!-- PROFILE OVERLAY -->
     <div id="profileOverlay" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-5" onclick="if(event.target===this)UIManager.toggleProfile()">
-        <div class="bg-gray-900/95 rounded-2xl p-6 max-w-2xl w-full border border-white/20 shadow-2xl">
+        <div class="bg-gray-900/95 rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-white/20 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">👤 Player Profile</h2>
                 <button onclick="UIManager.toggleProfile()" class="text-white text-xl cursor-pointer bg-transparent border-none hover:scale-110 transition-transform">✕</button>
@@ -172,6 +172,7 @@
             <!-- Tab Navigation -->
             <div class="flex flex-wrap gap-2 mb-6 border-b border-white/20 pb-4">
                 <button onclick="UIManager.showProfileTab('stats')" class="profile-tab-btn bg-blue-600 rounded-lg px-4 py-2 text-sm font-bold cursor-pointer border-none hover:bg-blue-500 transition-colors" data-tab="stats">📊 Stats</button>
+                <button onclick="UIManager.showProfileTab('battles')" class="profile-tab-btn bg-gray-700 rounded-lg px-4 py-2 text-sm font-bold cursor-pointer border-none hover:bg-gray-600 transition-colors" data-tab="battles">⚔️ Battles</button>
                 <button onclick="UIManager.showProfileTab('achievements')" class="profile-tab-btn bg-gray-700 rounded-lg px-4 py-2 text-sm font-bold cursor-pointer border-none hover:bg-gray-600 transition-colors" data-tab="achievements">🏆 Achievements</button>
                 <button onclick="UIManager.showProfileTab('titles')" class="profile-tab-btn bg-gray-700 rounded-lg px-4 py-2 text-sm font-bold cursor-pointer border-none hover:bg-gray-600 transition-colors" data-tab="titles">🎖️ Titles</button>
                 <button onclick="UIManager.showProfileTab('collection')" class="profile-tab-btn bg-gray-700 rounded-lg px-4 py-2 text-sm font-bold cursor-pointer border-none hover:bg-gray-600 transition-colors" data-tab="collection">📖 Collection</button>
@@ -183,6 +184,14 @@
                 <!-- Stats Tab -->
                 <div id="profile-stats" class="profile-tab-content">
                     <div id="profileStats" class="space-y-3 text-sm"></div>
+                </div>
+
+                <div id="profile-battles" class="profile-tab-content hidden">
+                    <h3 class="text-lg font-bold mb-4">⚔️ Battle Statistics</h3>
+                    <div id="battleHistoryStats" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6"></div>
+                    <h3 class="text-lg font-bold mb-3">Recent Battles</h3>
+                    <div id="battleHistoryList" class="space-y-3 max-h-96 overflow-y-auto"></div>
+                    <p class="text-xs opacity-60 mt-3">Your 50 most recent completed battles are saved.</p>
                 </div>
                 
                 <!-- Achievements Tab -->
@@ -494,6 +503,10 @@
                     <button onclick="UIManager.closeNewsOverlay()" class="w-8 h-8 bg-red-600 rounded-full text-white text-lg flex items-center justify-center cursor-pointer border-none hover:scale-110 transition-transform">✕</button>
                 </div>
                 <div class="space-y-4 text-left">
+                    <div class="bg-white/10 rounded-xl p-4">
+                        <h3 class="font-bold text-red-300 mb-2">⚔️ Battle History & Stats</h3>
+                        <p class="text-sm">Check the Battles tab in your Player Profile for your recent results, win rate, boss and wild battle records, and turns played. Your 50 most recent battles are saved.</p>
+                    </div>
                     <div class="bg-white/10 rounded-xl p-4">
                         <h3 class="font-bold text-purple-300 mb-2">📊 Compare Your Pets</h3>
                         <p class="text-sm">Open Compare Pets from the Home screen to compare any two pets in your party or storage. Check their HP, attack, defense, speed, and special stats, including bonuses from equipped gear.</p>

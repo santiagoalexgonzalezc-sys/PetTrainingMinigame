@@ -2617,6 +2617,8 @@ const BossSystem = {
 // ==================== UI MANAGER ====================
 // === SCREEN MANAGEMENT ===
 const UIManager = {
+    craftingCategory: "all",
+
     init() {
         // Setup event listeners
         document.getElementById("stopBtn").addEventListener("click", () => TrainingSystem.stop());
@@ -4753,6 +4755,12 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     },
 
     // === CRAFTING ===
+    setCraftingCategory(category) {
+        if (!["all", "weapon", "armor", "ring", "item"].includes(category)) return;
+        this.craftingCategory = category;
+        this.renderCrafting();
+    },
+
     renderCrafting() {
         const resourceGrid = document.getElementById("craftingResources");
         resourceGrid.innerHTML = "";
@@ -4788,7 +4796,18 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
         const recipeGrid = document.getElementById("craftingRecipes");
         recipeGrid.innerHTML = "";
+        document.querySelectorAll(".crafting-category-btn").forEach(button => {
+            const isSelected = button.dataset.category === this.craftingCategory;
+            button.classList.toggle("bg-blue-700", isSelected);
+            button.classList.toggle("bg-gray-700", !isSelected);
+            button.setAttribute("aria-selected", String(isSelected));
+        });
+
         for (const [recipeId, recipe] of Object.entries(CraftingSystem.recipes)) {
+            const equipment = EquipmentSystem.equipment[recipeId];
+            const category = equipment?.type || "item";
+            if (this.craftingCategory !== "all" && category !== this.craftingCategory) continue;
+
             const canCraft = CraftingSystem.canCraft(recipeId);
             const costText = Object.entries(recipe.cost).map(([itemId, qty]) => {
                 const owned = Economy.inventory[itemId] || 0;
@@ -4799,13 +4818,24 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 
             const card = document.createElement("div");
             card.className = "bg-white/10 rounded-xl p-4 text-center";
-            const typeLabel = recipe.type === "equipment" ? "⚔️ Equipment" : "📦 Item";
+            const typeLabel = equipment
+                ? `${{ weapon: "⚔️ Weapon", armor: "🛡️ Armor", ring: "💍 Ring" }[equipment.type] || "Equipment"} | Tier ${equipment.tier}`
+                : "📦 Item";
+            const equipmentDetails = equipment
+                ? `<p class="text-xs mt-2">${Object.entries(equipment.stats || {}).map(([stat, value]) => `+${value} ${stat.toUpperCase()}`).join(" | ")}</p>
+                   <p class="text-xs opacity-70">${equipment.description}</p>`
+                : "";
             card.innerHTML = `
                 <h4>${recipe.name} <span class="text-xs opacity-60">${typeLabel}</span></h4>
+                ${equipmentDetails}
                 <div class="text-xs my-2 opacity-80">${costText}</div>
                 <button onclick="UIManager.craftItem('${recipeId}')" ${canCraft ? "" : "disabled"} class="border-none rounded-xl px-4 py-2.5 cursor-pointer text-white m-1 transition-all duration-150 text-sm hover:-translate-y-0.5 ${canCraft ? "bg-yellow-800" : "bg-gray-600 opacity-50 cursor-not-allowed"}">Craft</button>
             `;
             recipeGrid.appendChild(card);
+        }
+
+        if (recipeGrid.children.length === 0) {
+            recipeGrid.innerHTML = `<p class="col-span-full opacity-70">No ${this.craftingCategory === "item" ? "other item" : this.craftingCategory} recipes available.</p>`;
         }
     },
 

@@ -3260,8 +3260,32 @@ const UIManager = {
         const pet1El = document.getElementById("comparePet1");
         const pet2El = document.getElementById("comparePet2");
         const overlay = document.getElementById("compareOverlay");
-        if (pet1El) pet1El.innerHTML = "Click a pet to select";
-        if (pet2El) pet2El.innerHTML = "Click a pet to select";
+        const comparisonSection = document.getElementById("comparisonSection");
+        const allPets = [...PetManager.pets, ...PetManager.storage];
+
+        [1, 2].forEach(slot => {
+            const selector = document.getElementById(`comparePetSelect${slot}`);
+            if (!selector) return;
+
+            selector.innerHTML = "";
+            const placeholder = document.createElement("option");
+            placeholder.value = "";
+            placeholder.textContent = allPets.length ? "Select a pet" : "No pets available";
+            selector.appendChild(placeholder);
+
+            allPets.forEach(pet => {
+                const template = PetTypes[pet.typeId];
+                const option = document.createElement("option");
+                option.value = pet.id;
+                option.textContent = `${template?.emoji || "🐾"} ${PetManager.getEvolution(pet)} (Lv ${pet.level}, ${pet.tier || "?"})${pet.shiny ? " - Shiny" : ""}`;
+                selector.appendChild(option);
+            });
+        });
+
+        const emptyMessage = allPets.length ? "Select a pet above to compare" : "No pets available to compare.";
+        if (pet1El) pet1El.textContent = emptyMessage;
+        if (pet2El) pet2El.textContent = emptyMessage;
+        if (comparisonSection) comparisonSection.classList.add("hidden");
         if (overlay) overlay.classList.remove("hidden");
     },
 
@@ -3274,7 +3298,7 @@ const UIManager = {
         const allPets = [...PetManager.pets, ...PetManager.storage];
         const pet = allPets.find(p => String(p.id) === String(petId));
 
-        if (!pet) return;
+        if (!pet || (slot !== 1 && slot !== 2)) return;
 
         if (slot === 1) {
             this.comparePet1Id = petId;
@@ -3283,49 +3307,58 @@ const UIManager = {
         }
 
         this.renderComparePet(pet, slot);
+        const selector = document.getElementById(`comparePetSelect${slot}`);
+        if (selector) selector.value = pet.id;
 
-        // If both pets selected, show comparison
         if (this.comparePet1Id && this.comparePet2Id) {
             this.showComparison();
+        } else {
+            document.getElementById("comparisonSection")?.classList.add("hidden");
         }
+    },
+
+    handleCompareSelection(slot, petId) {
+        if (!petId) {
+            if (slot === 1) this.comparePet1Id = null;
+            else if (slot === 2) this.comparePet2Id = null;
+            else return;
+
+            const petEl = document.getElementById(slot === 1 ? "comparePet1" : "comparePet2");
+            if (petEl) petEl.textContent = "Select a pet to compare";
+            document.getElementById("comparisonSection")?.classList.add("hidden");
+            return;
+        }
+
+        this.selectComparePet(petId, slot);
     },
 
     renderComparePet(pet, slot) {
         const container = document.getElementById(slot === 1 ? "comparePet1" : "comparePet2");
         const template = PetTypes[pet.typeId];
+        if (!container) return;
+        if (!template) {
+            container.textContent = "Pet data is unavailable.";
+            return;
+        }
+
         const evolution = PetManager.getEvolution(pet);
         const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
+        const stats = PetManager.calculateStats(template, pet.level, pet);
 
         container.innerHTML = `
             <div class="text-4xl mb-2">${template.emoji}</div>
             <h4>${evolution}</h4>
             <p class="text-sm opacity-80">Level ${pet.level} ${pet.tier}</p>
             <p class="text-sm opacity-80">${template.type.toUpperCase()}</p>
+            ${pet.shiny ? '<p class="text-yellow-300 text-sm font-bold">Shiny</p>' : ""}
             <div class="mt-4 space-y-1 text-sm">
                 <div class="flex justify-between"><span>HP:</span><span>${maxHP}</span></div>
-                <div class="flex justify-between"><span>ATK:</span><span>${pet.stats.attack}</span></div>
-                <div class="flex justify-between"><span>DEF:</span><span>${pet.stats.defense}</span></div>
-                <div class="flex justify-between"><span>SPD:</span><span>${pet.stats.speed}</span></div>
-                <div class="flex justify-between"><span>SPC:</span><span>${pet.stats.special}</span></div>
+                <div class="flex justify-between"><span>ATK:</span><span>${stats.attack}</span></div>
+                <div class="flex justify-between"><span>DEF:</span><span>${stats.defense}</span></div>
+                <div class="flex justify-between"><span>SPD:</span><span>${stats.speed}</span></div>
+                <div class="flex justify-between"><span>SPC:</span><span>${stats.special}</span></div>
             </div>
-            <button onclick="UIManager.selectCompareSlot(${slot})" class="mt-4 border-none rounded-xl px-3 py-1.5 cursor-pointer text-white bg-blue-800 text-sm">Change Pet</button>
         `;
-    },
-
-    selectCompareSlot(slot) {
-        // Show pet selection dialog
-        const allPets = [...PetManager.pets, ...PetManager.storage];
-        const petNames = allPets.map(p => {
-            const template = PetTypes[p.typeId];
-            return `${template.emoji} ${PetManager.getEvolution(p)} (Lv ${p.level})`;
-        }).join("\n");
-
-        const choice = prompt(`Select pet for slot ${slot}:\n${petNames}\n\nEnter pet number (1-${allPets.length})`);
-        const idx = parseInt(choice, 10) - 1;
-
-        if (!isNaN(idx) && idx >= 0 && idx < allPets.length) {
-            this.selectComparePet(allPets[idx].id, slot);
-        }
     },
 
     showComparison() {
@@ -3336,15 +3369,19 @@ const UIManager = {
 
         const template1 = PetTypes[pet1.typeId];
         const template2 = PetTypes[pet2.typeId];
+        if (!template1 || !template2) return;
+
         const maxHP1 = PetManager.calculateMaxHP(template1, pet1.level, pet1);
         const maxHP2 = PetManager.calculateMaxHP(template2, pet2.level, pet2);
+        const stats1 = PetManager.calculateStats(template1, pet1.level, pet1);
+        const stats2 = PetManager.calculateStats(template2, pet2.level, pet2);
 
         const stats = [
             { name: "HP", val1: maxHP1, val2: maxHP2 },
-            { name: "ATK", val1: pet1.stats.attack, val2: pet2.stats.attack },
-            { name: "DEF", val1: pet1.stats.defense, val2: pet2.stats.defense },
-            { name: "SPD", val1: pet1.stats.speed, val2: pet2.stats.speed },
-            { name: "SPC", val1: pet1.stats.special, val2: pet2.stats.special },
+            { name: "ATK", val1: stats1.attack, val2: stats2.attack },
+            { name: "DEF", val1: stats1.defense, val2: stats2.defense },
+            { name: "SPD", val1: stats1.speed, val2: stats2.speed },
+            { name: "SPC", val1: stats1.special, val2: stats2.special },
         ];
 
         const comparisonHTML = stats.map(stat => {
@@ -3353,17 +3390,26 @@ const UIManager = {
             const diffText = diff !== 0 ? `(${diff > 0 ? "+" : ""}${diff})` : "";
             return `<div class="flex justify-between items-center text-sm">
                 <span>${stat.name}:</span>
-                <span>${stat.val1}</span>
+                <span class="w-1/4 text-center">${stat.val1}</span>
                 <span class="${diffClass}">${diffText}</span>
-                <span>${stat.val2}</span>
+                <span class="w-1/4 text-center">${stat.val2}</span>
             </div>`;
         }).join("");
 
-        // Update the comparison section
         const comparisonSection = document.getElementById("comparisonSection");
         const comparisonStats = document.getElementById("comparisonStats");
         if (comparisonSection && comparisonStats) {
-            comparisonStats.innerHTML = comparisonHTML;
+            const pet1Name = `${PetManager.getEvolution(pet1)} (Lv ${pet1.level})`;
+            const pet2Name = `${PetManager.getEvolution(pet2)} (Lv ${pet2.level})`;
+            comparisonStats.innerHTML = `
+                <div class="flex justify-between items-center text-xs opacity-75 mb-2">
+                    <span></span>
+                    <span class="w-1/4 text-center">${pet1Name}</span>
+                    <span></span>
+                    <span class="w-1/4 text-center">${pet2Name}</span>
+                </div>
+                ${comparisonHTML}
+            `;
             comparisonSection.classList.remove("hidden");
         }
     },

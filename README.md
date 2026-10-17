@@ -339,6 +339,10 @@ Equipment and recipes are defined in [`data/equipment.json`](./data/equipment.js
 
 Equipped stat bonuses update the pet's displayed stats and maximum HP. Item bonuses are also active in battle and rewards: elemental damage, critical chance, evasion, damage reduction, healing, HP regeneration, XP gain, and material drop chance. Selling a pet or consuming it in a prestige fusion returns its equipped gear to inventory.
 
+## Compare Pets
+
+Open **Compare Pets** from the Home screen and use the two selectors to choose pets from your party or storage. The comparison shows each pet's maximum HP, attack, defense, speed, and special stat, along with the difference between them. Stats are recalculated from the pet's current level, bonuses, and equipped items, so equipment is included in the comparison. Change either selection at any time to refresh the results.
+
 
 ## Party & Storage
 

@@ -594,9 +594,10 @@ const BattleSystem = {
 
     applyBurnDamage() {
           if (this.burning && this.burnDamage > 0 && this.active) {
-              const target = this.burning === "enemy" ? this.enemyPet : this.playerPet;
-              const targetName = this.burning === "enemy" ? this.getPetName(this.enemyPet) : this.getPetName(this.playerPet);
-              const side = this.burning === "enemy" ? "enemy" : "player";
+              const burningTarget = this.burning;
+              const target = burningTarget === "enemy" ? this.enemyPet : this.playerPet;
+              const targetName = this.getPetName(target);
+              const side = burningTarget === "enemy" ? "enemy" : "player";
               if (this.burnDuration[side] > 0) {
                   const burnDmg = Math.max(1, Math.floor(this.burnDamage * 0.25));
                   target.currentHP = Math.max(0, target.currentHP - burnDmg);
@@ -608,7 +609,7 @@ const BattleSystem = {
                   }
                   UIManager.updateBattleScreen();
                   if (target.currentHP <= 0) {
-                      if (this.burning === "enemy") {
+                      if (burningTarget === "enemy") {
                           this.endBattle(true);
                       } else {
                           this.endBattle(false);
@@ -623,9 +624,10 @@ const BattleSystem = {
 
       applyPoisonDamage() {
           if (this.poisoned && this.active) {
-              const side = this.poisoned === "enemy" ? "enemy" : "player";
-              const target = this.poisoned === "enemy" ? this.enemyPet : this.playerPet;
-              const targetName = this.poisoned === "enemy" ? this.getPetName(this.enemyPet) : this.getPetName(this.playerPet);
+              const poisonedTarget = this.poisoned;
+              const side = poisonedTarget === "enemy" ? "enemy" : "player";
+              const target = poisonedTarget === "enemy" ? this.enemyPet : this.playerPet;
+              const targetName = this.getPetName(target);
               if (this.poisonDuration[side] > 0) {
                   const maxHP = PetManager.calculateMaxHP(PetTypes[target.typeId], target.level, target);
                   const poisonDmg = Math.max(1, Math.floor(maxHP * 0.10));
@@ -637,7 +639,7 @@ const BattleSystem = {
                   }
                   UIManager.updateBattleScreen();
                   if (target.currentHP <= 0) {
-                      if (this.poisoned === "enemy") {
+                      if (poisonedTarget === "enemy") {
                           this.endBattle(true);
                       } else {
                           this.endBattle(false);

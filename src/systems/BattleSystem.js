@@ -1394,6 +1394,43 @@ const BattleSystem = {
             PlayerSystem.battleStreak = 0;
             PlayerSystem.totalBattles++;
             this.addLog(`💀 Defeat! Your pet needs healing...`);
+
+            const opponentTemplate = PetTypes[this.enemyPet.typeId];
+            const opponentName = this.getPetName(this.enemyPet);
+            const opponentMaxHP = opponentTemplate
+                ? PetManager.calculateMaxHP(opponentTemplate, this.enemyPet.level, this.enemyPet)
+                : null;
+            const equipment = Object.fromEntries(
+                Object.entries(this.enemyPet.equipmentSlots || {}).map(([slot, itemId]) => [
+                    slot,
+                    itemId ? EquipmentSystem.equipment[itemId]?.name || itemId : null
+                ])
+            );
+            console.groupCollapsed(`You lost to ${opponentName} (Level ${this.enemyPet.level})`);
+            console.log("Opponent details:", {
+                name: opponentName,
+                type: opponentTemplate?.type || "Unknown",
+                level: this.enemyPet.level,
+                tier: this.enemyPet.tier || "D1",
+                shiny: Boolean(this.enemyPet.shiny),
+                rare: Boolean(this.enemyPet.isRare),
+                prestigeLevel: this.enemyPet.prestigeLevel || 0,
+                hp: `${this.enemyPet.currentHP}/${opponentMaxHP ?? "unknown"}`,
+                stats: { ...(this.enemyPet.stats || {}) },
+                ability: opponentTemplate?.ability || null,
+                passives: opponentTemplate?.passive || [],
+                equipment,
+                battleType: this.isBossBattle ? "Boss battle" : "Wild battle",
+                zone: Exploration.currentFloor?.zoneId || null,
+                floor: Exploration.currentFloor?.floorIndex || null,
+                petId: this.enemyPet.id
+            });
+            console.log("Full opponent pet data:", {
+                ...this.enemyPet,
+                stats: { ...(this.enemyPet.stats || {}) },
+                equipmentSlots: { ...(this.enemyPet.equipmentSlots || {}) }
+            });
+            console.groupEnd();
             
             // Update actual player pet
             const actualPet = PetManager.pets.find(p => String(p.id) === String(this.playerPet.id));

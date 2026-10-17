@@ -1874,6 +1874,7 @@ const Exploration = {
         zoneId: null,
         floorIndex: null,
         petId: null,
+        speedMultiplier: 1,
         floorPage: 0
     }
 };
@@ -3959,7 +3960,10 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
             this.showScreen("battleScreen");
         } else if (Exploration.autoExplore.active) {
-            setTimeout(() => this.startNextAutoExplore(), 1000);
+            const speed = Math.min(3, Math.max(1, Number(Exploration.autoExplore.speedMultiplier) || 1));
+            setTimeout(() => {
+                if (Exploration.autoExplore.active) this.startNextAutoExplore();
+            }, 1000 / speed);
         } else {
             this.showToast("Nothing found this time...");
         }
@@ -5010,6 +5014,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         Exploration.autoExplore.zoneId = null;
         Exploration.autoExplore.floorIndex = null;
         Exploration.autoExplore.petId = null;
+        document.getElementById("autoExploreSpeed").value = String(Exploration.autoExplore.speedMultiplier || 1);
         document.getElementById("autoExploreOverlay").classList.remove("hidden");
         this.renderAutoExploreZones();
         document.getElementById("autoExploreInfo").innerHTML = "<p class='text-center opacity-80'>Step 1: Select a zone</p>";
@@ -5132,9 +5137,11 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             return;
         }
         const nextFloor = Exploration.autoExplore.floorIndex || 1;
+        const speed = Math.min(3, Math.max(1, Number(Exploration.autoExplore.speedMultiplier) || 1));
         setTimeout(() => {
+            if (!Exploration.autoExplore.active) return;
             this.doExploreWithFloor(Exploration.autoExplore.zoneId, nextFloor);
-        }, 1000);
+        }, 1000 / speed);
     },
 
     autoExploreFloorPrev() {

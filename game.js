@@ -955,7 +955,8 @@ const Economy = {
     },
 
     getItem(itemId) {
-        return this.shopItems[itemId] ?? EquipmentSystem.equipment[itemId];
+        return this.shopItems[itemId] ?? EquipmentSystem.equipment[itemId] ??
+            (itemId === "bossKey" ? { name: "Boss Key", type: "key" } : undefined);
     },
 
     isEquipment(itemId) {

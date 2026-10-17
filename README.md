@@ -339,6 +339,8 @@ Equipment and recipes are defined in [`data/equipment.json`](./data/equipment.js
 
 Equipped stat bonuses update the pet's displayed stats and maximum HP. Item bonuses are also active in battle and rewards: elemental damage, critical chance, evasion, damage reduction, healing, HP regeneration, XP gain, and material drop chance. Selling a pet or consuming it in a prestige fusion returns its equipped gear to inventory.
 
+Craftable damage-specialist weapons and rings are available for all 11 pet elements: Fire, Water, Electric, Grass, Ice, Psychic, Dragon, Dark, Fairy, Poison, and Normal. Element-specific rings provide +15% damage for their element; the Ring of Elements remains available for +10% damage across all elements. The armor collection also includes Phoenix Mail (regeneration), Stormguard Armor (evasion), Titan Plate (damage reduction), Verdant Robe (healing), and Frostweave Cloak (damage reduction and regeneration).
+
 ## Compare Pets
 
 Open **Compare Pets** from the Home screen and use the two selectors to choose pets from your party or storage. The comparison shows each pet's maximum HP, attack, defense, speed, and special stat, along with the difference between them. Stats are recalculated from the pet's current level, bonuses, and equipped items, so equipment is included in the comparison. Change either selection at any time to refresh the results.

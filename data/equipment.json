@@ -32,6 +32,94 @@
     "description": "+10 Attack, +5 Speed, +15% Electric damage",
     "recipe": { "electricSpark": 3, "steelIngot": 2, "thunderShard": 1 }
   },
+  "thornBow": {
+    "id": "thornBow",
+    "name": "Thorn Bow",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "🏹",
+    "stats": { "attack": 12, "speed": 3 },
+    "bonuses": { "grassDamage": 1.15 },
+    "description": "+12 Attack, +3 Speed, +15% Grass damage",
+    "recipe": { "woodStick": 5, "grassSeed": 3, "snakeScale": 2 }
+  },
+  "frostSpear": {
+    "id": "frostSpear",
+    "name": "Frost Spear",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "🔱",
+    "stats": { "attack": 12, "special": 3 },
+    "bonuses": { "iceDamage": 1.15 },
+    "description": "+12 Attack, +3 Special, +15% Ice damage",
+    "recipe": { "rock": 5, "iceShard": 3, "frostCrystal": 2 }
+  },
+  "mindScepter": {
+    "id": "mindScepter",
+    "name": "Mind Scepter",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "🪄",
+    "stats": { "special": 15 },
+    "bonuses": { "psychicDamage": 1.15 },
+    "description": "+15 Special, +15% Psychic damage",
+    "recipe": { "woodStick": 5, "psychicGem": 3, "mysticRune": 2 }
+  },
+  "dragonFangBlade": {
+    "id": "dragonFangBlade",
+    "name": "Dragonfang Blade",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "🐉",
+    "stats": { "attack": 15 },
+    "bonuses": { "dragonDamage": 1.15 },
+    "description": "+15 Attack, +15% Dragon damage",
+    "recipe": { "dragonScale": 3, "monsterHorn": 3, "starMetal": 2 }
+  },
+  "shadowScythe": {
+    "id": "shadowScythe",
+    "name": "Shadow Scythe",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "🌑",
+    "stats": { "attack": 10, "special": 5 },
+    "bonuses": { "darkDamage": 1.15 },
+    "description": "+10 Attack, +5 Special, +15% Dark damage",
+    "recipe": { "darkFragment": 3, "soulStone": 2, "obsidianBlade": 2 }
+  },
+  "faeWand": {
+    "id": "faeWand",
+    "name": "Fae Wand",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "✨",
+    "stats": { "special": 15 },
+    "bonuses": { "fairyDamage": 1.15 },
+    "description": "+15 Special, +15% Fairy damage",
+    "recipe": { "woodStick": 5, "fairyDust": 3, "divineFeather": 2 }
+  },
+  "venomFang": {
+    "id": "venomFang",
+    "name": "Venom Fang",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "🐍",
+    "stats": { "attack": 12, "special": 3 },
+    "bonuses": { "poisonDamage": 1.15 },
+    "description": "+12 Attack, +3 Special, +15% Poison damage",
+    "recipe": { "snakeScale": 5, "venomSac": 3, "poisonVial": 2 }
+  },
+  "championsMaul": {
+    "id": "championsMaul",
+    "name": "Champion's Maul",
+    "type": "weapon",
+    "tier": 1,
+    "emoji": "🔨",
+    "stats": { "attack": 15 },
+    "bonuses": { "normalDamage": 1.15 },
+    "description": "+15 Attack, +15% Normal damage",
+    "recipe": { "woodStick": 5, "monsterHorn": 3, "beastFur": 2 }
+  },
   "leatherVest": {
     "id": "leatherVest",
     "name": "Leather Vest",
@@ -61,6 +149,61 @@
     "stats": { "defense": 25 },
     "description": "+25 Defense",
     "recipe": { "ore": 5, "steelIngot": 2 }
+  },
+  "phoenixMail": {
+    "id": "phoenixMail",
+    "name": "Phoenix Mail",
+    "type": "armor",
+    "tier": 1,
+    "emoji": "🔥",
+    "stats": { "hp": 25, "defense": 8 },
+    "bonuses": { "hpRegeneration": 0.05 },
+    "description": "+25 HP, +8 Defense, +5% HP Regeneration",
+    "recipe": { "phoenixFeather": 3, "fireEssence": 3, "titaniumPlate": 2 }
+  },
+  "stormguardArmor": {
+    "id": "stormguardArmor",
+    "name": "Stormguard Armor",
+    "type": "armor",
+    "tier": 1,
+    "emoji": "⚡",
+    "stats": { "defense": 15, "speed": 5 },
+    "bonuses": { "evasion": 0.08 },
+    "description": "+15 Defense, +5 Speed, +8% Evasion",
+    "recipe": { "thunderShard": 3, "steelIngot": 3, "flyingFeather": 2 }
+  },
+  "titanPlate": {
+    "id": "titanPlate",
+    "name": "Titan Plate",
+    "type": "armor",
+    "tier": 1,
+    "emoji": "🪨",
+    "stats": { "hp": 35, "defense": 12 },
+    "bonuses": { "damageReduction": 0.08 },
+    "description": "+35 HP, +12 Defense, +8% Damage Reduction",
+    "recipe": { "titaniumPlate": 4, "ore": 5, "monsterHorn": 2 }
+  },
+  "verdantRobe": {
+    "id": "verdantRobe",
+    "name": "Verdant Robe",
+    "type": "armor",
+    "tier": 1,
+    "emoji": "🌿",
+    "stats": { "hp": 20, "special": 8 },
+    "bonuses": { "healingBonus": 0.1 },
+    "description": "+20 HP, +8 Special, +10% Healing Received",
+    "recipe": { "natureEssence": 3, "herbs": 5, "ancientRoot": 2 }
+  },
+  "frostweaveCloak": {
+    "id": "frostweaveCloak",
+    "name": "Frostweave Cloak",
+    "type": "armor",
+    "tier": 1,
+    "emoji": "❄️",
+    "stats": { "defense": 10, "speed": 4 },
+    "bonuses": { "damageReduction": 0.05, "hpRegeneration": 0.03 },
+    "description": "+10 Defense, +4 Speed, +5% Damage Reduction, +3% HP Regeneration",
+    "recipe": { "frostCrystal": 3, "mithrilThread": 3, "iceShard": 2 }
   },
   "ringOfSwiftness": {
     "id": "ringOfSwiftness",
@@ -105,6 +248,127 @@
     "bonuses": { "elementalDamage": 0.1 },
     "description": "+15 Special, +10% All Elemental Damage",
     "recipe": { "magicCrystal": 5, "mysticRune": 2, "starFragment": 1 }
+  },
+  "emberRing": {
+    "id": "emberRing",
+    "name": "Ember Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "🔥",
+    "stats": { "special": 8 },
+    "bonuses": { "fireDamage": 1.15 },
+    "description": "+8 Special, +15% Fire damage",
+    "recipe": { "fireEssence": 3, "fireStone": 2, "ruby": 1 }
+  },
+  "tideRing": {
+    "id": "tideRing",
+    "name": "Tide Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "💧",
+    "stats": { "special": 8 },
+    "bonuses": { "waterDamage": 1.15 },
+    "description": "+8 Special, +15% Water damage",
+    "recipe": { "waterOrb": 3, "waterStone": 2, "sapphire": 1 }
+  },
+  "stormRing": {
+    "id": "stormRing",
+    "name": "Storm Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "⚡",
+    "stats": { "speed": 5 },
+    "bonuses": { "electricDamage": 1.15 },
+    "description": "+5 Speed, +15% Electric damage",
+    "recipe": { "electricSpark": 3, "thunderStone": 2, "thunderShard": 1 }
+  },
+  "briarRing": {
+    "id": "briarRing",
+    "name": "Briar Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "🍃",
+    "stats": { "defense": 5, "special": 5 },
+    "bonuses": { "grassDamage": 1.15 },
+    "description": "+5 Defense, +5 Special, +15% Grass damage",
+    "recipe": { "grassSeed": 3, "leafStone": 2, "natureEssence": 1 }
+  },
+  "glacierRing": {
+    "id": "glacierRing",
+    "name": "Glacier Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "❄️",
+    "stats": { "defense": 8 },
+    "bonuses": { "iceDamage": 1.15 },
+    "description": "+8 Defense, +15% Ice damage",
+    "recipe": { "iceShard": 3, "frostCrystal": 2, "moonStone": 1 }
+  },
+  "mindRing": {
+    "id": "mindRing",
+    "name": "Mind Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "🔮",
+    "stats": { "special": 10 },
+    "bonuses": { "psychicDamage": 1.15 },
+    "description": "+10 Special, +15% Psychic damage",
+    "recipe": { "psychicGem": 3, "mysticRune": 2, "timeCrystal": 1 }
+  },
+  "dragonRing": {
+    "id": "dragonRing",
+    "name": "Dragon Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "🐉",
+    "stats": { "attack": 8 },
+    "bonuses": { "dragonDamage": 1.15 },
+    "description": "+8 Attack, +15% Dragon damage",
+    "recipe": { "dragonScale": 3, "starMetal": 2, "monsterHorn": 1 }
+  },
+  "shadowRing": {
+    "id": "shadowRing",
+    "name": "Shadow Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "🌑",
+    "stats": { "attack": 5, "special": 5 },
+    "bonuses": { "darkDamage": 1.15 },
+    "description": "+5 Attack, +5 Special, +15% Dark damage",
+    "recipe": { "darkFragment": 3, "soulStone": 2, "voidEssence": 1 }
+  },
+  "faeRing": {
+    "id": "faeRing",
+    "name": "Fae Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "✨",
+    "stats": { "special": 10 },
+    "bonuses": { "fairyDamage": 1.15 },
+    "description": "+10 Special, +15% Fairy damage",
+    "recipe": { "fairyDust": 3, "divineFeather": 2, "starFragment": 1 }
+  },
+  "venomRing": {
+    "id": "venomRing",
+    "name": "Venom Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "☠️",
+    "stats": { "attack": 5, "special": 5 },
+    "bonuses": { "poisonDamage": 1.15 },
+    "description": "+5 Attack, +5 Special, +15% Poison damage",
+    "recipe": { "venomSac": 3, "poisonVial": 2, "snakeScale": 1 }
+  },
+  "championRing": {
+    "id": "championRing",
+    "name": "Champion Ring",
+    "type": "ring",
+    "tier": 1,
+    "emoji": "💪",
+    "stats": { "attack": 8 },
+    "bonuses": { "normalDamage": 1.15 },
+    "description": "+8 Attack, +15% Normal damage",
+    "recipe": { "monsterHorn": 3, "beastFur": 2, "goldNugget": 1 }
   },
   "ringOfProtection": {
     "id": "ringOfProtection",

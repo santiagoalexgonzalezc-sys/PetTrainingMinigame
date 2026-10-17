@@ -2,6 +2,7 @@
 const BattleSystem = {
     petsDefeated: 0,
     active: false,
+    battleId: 0,
     playerPet: null,
     enemyPet: null,
     isPlayerTurn: true,
@@ -22,6 +23,17 @@ const BattleSystem = {
     currentBoss: null,
     bossAbilityUsed: false,
     regrowthUsed: false,
+
+    scheduleBattleAction(action, delay = 1000, allowAfterBattle = false) {
+        const battleId = this.battleId;
+        const speed = Exploration.autoExplore.active
+            ? Math.min(3, Math.max(1, Number(Exploration.autoExplore.speedMultiplier) || 1))
+            : 1;
+        return setTimeout(() => {
+            if (this.battleId !== battleId || (!allowAfterBattle && !this.active)) return;
+            action();
+        }, delay / speed);
+    },
 
     typeEffectiveness: {
         fire: { grass: 2, water: 0.5, ice: 2, fire: 0.5, dragon: 0.5, fairy: 2, dark: 1, normal: 1 },
@@ -98,6 +110,7 @@ const BattleSystem = {
             return;
         }
 
+        this.battleId++;
         if (Exploration.autoExplore.active) {
             const autoPet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
             if (!autoPet || autoPet.currentHP <= 0) {
@@ -150,9 +163,9 @@ const BattleSystem = {
         
         // If player goes first and auto-explore is on, play immediately
         if (this.isPlayerTurn && this.autoExploreActive) {
-            setTimeout(() => this.autoPlayTurn(), 1000);
+            this.scheduleBattleAction(() => this.autoPlayTurn());
         } else if (!this.isPlayerTurn) {
-            setTimeout(() => this.enemyTurn(), 1000);
+            this.scheduleBattleAction(() => this.enemyTurn());
         }
     },
 
@@ -179,7 +192,7 @@ const BattleSystem = {
         UIManager.updateBattleScreen();
         
         // Enemy gets their turn after switch
-        setTimeout(() => this.enemyTurn(), 1000);
+        this.scheduleBattleAction(() => this.enemyTurn());
         return true;
     },
 
@@ -339,7 +352,7 @@ const BattleSystem = {
               this.confused = null;
               this.isPlayerTurn = false;
               UIManager.updateBattleScreen();
-              setTimeout(() => this.enemyTurn(), 1000);
+              this.scheduleBattleAction(() => this.enemyTurn());
               return;
           }
           
@@ -361,7 +374,7 @@ const BattleSystem = {
              
              // Player gets another turn
              this.isPlayerTurn = true;
-             setTimeout(() => {
+             this.scheduleBattleAction(() => {
                  UIManager.updateBattleScreen();
                  if (this.autoExploreActive) {
                      this.autoPlayTurn();
@@ -371,7 +384,7 @@ const BattleSystem = {
          }
          
          // Enemy attacks after delay
-         setTimeout(() => this.enemyTurn(), 1000);
+         this.scheduleBattleAction(() => this.enemyTurn());
      },
      
     enemyTurn() {
@@ -383,7 +396,7 @@ const BattleSystem = {
               this.confused = null;
               this.isPlayerTurn = true;
               UIManager.updateBattleScreen();
-              setTimeout(() => {
+              this.scheduleBattleAction(() => {
                   UIManager.updateBattleScreen();
                   if (this.autoExploreActive) {
                       this.autoPlayTurn();
@@ -489,7 +502,7 @@ const BattleSystem = {
          UIManager.updateBattleScreen();
 
          if (this.autoExploreActive) {
-             setTimeout(() => this.autoPlayTurn(), 1000);
+             this.scheduleBattleAction(() => this.autoPlayTurn());
          }
     },
 
@@ -737,11 +750,11 @@ const BattleSystem = {
                 
                 // Player gets another turn
                 this.isPlayerTurn = true;
-                setTimeout(() => UIManager.updateBattleScreen(), 500);
+                this.scheduleBattleAction(() => UIManager.updateBattleScreen(), 500);
                 return;
             }
             
-            setTimeout(() => this.enemyTurn(), 1000);
+            this.scheduleBattleAction(() => this.enemyTurn());
          }
          
          // Bleeding Claw implementation
@@ -781,7 +794,7 @@ const BattleSystem = {
              this.isPlayerTurn = false;
              UIManager.updateBattleScreen();
              
-             setTimeout(() => this.enemyTurn(), 1000);
+             this.scheduleBattleAction(() => this.enemyTurn());
          }
          
         // Fireball implementation (Ember Fox ability)
@@ -827,7 +840,7 @@ const BattleSystem = {
               this.isPlayerTurn = false;
               UIManager.updateBattleScreen();
               
-              setTimeout(() => this.enemyTurn(), 1000);
+              this.scheduleBattleAction(() => this.enemyTurn());
           }
           
           // Ember Surge implementation (flameCat ability)
@@ -868,7 +881,7 @@ const BattleSystem = {
               this.isPlayerTurn = false;
               UIManager.updateBattleScreen();
               
-              setTimeout(() => this.enemyTurn(), 1000);
+              this.scheduleBattleAction(() => this.enemyTurn());
           }
           
           // Psychic Burst implementation (mindCat ability)
@@ -909,7 +922,7 @@ const BattleSystem = {
               this.isPlayerTurn = false;
               UIManager.updateBattleScreen();
               
-              setTimeout(() => this.enemyTurn(), 1000);
+              this.scheduleBattleAction(() => this.enemyTurn());
           }
           
           // Moonbeam Heal implementation (moonPixie ability)
@@ -952,7 +965,7 @@ const BattleSystem = {
               this.isPlayerTurn = false;
               UIManager.updateBattleScreen();
               
-              setTimeout(() => this.enemyTurn(), 1000);
+              this.scheduleBattleAction(() => this.enemyTurn());
           }
           
           // Dragon Rampage implementation (drakeWhelp ability)
@@ -998,7 +1011,7 @@ const BattleSystem = {
               this.isPlayerTurn = false;
               UIManager.updateBattleScreen();
               
-              setTimeout(() => this.enemyTurn(), 1000);
+              this.scheduleBattleAction(() => this.enemyTurn());
           }
           
           // Aurora Guard implementation (crystalSeal ability)
@@ -1037,7 +1050,7 @@ const BattleSystem = {
                this.isPlayerTurn = false;
                UIManager.updateBattleScreen();
                
-               setTimeout(() => this.enemyTurn(), 1000);
+               this.scheduleBattleAction(() => this.enemyTurn());
            }
            
            // Vine Lash implementation (vineSnake ability)
@@ -1076,7 +1089,7 @@ const BattleSystem = {
                this.isPlayerTurn = false;
                UIManager.updateBattleScreen();
                
-               setTimeout(() => this.enemyTurn(), 1000);
+               this.scheduleBattleAction(() => this.enemyTurn());
            }
            
            // Hypnosis implementation (dreamOwl ability)
@@ -1116,7 +1129,7 @@ const BattleSystem = {
                this.isPlayerTurn = false;
                UIManager.updateBattleScreen();
                
-               setTimeout(() => this.enemyTurn(), 1000);
+               this.scheduleBattleAction(() => this.enemyTurn());
            }
            
            // Life Drain implementation (duskBat ability)
@@ -1158,7 +1171,7 @@ const BattleSystem = {
                this.isPlayerTurn = false;
                UIManager.updateBattleScreen();
                
-               setTimeout(() => this.enemyTurn(), 1000);
+               this.scheduleBattleAction(() => this.enemyTurn());
            }
            
            // Fluffy Guard implementation (cloudSheep ability)
@@ -1196,7 +1209,7 @@ const BattleSystem = {
                this.isPlayerTurn = false;
                UIManager.updateBattleScreen();
                
-               setTimeout(() => this.enemyTurn(), 1000);
+               this.scheduleBattleAction(() => this.enemyTurn());
            }
            
            // Corrosive Bolt implementation (venomAsp ability)
@@ -1235,7 +1248,7 @@ const BattleSystem = {
                this.isPlayerTurn = false;
                UIManager.updateBattleScreen();
                
-               setTimeout(() => this.enemyTurn(), 1000);
+               this.scheduleBattleAction(() => this.enemyTurn());
            }
        },
   
@@ -1245,6 +1258,7 @@ const BattleSystem = {
     },
 
     endBattle(playerWon) {
+        if (!this.active) return;
         this.active = false;
 
         // Trigger victory/defeat cinematics
@@ -1396,7 +1410,7 @@ const BattleSystem = {
         DataManager.save();
         UIManager.updateBattleScreen();
         
-        setTimeout(() => {
+        this.scheduleBattleAction(() => {
             if (Exploration.autoExplore.active && playerWon) {
                 UIManager.showAutoExploreNotification(`Victory! +${petXPReward} pet XP, +${moneyReward} gold`, "success");
                 UIManager.startNextAutoExplore();
@@ -1417,7 +1431,7 @@ const BattleSystem = {
                 UIManager.updateTeamPower();
                 UIManager.updatePlayerLevelDisplay();
             }
-        }, 500);
+        }, 500, true);
     },
 
     tryCatch(wildPet) {

@@ -59,6 +59,7 @@ const DataManager = {
                         p.equipment = [];
                     }
                 }
+                EquipmentSystem.normalizePetEquipment(p);
                 
                 // Fix malformed tiers from old upgrade bug
                 if (!p.tier || typeof p.tier !== "string" || p.tier.length < 2) {
@@ -89,6 +90,7 @@ const DataManager = {
                         p.equipment = [];
                     }
                 }
+                EquipmentSystem.normalizePetEquipment(p);
                 
                 // Fix malformed tiers from old upgrade bug
                 if (!p.tier || typeof p.tier !== "string" || p.tier.length < 2) {
@@ -975,13 +977,15 @@ const Economy = {
         if (qty > this.inventory[itemId]) qty = this.inventory[itemId];
 
         const item = this.shopItems[itemId];
+        if (!item) return false;
         this.inventory[itemId] -= qty;
 
         const totalPower = item.power * qty;
 
         if (item.type === "heal") {
             const maxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
-            pet.currentHP = Math.min(maxHP, pet.currentHP + totalPower);
+            const healingBonus = EquipmentSystem.getBonus(pet, "healingBonus");
+            pet.currentHP = Math.min(maxHP, pet.currentHP + Math.floor(totalPower * (1 + healingBonus)));
         } else if (item.type === "xp") {
             PetManager.gainXP(pet, totalPower);
         } else if (item.type === "training") {
@@ -1202,6 +1206,7 @@ const EquipmentSystem = {
     craftEquipment(equipmentId) {
         const equip = this.equipment[equipmentId];
         if (!equip) return { success: false, reason: "Equipment not found!" };
+        if (!equip.recipe) return { success: false, reason: "Equipment has no crafting recipe!" };
 
         // Check if player has required materials
         for (const [material, qty] of Object.entries(equip.recipe)) {
@@ -1225,7 +1230,7 @@ const EquipmentSystem = {
 
     canCraft(equipmentId) {
         const equip = this.equipment[equipmentId];
-        if (!equip) return false;
+        if (!equip || !equip.recipe) return false;
 
         for (const [material, qty] of Object.entries(equip.recipe)) {
             if ((Economy.inventory[material] || 0) < qty) {
@@ -1235,64 +1240,101 @@ const EquipmentSystem = {
         return true;
     },
 
-    getStats(pet) {
-        if (!pet.equipment || !Array.isArray(pet.equipment) || pet.equipment.length === 0) return { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
-        let totalStats = { hp: 0, attack: 0, defense: 0, speed: 0, special: 0 };
-        for (const itemId of pet.equipment) {
-            const item = Economy.getItem(itemId);
-            if (item && item.stats) {
-                for (const [stat, value] of Object.entries(item.stats)) {
-                    totalStats[stat] = (totalStats[stat] || 0) + value;
-                }
+    getBonus(pet, bonusId) {
+        let total = 0;
+        for (const slot of ["weapon", "armor", "ring"]) {
+            const itemId = pet?.equipmentSlots?.[slot];
+            total += this.equipment[itemId]?.bonuses?.[bonusId] || 0;
+        }
+        return total;
+    },
+
+    getPet(petId) {
+        return PetManager.pets.find(p => String(p.id) === String(petId)) ||
+               PetManager.storage.find(p => String(p.id) === String(petId));
+    },
+
+    normalizePetEquipment(pet) {
+        const slots = pet.equipmentSlots && typeof pet.equipmentSlots === "object"
+            ? pet.equipmentSlots
+            : {};
+        pet.equipmentSlots = {
+            weapon: slots.weapon || null,
+            armor: slots.armor || null,
+            ring: slots.ring || null
+        };
+
+        const legacyItems = Array.isArray(pet.equipment) ? pet.equipment : [];
+        for (const itemId of legacyItems) {
+            const item = this.equipment[itemId];
+            const slot = item?.type;
+            if (["weapon", "armor", "ring"].includes(slot) && !pet.equipmentSlots[slot]) {
+                pet.equipmentSlots[slot] = itemId;
+            } else if (item) {
+                Economy.inventory[itemId] = (Economy.inventory[itemId] || 0) + 1;
             }
         }
-        return totalStats;
+        delete pet.equipment;
     },
 
-    canEquip(petId) {
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) ||
-                    PetManager.storage.find(p => String(p.id) === String(petId));
-        if (!pet) return { valid: false, reason: "Pet not found!" };
-        if (!Array.isArray(pet.equipment) || pet.equipment.length >= 5) return { valid: false, reason: "Max 5 equipment slots!" };
-        return { valid: true };
+    updatePetStats(pet) {
+        const template = PetTypes[pet.typeId];
+        if (!template) return;
+        pet.stats = PetManager.calculateStats(template, pet.level, pet);
+        const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
+        pet.currentHP = Math.min(pet.currentHP, maxHP);
     },
 
-    equip(petId, itemId) {
-        const validation = this.canEquip(petId);
-        if (!validation.valid) return { success: false, reason: validation.reason };
+    equipToPet(petId, itemId) {
+        const pet = this.getPet(petId);
+        if (!pet) return { success: false, reason: "Pet not found!" };
 
+        const item = this.equipment[itemId];
+        if (!item || !["weapon", "armor", "ring"].includes(item.type)) {
+            return { success: false, reason: "Equipment not found!" };
+        }
         if (!Economy.inventory[itemId] || Economy.inventory[itemId] <= 0) {
             return { success: false, reason: "No item in inventory!" };
         }
 
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) ||
-                    PetManager.storage.find(p => String(p.id) === String(petId));
-
+        this.normalizePetEquipment(pet);
+        const replacedItem = pet.equipmentSlots[item.type];
         Economy.inventory[itemId]--;
-        if (!Array.isArray(pet.equipment)) pet.equipment = [];
-        pet.equipment.push(itemId);
-        pet.stats = PetManager.calculateStats(PetTypes[pet.typeId], pet.level, pet);
-        const newMaxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
-        pet.currentHP = Math.min(pet.currentHP, newMaxHP);
+        if (replacedItem) {
+            Economy.inventory[replacedItem] = (Economy.inventory[replacedItem] || 0) + 1;
+        }
+        pet.equipmentSlots[item.type] = itemId;
+        this.updatePetStats(pet);
+        return { success: true, pet, equipment: item };
+    },
 
-        return { success: true, pet };
+    unequipFromPet(petId, slot) {
+        const pet = this.getPet(petId);
+        if (!pet) return { success: false, reason: "Pet not found!" };
+        if (!["weapon", "armor", "ring"].includes(slot)) {
+            return { success: false, reason: "Equipment slot not found!" };
+        }
+
+        this.normalizePetEquipment(pet);
+        const itemId = pet.equipmentSlots[slot];
+        if (!itemId) return { success: false, reason: "No equipment in that slot!" };
+
+        pet.equipmentSlots[slot] = null;
+        Economy.inventory[itemId] = (Economy.inventory[itemId] || 0) + 1;
+        this.updatePetStats(pet);
+        return { success: true, pet, equipment: this.equipment[itemId] };
+    },
+
+    equip(petId, itemId) {
+        return this.equipToPet(petId, itemId);
     },
 
     unequip(petId, itemId) {
-        const pet = PetManager.pets.find(p => String(p.id) === String(petId)) ||
-                    PetManager.storage.find(p => String(p.id) === String(petId));
-        if (!pet || !Array.isArray(pet.equipment) || pet.equipment.length === 0) return { success: false, reason: "No equipment to unequip!" };
-
-        const index = pet.equipment.indexOf(itemId);
-        if (index === -1) return { success: false, reason: "Item not found!" };
-
-        pet.equipment.splice(index, 1);
-        Economy.inventory[itemId] = (Economy.inventory[itemId] || 0) + 1;
-        pet.stats = PetManager.calculateStats(PetTypes[pet.typeId], pet.level, pet);
-        const newMaxHP = PetManager.calculateMaxHP(PetTypes[pet.typeId], pet.level, pet);
-        pet.currentHP = Math.min(pet.currentHP, newMaxHP);
-
-        return { success: true, pet };
+        const pet = this.getPet(petId);
+        if (!pet) return { success: false, reason: "Pet not found!" };
+        const slot = Object.keys(pet.equipmentSlots || {}).find(key => pet.equipmentSlots[key] === itemId);
+        if (!slot) return { success: false, reason: "Item not found!" };
+        return this.unequipFromPet(petId, slot);
     }
 };
 
@@ -2195,7 +2237,9 @@ const Game = {
     hasStarter: false,
 
     async init() {
-        const dataFiles = await DataLoader.loadAllData({});
+        const dataFiles = await DataLoader.loadAllData({ equipment: EquipmentSystem.equipment });
+        EquipmentSystem.equipment = dataFiles.equipment;
+        CraftingSystem.loadEquipmentRecipes(EquipmentSystem.equipment);
         AchievementSystem.loadAchievements(dataFiles.achievements);
         DataManager.load();
         UIManager.init();
@@ -2277,6 +2321,21 @@ const CraftingSystem = {
         ringOfVitality:   { name: "Ring of Vitality",   outputQty: 1, cost: { turtleShell: 5, soulStone: 2, divineFeather: 1 }, type: "equipment" },
         ringOfElements:   { name: "Ring of Elements",   outputQty: 1, cost: { magicCrystal: 5, mysticRune: 2, starFragment: 1 }, type: "equipment" },
         ringOfProtection: { name: "Ring of Protection", outputQty: 1, cost: { steelIngot: 5, obsidianBlade: 2, ancientRune: 1 }, type: "equipment" }
+    },
+
+    loadEquipmentRecipes(equipment) {
+        for (const [recipeId, recipe] of Object.entries(this.recipes)) {
+            if (recipe.type === "equipment") delete this.recipes[recipeId];
+        }
+        for (const [equipmentId, item] of Object.entries(equipment)) {
+            if (!item.recipe) continue;
+            this.recipes[equipmentId] = {
+                name: item.name,
+                outputQty: 1,
+                cost: item.recipe,
+                type: "equipment"
+            };
+        }
     },
 
     canCraft(recipeId) {
@@ -3481,7 +3540,7 @@ const UIManager = {
             ${pet.prestigeLevel > 0 ? `<div class="text-purple-300 font-bold">⭐ Prestige ${pet.prestigeLevel}</div><div class="text-purple-300 text-xs">+${pet.bonusStats.hp} HP | +${pet.bonusStats.attack} ATK | +${pet.bonusStats.defense} DEF | +${pet.bonusStats.speed} SPD | +${pet.bonusStats.special} SPC</div><br>` : ""}
             ${pet.shiny ? `<div class="text-yellow-300 font-bold">✨ Shiny</div><div class="text-yellow-300 text-xs">+${pet.shinyBonus.hp} HP | +${pet.shinyBonus.attack} ATK | +${pet.shinyBonus.defense} DEF | +${pet.shinyBonus.speed} SPD | +${pet.shinyBonus.special} SPC</div><br>` : ""}
             <div class="opacity-90 text-sm">Tier Bonus: +${pet.tierBonus || 0}%</div>
-            ${pet.equipmentSlots ? `<div class="opacity-90 text-sm mt-2">Equipment:</div>` : ""}
+            ${pet.equipmentSlots && (pet.equipmentSlots.weapon || pet.equipmentSlots.armor || pet.equipmentSlots.ring) ? `<div class="opacity-90 text-sm mt-2">Equipment:</div>` : ""}
             ${pet.equipmentSlots ? `
                 ${pet.equipmentSlots.weapon ? `<div class="opacity-90 text-sm">⚔️ ${EquipmentSystem.equipment[pet.equipmentSlots.weapon]?.name || "Unknown"} <button onclick="UIManager.unequipPetSlot('weapon')" class="text-red-400 text-xs ml-2">[Unequip]</button></div>` : ""}
                 ${pet.equipmentSlots.armor ? `<div class="opacity-90 text-sm">🛡️ ${EquipmentSystem.equipment[pet.equipmentSlots.armor]?.name || "Unknown"} <button onclick="UIManager.unequipPetSlot('armor')" class="text-red-400 text-xs ml-2">[Unequip]</button></div>` : ""}
@@ -3516,11 +3575,7 @@ const UIManager = {
         const equipBtn = document.getElementById("equipBtn");
         if (equipBtn) {
             const hasEquipmentInInventory = Object.keys(EquipmentSystem.equipment).some(equipId => (Economy.inventory[equipId] || 0) > 0);
-            const hasFreeWeaponSlot = !pet.equipmentSlots || !pet.equipmentSlots.weapon;
-            const hasFreeArmorSlot = !pet.equipmentSlots || !pet.equipmentSlots.armor;
-            const hasFreeRingSlot = !pet.equipmentSlots || !pet.equipmentSlots.ring;
-            const hasFreeSlot = hasFreeWeaponSlot || hasFreeArmorSlot || hasFreeRingSlot;
-            equipBtn.style.display = (hasFreeSlot && hasEquipmentInInventory) ? "inline-block" : "none";
+            equipBtn.style.display = hasEquipmentInInventory ? "inline-block" : "none";
         }
         const unequipBtn = document.getElementById("unequipBtn");
         if (unequipBtn) {
@@ -4326,7 +4381,10 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             const card = document.createElement("div");
             card.className = "bg-white/10 rounded-xl p-4 text-center cursor-pointer hover:bg-white/20 transition-all";
             const statsText = equip.stats ? Object.entries(equip.stats).map(([k, v]) => `+${v} ${k.toUpperCase()}`).join(" | ") : "";
-            const bonusesText = equip.bonuses ? Object.entries(equip.bonuses).map(([k, v]) => `+${Math.round(v * 100)}% ${k}`).join(" | ") : "";
+            const bonusesText = equip.bonuses ? Object.entries(equip.bonuses).map(([k, v]) => {
+                const percent = ["fireDamage", "waterDamage", "electricDamage"].includes(k) ? (v - 1) * 100 : v * 100;
+                return `+${Math.round(percent)}% ${k}`;
+            }).join(" | ") : "";
             card.innerHTML = `
                 <h4>${equip.emoji} ${equip.name}</h4>
                 <p class="text-xs opacity-70">${equip.type.toUpperCase()} | Tier ${equip.tier}</p>

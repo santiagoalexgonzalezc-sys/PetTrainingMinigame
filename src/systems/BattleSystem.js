@@ -51,6 +51,29 @@ const BattleSystem = {
         fairy: ["magicCrystal", "divineFeather", "starFragment"]
     },
 
+    primaryMaterialDrops: {
+        grass: "woodStick",
+        ice: "rock",
+        normal: "leather",
+        electric: "ore",
+        poison: "herbs",
+        fairy: "crystal",
+        dark: "darkRock"
+    },
+
+    zoneMaterialDrops: {
+        forest: "herbs",
+        cave: "ore",
+        lake: "leather",
+        mountain: "crystal",
+        desert: "leather",
+        ocean: "crystal",
+        volcano: "darkRock",
+        swamp: "herbs",
+        sky: "crystal",
+        toxicMarsh: "herbs"
+    },
+
     dropSpecialMaterials(element, chanceBonus = 0) {
         const materials = this.specialMaterialDrops[element] || [];
         for (const material of materials) {
@@ -1294,10 +1317,6 @@ const BattleSystem = {
                 this.addLog("✨ Found an XP Orb!");
             }
             
-            const elementToResource = {
-                grass: "woodStick", ice: "rock", normal: "leather",
-                electric: "ore", poison: "herbs", fairy: "crystal", dark: "darkRock"
-            };
             const resourceNames = {
                 woodStick: "Wood Stick", rock: "Rock", leather: "Leather",
                 ore: "Ore", herbs: "Herbs", crystal: "Crystal", darkRock: "Dark Rock"
@@ -1310,7 +1329,7 @@ const BattleSystem = {
             // Primary resource drop based on enemy element (25% chance, 1-2 qty)
             const materialDropBonus = EquipmentSystem.getBonus(this.playerPet, "materialDropChance");
             if (Math.random() < Math.min(1, 0.60 + materialDropBonus)) {
-                const resource = elementToResource[enemyElement];
+                const resource = this.primaryMaterialDrops[enemyElement];
                 const qty = Math.random() < 0.3 ? 2 : 1;
                 if (resource) {
                     Economy.inventory[resource] = (Economy.inventory[resource] || 0) + qty;
@@ -1319,13 +1338,8 @@ const BattleSystem = {
             }
             
             // Zone secondary resource drop (40% chance, 1 qty)
-            const zoneSecondary = {
-                forest: "herbs", cave: "ore", lake: "leather", mountain: "crystal",
-                desert: "leather", ocean: "crystal", volcano: "darkRock", swamp: "herbs",
-                sky: "crystal", toxicMarsh: "herbs"
-            };
             if (Math.random() < Math.min(1, 0.40 + materialDropBonus)) {
-                const resource = zoneId ? zoneSecondary[zoneId] : null;
+                const resource = zoneId ? this.zoneMaterialDrops[zoneId] : null;
                 if (resource) {
                     Economy.inventory[resource] = (Economy.inventory[resource] || 0) + 1;
                     this.addLog(`${resourceEmojis[resource]} Found 1x ${resourceNames[resource]}!`);

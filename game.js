@@ -3973,7 +3973,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             BattleSystem.startBattle(BattleSystem.playerPet, BattleSystem.enemyPet);
             this.showScreen("battleScreen");
         } else if (Exploration.autoExplore.active) {
-            const speed = Math.min(3, Math.max(1, Number(Exploration.autoExplore.speedMultiplier) || 1));
+            const speed = Math.min(5, Math.max(1, Number(Exploration.autoExplore.speedMultiplier) || 1));
             setTimeout(() => {
                 if (Exploration.autoExplore.active) this.startNextAutoExplore();
             }, 1000 / speed);
@@ -5156,7 +5156,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             return;
         }
         const nextFloor = Exploration.autoExplore.floorIndex || 1;
-        const speed = Math.min(3, Math.max(1, Number(Exploration.autoExplore.speedMultiplier) || 1));
+        const speed = Math.min(5, Math.max(1, Number(Exploration.autoExplore.speedMultiplier) || 1));
         setTimeout(() => {
             if (!Exploration.autoExplore.active) return;
             this.doExploreWithFloor(Exploration.autoExplore.zoneId, nextFloor);

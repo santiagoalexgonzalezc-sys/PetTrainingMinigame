@@ -1163,6 +1163,7 @@ const BattleSystem = {
         if (playerWon) {
             this.petsDefeated = this.petsDefeated + 1;
             PlayerSystem.totalBattles++;
+            PlayerSystem.totalWins++;
             PlayerSystem.battleStreak++;
             if (PlayerSystem.battleStreak > PlayerSystem.bestStreak) {
                 PlayerSystem.bestStreak = PlayerSystem.battleStreak;
@@ -1177,6 +1178,9 @@ const BattleSystem = {
             AchievementSystem.checkAchievement("defeat10");
             AchievementSystem.checkAchievement("defeat50");
             AchievementSystem.checkAchievement("defeat100");
+            AchievementSystem.checkAchievement("win10");
+            AchievementSystem.checkAchievement("win25");
+            AchievementSystem.checkAchievement("win50");
             AchievementSystem.checkAchievement("streak5");
             AchievementSystem.checkAchievement("streak10");
 
@@ -1342,11 +1346,16 @@ const BattleSystem = {
         if (success && PetManager.pets.length < PetManager.maxPartySize) {
             PetManager.pets.push(wildPet);
             PlayerSystem.totalCatches++;
+            PlayerSystem.lastRareCatch = wildPet.isRare === true;
             // Update quest progress for catching
             DataManager.updateQuestProgress("catch", "any");
             AchievementSystem.checkAchievement("firstCatch");
             AchievementSystem.checkAchievement("catch10");
             AchievementSystem.checkAchievement("catch25");
+            if (wildPet.isRare) {
+                AchievementSystem.checkAchievement("rareCatch");
+                PlayerSystem.lastRareCatch = false;
+            }
             if (wildPet.shiny) {
                 AchievementSystem.checkAchievement("shiny");
             }
@@ -1355,11 +1364,16 @@ const BattleSystem = {
         } else if (success && PetManager.pets.length + PetManager.storage.length < PetManager.maxTotalPets) {
             PetManager.storage.push(wildPet);
             PlayerSystem.totalCatches++;
+            PlayerSystem.lastRareCatch = wildPet.isRare === true;
             // Update quest progress for catching
             DataManager.updateQuestProgress("catch", "any");
             AchievementSystem.checkAchievement("firstCatch");
             AchievementSystem.checkAchievement("catch10");
             AchievementSystem.checkAchievement("catch25");
+            if (wildPet.isRare) {
+                AchievementSystem.checkAchievement("rareCatch");
+                PlayerSystem.lastRareCatch = false;
+            }
             if (wildPet.shiny) {
                 AchievementSystem.checkAchievement("shiny");
             }

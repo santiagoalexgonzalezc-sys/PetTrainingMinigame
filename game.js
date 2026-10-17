@@ -5103,8 +5103,13 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     renderAutoExplorePets() {
         const grid = document.getElementById("autoExplorePetGrid");
         grid.innerHTML = "";
+        const zone = Exploration.zones[Exploration.autoExplore.zoneId];
+        const selectedFloor = Exploration.autoExplore.floorIndex;
+        const floorMinLevel = zone && selectedFloor
+            ? (selectedFloor - 1) * zone.floorSize + 1
+            : 1;
         PetManager.pets.forEach(pet => {
-            if (pet.currentHP <= 0) return;
+            if (pet.currentHP <= 0 || pet.level < floorMinLevel) return;
             const template = PetTypes[pet.typeId];
             const evolution = PetManager.getEvolution(pet);
             const maxHP = PetManager.calculateMaxHP(template, pet.level, pet);
@@ -5129,6 +5134,10 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             };
             grid.appendChild(card);
         });
+
+        if (grid.children.length === 0) {
+            grid.innerHTML = `<p class="col-span-full opacity-75">No healthy pets are level ${floorMinLevel} or higher. Choose a lower floor or level up a pet first.</p>`;
+        }
     },
 
     startAutoExplore() {
@@ -5139,6 +5148,14 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         const pet = PetManager.pets.find(p => String(p.id) === String(Exploration.autoExplore.petId));
         if (!pet || pet.currentHP <= 0) {
             this.showToast("Selected pet not found or has no HP!");
+            return;
+        }
+        const zone = Exploration.zones[Exploration.autoExplore.zoneId];
+        const floorMinLevel = zone
+            ? (Exploration.autoExplore.floorIndex - 1) * zone.floorSize + 1
+            : Infinity;
+        if (pet.level < floorMinLevel) {
+            this.showToast(`This floor requires a pet at least level ${floorMinLevel}. Choose a lower floor or level up this pet.`);
             return;
         }
         Exploration.autoExplore.active = true;

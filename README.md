@@ -155,7 +155,7 @@ Beyond the normal tier roll, high-level players occasionally face an **elite** w
 
 ### Auto-Explore
 
-Unlocked at **player level 50**. Pick a pet, zone, and floor and the game auto-battles floor after floor until the pet faints or you leave the battle screen.
+Unlocked at **player level 50**. Choose **Explore floors** to pick a pet, zone, and floor and auto-battle until the pet faints or you stop. Choose **Farm a boss** to select a boss and healthy party pet; the game repeats that boss fight at the chosen battle speed while you have enough Boss Keys. Farming stops when you run out of keys or your pet faints, and each fight uses normal boss rewards.
 
 ## Shop
 

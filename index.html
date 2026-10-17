@@ -286,6 +286,14 @@
         <div class="max-w-4xl mx-auto my-5">
             <h2>🔄 Auto Explore</h2>
             <p id="autoExploreInfo" class="text-left max-w-md mx-auto mb-4">Step 1: Select a zone</p>
+            <div class="my-4">
+                <label for="autoExploreMode" class="mr-2 font-semibold">Auto mode</label>
+                <select id="autoExploreMode" onchange="UIManager.setAutoExploreMode(this.value)" class="rounded-lg px-3 py-2 text-gray-900">
+                    <option value="explore">Explore floors</option>
+                    <option value="boss">Farm a boss</option>
+                </select>
+            </div>
+            <div id="autoExploreWildSetup">
             <h3 class="mt-4 mb-2">Select Zone</h3>
             <div id="autoExploreZoneGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-5xl mx-auto my-5"></div>
             <div class="hidden" id="autoExploreFloorNav">
@@ -297,9 +305,17 @@
                 </div>
             </div>
             <div id="autoExploreFloorGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-5xl mx-auto my-5"></div>
-            <h3 class="mt-4 mb-2">Select Pet</h3>
+            </div>
+            <div id="autoBossSetup" class="hidden">
+                <h3 class="mt-4 mb-2">Select Boss</h3>
+                <p class="text-sm opacity-75">Boss Keys are spent for each fight. Auto farming stops when you run out of keys or your pet faints.</p>
+                <div id="autoBossGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-5xl mx-auto my-5"></div>
+            </div>
+            <div id="autoExplorePetSetup" class="hidden">
+            <h3 id="autoExplorePetHeading" class="mt-4 mb-2">Select Pet</h3>
             <p id="autoExplorePetInfo" class="text-center opacity-80 mb-4"></p>
             <div id="autoExplorePetGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-5xl mx-auto my-5"></div>
+            </div>
             <div class="my-4">
                 <label for="autoExploreSpeed" class="mr-2 font-semibold">Battle speed</label>
                 <select id="autoExploreSpeed" onchange="Exploration.autoExplore.speedMultiplier = Number(this.value)" class="rounded-lg px-3 py-2 text-gray-900">
@@ -503,6 +519,10 @@
                     <button onclick="UIManager.closeNewsOverlay()" class="w-8 h-8 bg-red-600 rounded-full text-white text-lg flex items-center justify-center cursor-pointer border-none hover:scale-110 transition-transform">✕</button>
                 </div>
                 <div class="space-y-4 text-left">
+                    <div class="bg-white/10 rounded-xl p-4">
+                        <h3 class="font-bold text-orange-300 mb-2">👑 Auto Boss Farming</h3>
+                        <p class="text-sm">Auto Explore now has a Farm a Boss mode. Pick a boss and a healthy party pet to repeat the fight automatically at your chosen speed. Each rematch spends the boss's key cost; farming stops when you run out of keys or your pet faints.</p>
+                    </div>
                     <div class="bg-white/10 rounded-xl p-4">
                         <h3 class="font-bold text-red-300 mb-2">⚔️ Battle History & Stats</h3>
                         <p class="text-sm">Check the Battles tab in your Player Profile for your recent results, win rate, boss and wild battle records, and turns played. Your 50 most recent battles are saved.</p>

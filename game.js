@@ -956,7 +956,26 @@ const Economy = {
 
     getItem(itemId) {
         return this.shopItems[itemId] ?? EquipmentSystem.equipment[itemId] ??
-            (itemId === "bossKey" ? { name: "Boss Key", type: "key" } : undefined);
+            (itemId === "bossKey"
+                ? { name: "Boss Key", type: "key" }
+                : this.isResource(itemId)
+                    ? {
+                        name: itemId.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase()),
+                        type: "resource",
+                        power: 1
+                    }
+                    : undefined);
+    },
+
+    isResource(itemId) {
+        const isCraftingMaterial = Object.values(CraftingSystem.recipes).some(recipe =>
+            Object.hasOwn(recipe.cost, itemId)
+        );
+        const isBossReward = Object.values(BossSystem.bosses).some(boss =>
+            Object.hasOwn(boss.rewards.materials, itemId) ||
+            Object.hasOwn(boss.rewards.common, itemId)
+        );
+        return isCraftingMaterial || isBossReward;
     },
 
     isEquipment(itemId) {
@@ -4765,7 +4784,14 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
     renderCrafting() {
         const resourceGrid = document.getElementById("craftingResources");
         resourceGrid.innerHTML = "";
-        const resourceItems = ["woodStick", "rock", "leather", "ore", "herbs", "crystal", "darkRock", "fireEssence", "waterOrb", "electricSpark", "iceShard", "poisonVial", "darkFragment", "fairyDust", "psychicGem", "groundStone", "flyingFeather", "ghostEssence", "bugShell", "steelIngot", "fightingBand", "magicCrystal", "ancientScroll", "mysticRune", "starFragment", "moonStone", "sunStone", "thunderStone", "waterStone", "fireStone", "leafStone", "monsterHorn", "beastFur", "snakeScale", "birdWing", "wolfFang", "bearClaw", "spiderSilk", "turtleShell", "goldNugget", "silverOre", "platinumBar", "diamond", "ruby", "sapphire", "emerald", "topaz", "amethyst", "chaosOrb", "timeCrystal", "soulStone", "divineFeather", "voidEssence"];
+        const resourceItems = new Set([
+            "woodStick", "rock", "leather", "ore", "herbs", "crystal", "darkRock", "fireEssence", "waterOrb", "electricSpark", "iceShard", "poisonVial", "darkFragment", "fairyDust", "psychicGem", "groundStone", "flyingFeather", "ghostEssence", "bugShell", "steelIngot", "fightingBand", "magicCrystal", "ancientScroll", "mysticRune", "starFragment", "moonStone", "sunStone", "thunderStone", "waterStone", "fireStone", "leafStone", "monsterHorn", "beastFur", "snakeScale", "birdWing", "wolfFang", "bearClaw", "spiderSilk", "turtleShell", "goldNugget", "silverOre", "platinumBar", "diamond", "ruby", "sapphire", "emerald", "topaz", "amethyst", "chaosOrb", "timeCrystal", "soulStone", "divineFeather", "voidEssence",
+            ...Object.values(CraftingSystem.recipes).flatMap(recipe => Object.keys(recipe.cost)),
+            ...Object.values(BossSystem.bosses).flatMap(boss => [
+                ...Object.keys(boss.rewards.materials),
+                ...Object.keys(boss.rewards.common)
+            ])
+        ]);
         const resourceEmojis = {
             woodStick: "🪵", rock: "🪨", leather: "🥾", ore: "⛏️",
             herbs: "🌿", crystal: "💎", darkRock: "🟣", fireEssence: "🔥",
@@ -4789,7 +4815,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             card.className = "bg-white/10 rounded-xl p-2.5 text-center";
             card.innerHTML = `
                 <div class="text-2xl">${resourceEmojis[itemId] || "📦"}</div>
-                <div class="text-xs mt-1">${itemId}</div>
+                <div class="text-xs mt-1">${Economy.getItem(itemId)?.name || itemId}</div>
                 <div class="text-yellow-400 font-bold text-sm">${count}</div>
             `;
             resourceGrid.appendChild(card);

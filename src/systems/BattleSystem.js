@@ -37,6 +37,31 @@ const BattleSystem = {
         normal: { rock: 0.5, ghost: 0, steel: 0.5, dark: 1, fairy: 1 }
     },
 
+    specialMaterialDrops: {
+        fire: ["fireEssence"],
+        water: ["waterOrb", "turtleShell"],
+        electric: ["electricSpark", "steelIngot", "thunderShard", "flyingFeather"],
+        grass: ["snakeScale", "magicCrystal", "mysticRune", "starFragment"],
+        poison: ["snakeScale", "beastFur"],
+        ice: ["turtleShell", "divineFeather"],
+        normal: ["beastFur", "monsterHorn"],
+        dragon: ["dragonScale", "monsterHorn", "steelIngot"],
+        dark: ["chaosOrb", "soulStone", "obsidianBlade", "ancientRune"],
+        psychic: ["timeCrystal", "chaosOrb", "mysticRune", "starFragment"],
+        fairy: ["magicCrystal", "divineFeather", "starFragment"]
+    },
+
+    dropSpecialMaterials(element, chanceBonus = 0) {
+        const materials = this.specialMaterialDrops[element] || [];
+        for (const material of materials) {
+            if (Math.random() < Math.min(1, 0.10 + chanceBonus)) {
+                Economy.inventory[material] = (Economy.inventory[material] || 0) + 1;
+                const name = material.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase());
+                this.addLog(`✨ Found 1x ${name}!`);
+            }
+        }
+    },
+
     startBattle(playerPet, enemyPet) {
         if (!playerPet || !enemyPet || !playerPet.stats || !enemyPet.stats) {
             console.error("Invalid battle state - missing pet or stats:", playerPet, enemyPet);
@@ -1300,6 +1325,8 @@ const BattleSystem = {
                     this.addLog(`${resourceEmojis[resource]} Found 1x ${resourceNames[resource]}!`);
                 }
             }
+
+            this.dropSpecialMaterials(enemyElement, materialDropBonus);
             
             // 5% chance to drop 2 Gems when defeating a wild pet over level 20
             if (enemyLevel > 20 && Math.random() < 0.30) {

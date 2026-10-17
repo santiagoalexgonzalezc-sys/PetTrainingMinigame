@@ -27,7 +27,7 @@ const BattleSystem = {
     scheduleBattleAction(action, delay = 1000, allowAfterBattle = false) {
         const battleId = this.battleId;
         const speed = Exploration.autoExplore.active
-            ? Math.min(3, Math.max(1, Number(Exploration.autoExplore.speedMultiplier) || 1))
+            ? Math.min(5, Math.max(1, Number(Exploration.autoExplore.speedMultiplier) || 1))
             : 1;
         return setTimeout(() => {
             if (this.battleId !== battleId || (!allowAfterBattle && !this.active)) return;

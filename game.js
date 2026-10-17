@@ -16,11 +16,13 @@ const DataManager = {
                 bestStreak: PlayerSystem.bestStreak,
                 unlockedZones: PlayerSystem.unlockedZones,
                 totalBattles: PlayerSystem.totalBattles,
+                totalWins: PlayerSystem.totalWins,
                 totalCatches: PlayerSystem.totalCatches,
                 totalTrainings: PlayerSystem.totalTrainings,
                 totalExplores: PlayerSystem.totalExplores,
                 totalCrafts: PlayerSystem.totalCrafts,
                 totalPrestiges: PlayerSystem.totalPrestiges,
+                lastRareCatch: PlayerSystem.lastRareCatch,
                 lastDailyBonus: PlayerSystem.lastDailyBonus,
                 loginStreak: PlayerSystem.loginStreak,
                 lastLoginDate: PlayerSystem.lastLoginDate,
@@ -121,6 +123,8 @@ const DataManager = {
                 PlayerSystem.totalExplores = data.player.totalExplores || 0;
                 PlayerSystem.totalCrafts = data.player.totalCrafts || 0;
                 PlayerSystem.totalPrestiges = data.player.totalPrestiges || 0;
+                PlayerSystem.totalWins = data.player.totalWins || 0;
+                PlayerSystem.lastRareCatch = data.player.lastRareCatch || false;
                 PlayerSystem.lastDailyBonus = data.player.lastDailyBonus || null;
                 PlayerSystem.loginStreak = data.player.loginStreak || 0;
                 PlayerSystem.lastLoginDate = data.player.lastLoginDate || null;
@@ -142,6 +146,7 @@ const DataManager = {
                 PlayerSystem.totalExplores = 0;
                 PlayerSystem.totalCrafts = 0;
                 PlayerSystem.totalPrestiges = 0;
+                PlayerSystem.totalWins = 0;
                 PlayerSystem.lastDailyBonus = null;
                 PlayerSystem.loginStreak = 0;
                 PlayerSystem.lastLoginDate = null;
@@ -1014,6 +1019,7 @@ const PlayerSystem = {
     bestStreak: 0,
     unlockedZones: ["forest", "cave", "lake", "mountain", "desert", "ocean", "volcano", "swamp", "sky", "toxicMarsh", "darkforest"],
     totalBattles: 0,
+    totalWins: 0,
     totalCatches: 0,
     totalTrainings: 0,
     totalExplores: 0,
@@ -1021,6 +1027,7 @@ const PlayerSystem = {
     totalPrestiges: 0,
     totalBossesDefeated: 0,
     dragonLordDefeated: false,
+    lastRareCatch: false,
     lastDailyBonus: null,
     loginStreak: 0,
     lastLoginDate: null,
@@ -1291,7 +1298,8 @@ const EquipmentSystem = {
 
 // ==================== ACHIEVEMENT SYSTEM ====================
 const AchievementSystem = {
-    achievements: {
+    achievements: {},
+    defaultAchievements: {
         firstCatch: { id: "firstCatch", name: "First Catch", description: "Catch your first pet", icon: "🎱", reward: 100, tier: "bronze" },
         defeat10: { id: "defeat10", name: "Novice Trainer", description: "Defeat 10 pets in battle", icon: "⚔️", reward: 200, tier: "bronze" },
         defeat50: { id: "defeat50", name: "Skilled Trainer", description: "Defeat 50 pets in battle", icon: "🗡️", reward: 500, tier: "silver" },
@@ -1313,6 +1321,10 @@ const AchievementSystem = {
         dragonSlayer: { id: "dragonSlayer", name: "Dragon Slayer", description: "Defeat the Dragon Lord", icon: "🐉", reward: 5000, tier: "platinum" }
     },
 
+    loadAchievements(data = {}) {
+        this.achievements = Object.assign({}, this.defaultAchievements, data || {});
+    },
+
     getTierMultiplier(tier) {
         switch (tier) {
             case "platinum": return 4;
@@ -1323,76 +1335,47 @@ const AchievementSystem = {
         }
     },
 
+    requirements: {
+        firstCatch: () => PlayerSystem.totalCatches >= 1,
+        defeat10: () => PlayerSystem.totalBattles >= 10,
+        defeat50: () => PlayerSystem.totalBattles >= 50,
+        defeat100: () => PlayerSystem.totalBattles >= 100,
+        catch10: () => AchievementSystem.getUniquePetCount() >= 10,
+        catch25: () => AchievementSystem.getUniquePetCount() >= 25,
+        catch50: () => AchievementSystem.getUniquePetCount() >= 50,
+        shiny: () => AchievementSystem.hasShinyPet(),
+        craft10: () => PlayerSystem.totalCrafts >= 10,
+        craft50: () => PlayerSystem.totalCrafts >= 50,
+        level10: () => PlayerSystem.level >= 10,
+        level25: () => PlayerSystem.level >= 25,
+        level50: () => PlayerSystem.level >= 50,
+        streak5: () => PlayerSystem.bestStreak >= 5,
+        streak10: () => PlayerSystem.bestStreak >= 10,
+        prestige1: () => PlayerSystem.totalPrestiges >= 1,
+        explore10: () => PlayerSystem.totalExplores >= 10,
+        explore50: () => PlayerSystem.totalExplores >= 50,
+        explore100: () => PlayerSystem.totalExplores >= 100,
+        bossSlayer1: () => PlayerSystem.totalBossesDefeated >= 5,
+        bossSlayer2: () => PlayerSystem.totalBossesDefeated >= 20,
+        dragonSlayer: () => PlayerSystem.dragonLordDefeated,
+        win10: () => PlayerSystem.totalWins >= 10,
+        win25: () => PlayerSystem.totalWins >= 25,
+        win50: () => PlayerSystem.totalWins >= 50,
+        rareCatch: () => PlayerSystem.lastRareCatch === true,
+        shelterFull: () => PetManager.pets.length + PetManager.storage.length >= PetManager.maxTotalPets,
+        dailyLogin7: () => PlayerSystem.loginStreak >= 7,
+        dailyLogin30: () => PlayerSystem.loginStreak >= 30,
+        explore100: () => PlayerSystem.totalExplores >= 100
+    },
+
     checkAchievement(achievementId) {
         if (PlayerSystem.achievements.has(achievementId)) return false;
 
         const achievement = this.achievements[achievementId];
         if (!achievement) return false;
 
-        let unlocked = false;
-
-        switch (achievementId) {
-            case "firstCatch":
-                unlocked = PlayerSystem.totalCatches >= 1;
-                break;
-            case "defeat10":
-                unlocked = PlayerSystem.totalBattles >= 10;
-                break;
-            case "defeat50":
-                unlocked = PlayerSystem.totalBattles >= 50;
-                break;
-            case "defeat100":
-                unlocked = PlayerSystem.totalBattles >= 100;
-                break;
-            case "catch10":
-                unlocked = this.getUniquePetCount() >= 10;
-                break;
-            case "catch25":
-                unlocked = this.getUniquePetCount() >= 25;
-                break;
-            case "shiny":
-                unlocked = this.hasShinyPet();
-                break;
-            case "craft10":
-                unlocked = PlayerSystem.totalCrafts >= 10;
-                break;
-            case "craft50":
-                unlocked = PlayerSystem.totalCrafts >= 50;
-                break;
-            case "level10":
-                unlocked = PlayerSystem.level >= 10;
-                break;
-            case "level25":
-                unlocked = PlayerSystem.level >= 25;
-                break;
-            case "level50":
-                unlocked = PlayerSystem.level >= 50;
-                break;
-            case "streak5":
-                unlocked = PlayerSystem.bestStreak >= 5;
-                break;
-            case "streak10":
-                unlocked = PlayerSystem.bestStreak >= 10;
-                break;
-            case "prestige1":
-                unlocked = PlayerSystem.totalPrestiges >= 1;
-                break;
-            case "explore10":
-                unlocked = PlayerSystem.totalExplores >= 10;
-                break;
-            case "explore50":
-                unlocked = PlayerSystem.totalExplores >= 50;
-                break;
-            case "bossSlayer1":
-                unlocked = PlayerSystem.totalBossesDefeated >= 5;
-                break;
-            case "bossSlayer2":
-                unlocked = PlayerSystem.totalBossesDefeated >= 20;
-                break;
-            case "dragonSlayer":
-                unlocked = PlayerSystem.dragonLordDefeated;
-                break;
-        }
+        const requirementFn = this.requirements[achievementId];
+        const unlocked = typeof requirementFn === "function" ? requirementFn() : false;
 
         if (unlocked) {
             PlayerSystem.achievements.add(achievementId);
@@ -1789,36 +1772,34 @@ const Exploration = {
             petType = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
         }
 
-         // Generate wild pet level from floor index
-         const level = getWildPetLevelForFloor(floorIndex, zone.floorSize);
-         const floorMax = floorIndex * zone.floorSize;
+        // Generate wild pet level from floor index
+        const level = getWildPetLevelForFloor(floorIndex, zone.floorSize);
+        const floorMax = floorIndex * zone.floorSize;
 
-         // Shiny roll: 1 in 500
+        // Shiny roll: 1 in 500
         const isShiny = Math.random() < 0.002;
 
         // Tier roll based on zone
         const tier = rollTierForZone(zoneId);
 
-const wildPet = PetManager.createPet(petType, level, { shiny: isShiny, tier });
+        const wildPet = PetManager.createPet(petType, level, { shiny: isShiny, tier });
+        if (wildPet) {
+            wildPet.isRare = isRare;
+        }
 
-         if (!wildPet || !wildPet.stats) {
-             console.error("Failed to create valid wild pet:", petType, level, wildPet);
-             return null;
-         }
+        // C-tier opponent encounter based on player level
+        const cTierChance = getCTierChance(PlayerSystem.level);
+        if (cTierChance > 0 && Math.random() * 100 < cTierChance) {
+            const cTire = rollCTire(PlayerSystem.level);
+            const cTierLevelBonus = Math.min((cTire - 1) * 3, floorMax - wildPet.level);
+            wildPet.level = wildPet.level + cTierLevelBonus;
+            wildPet.tier = cTire >= 4 ? "C" + cTire : wildPet.tier;
+            wildPet.tierBonus = PetManager.calculateTierBonus(wildPet.tier);
+            wildPet.stats = PetManager.calculateStats(PetTypes[wildPet.typeId], wildPet.level, wildPet);
+            wildPet.currentHP = PetManager.calculateMaxHP(PetTypes[wildPet.typeId], wildPet.level, wildPet);
+        }
 
-          // C-tier opponent encounter based on player level
- const cTierChance = getCTierChance(PlayerSystem.level);
-          if (cTierChance > 0 && Math.random() * 100 < cTierChance) {
-              const cTire = rollCTire(PlayerSystem.level);
-              const cTierLevelBonus = Math.min((cTire - 1) * 3, floorMax - wildPet.level);
-              wildPet.level = wildPet.level + cTierLevelBonus;
-              wildPet.tier = cTire >= 4 ? "C" + cTire : wildPet.tier;
-              wildPet.tierBonus = PetManager.calculateTierBonus(wildPet.tier);
-              wildPet.stats = PetManager.calculateStats(PetTypes[wildPet.typeId], wildPet.level, wildPet);
-              wildPet.currentHP = PetManager.calculateMaxHP(PetTypes[wildPet.typeId], wildPet.level, wildPet);
-          }
-
-         return { pet: wildPet, isRare, isShiny };
+        return { pet: wildPet, isRare, isShiny };
     },
 
     getCooldownRemaining(zoneId) {
@@ -2213,7 +2194,9 @@ const TrainingSystem = {
 const Game = {
     hasStarter: false,
 
-    init() {
+    async init() {
+        const dataFiles = await DataLoader.loadAllData({});
+        AchievementSystem.loadAchievements(dataFiles.achievements);
         DataManager.load();
         UIManager.init();
         UIManager.updateCurrency();
@@ -4974,4 +4957,4 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
 };
 
 // Initialize game when DOM is loaded
-document.addEventListener("DOMContentLoaded", () => Game.init());
+document.addEventListener("DOMContentLoaded", async () => { await Game.init(); });

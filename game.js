@@ -5450,6 +5450,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         Exploration.autoExplore.zoneId = null;
         Exploration.autoExplore.floorIndex = null;
         Exploration.autoExplore.petId = null;
+        Exploration.autoExplore.floorPage = 0;
         document.getElementById("autoExploreSpeed").value = String(Exploration.autoExplore.speedMultiplier || 1);
         document.getElementById("autoExploreOverlay").classList.remove("hidden");
         this.renderAutoExploreZones();
@@ -5472,6 +5473,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             if (!isLocked) {
                 card.onclick = () => {
                     Exploration.autoExplore.zoneId = zoneId;
+                    Exploration.autoExplore.floorPage = 0;
                     this.renderAutoExploreFloors(zoneId);
                     document.getElementById("autoExploreInfo").innerHTML = `<p class='text-center opacity-80'>Step 2: Select a floor in ${zone.emoji} ${zone.name}</p>`;
                 };
@@ -5486,7 +5488,7 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         grid.innerHTML = "";
         const floorsPerPage = 10;
         const totalPages = Math.ceil(zone.maxFloor / floorsPerPage);
-        const page = Exploration.autoExploreFloorPage || 0;
+        const page = Exploration.autoExplore.floorPage || 0;
         const startFloor = page * floorsPerPage + 1;
         const endFloor = Math.min(startFloor + floorsPerPage - 1, zone.maxFloor);
         for (let i = startFloor; i <= endFloor; i++) {
@@ -5603,8 +5605,8 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         if (!zone) return;
         const floorsPerPage = 10;
         const totalPages = Math.ceil(zone.maxFloor / floorsPerPage);
-        if (Exploration.autoExploreFloorPage > 0) {
-            Exploration.autoExploreFloorPage--;
+        if (Exploration.autoExplore.floorPage > 0) {
+            Exploration.autoExplore.floorPage--;
             this.renderAutoExploreFloors(zoneId);
         }
     },
@@ -5615,8 +5617,8 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
         if (!zone) return;
         const floorsPerPage = 10;
         const totalPages = Math.ceil(zone.maxFloor / floorsPerPage);
-        if (Exploration.autoExploreFloorPage < totalPages - 1) {
-            Exploration.autoExploreFloorPage++;
+        if (Exploration.autoExplore.floorPage < totalPages - 1) {
+            Exploration.autoExplore.floorPage++;
             this.renderAutoExploreFloors(zoneId);
         }
     },

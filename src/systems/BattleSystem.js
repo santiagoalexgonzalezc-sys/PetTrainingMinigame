@@ -51,6 +51,12 @@ const BattleSystem = {
         fairy: ["magicCrystal", "divineFeather", "starFragment"]
     },
 
+    specialMaterialDropChances: {
+        fireEssence: 0.10,
+        waterOrb: 0.10,
+        dragonScale: 0.05
+    },
+
     primaryMaterialDrops: {
         grass: "woodStick",
         ice: "rock",
@@ -77,10 +83,11 @@ const BattleSystem = {
     dropSpecialMaterials(element, chanceBonus = 0) {
         const materials = this.specialMaterialDrops[element] || [];
         for (const material of materials) {
-            if (Math.random() < Math.min(1, 0.10 + chanceBonus)) {
+            const baseChance = this.specialMaterialDropChances[material] ?? 0.05;
+            if (Math.random() < Math.min(1, baseChance + chanceBonus)) {
                 Economy.inventory[material] = (Economy.inventory[material] || 0) + 1;
                 const name = material.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase());
-                this.addLog(`✨ Found 1x ${name}!`);
+                this.addLog(`✨ Found 1x ${name} (${Math.round(baseChance * 100)}% base chance)!`);
             }
         }
     },
@@ -1326,7 +1333,7 @@ const BattleSystem = {
                 herbs: "🌿", crystal: "💎", darkRock: "🟣"
             };
             
-            // Primary resource drop based on enemy element (25% chance, 1-2 qty)
+            // Primary resource drop based on enemy element (60% chance, 1-2 qty)
             const materialDropBonus = EquipmentSystem.getBonus(this.playerPet, "materialDropChance");
             if (Math.random() < Math.min(1, 0.60 + materialDropBonus)) {
                 const resource = this.primaryMaterialDrops[enemyElement];
@@ -1378,6 +1385,11 @@ const BattleSystem = {
             const actualPet = PetManager.pets.find(p => String(p.id) === String(this.playerPet.id));
             if (actualPet) {
                 actualPet.currentHP = Math.floor(actualPet.currentHP / 2);
+            }
+
+            if (this.isBossBattle) {
+                this.isBossBattle = false;
+                this.currentBoss = null;
             }
         }
         

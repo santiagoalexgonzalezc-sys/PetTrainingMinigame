@@ -2540,8 +2540,8 @@ const BossSystem = {
     },
 
     checkRandomBossEncounter() {
-        // 5% chance for random boss encounter during exploration
-        if (Math.random() < 0.05) {
+        // 1% chance for random boss encounter during exploration
+        if (Math.random() < 0.01) {
             const bossIds = this.explorationBossIds;
             const randomBossId = bossIds[Math.floor(Math.random() * bossIds.length)];
             return this.bosses[randomBossId];

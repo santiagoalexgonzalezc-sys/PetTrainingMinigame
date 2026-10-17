@@ -35,7 +35,7 @@ const PetManager = {
             shinyBonus: shinyBonus,
             tier: tier,
             tierBonus: this.calculateTierBonus(tier),
-            equipment: []
+            equipmentSlots: { weapon: null, armor: null, ring: null }
         };
         
         pet.currentHP = this.calculateMaxHP(template, level, pet);
@@ -218,10 +218,12 @@ const PetManager = {
         // Deduct 5 gems for prestige fusion
         Economy.inventory.gem = (Economy.inventory.gem || 0) - 5;
         
-        if (Array.isArray(pet2.equipment)) {
-            pet2.equipment.forEach(itemId => {
+        EquipmentSystem.normalizePetEquipment(pet2);
+        for (const slot of ["weapon", "armor", "ring"]) {
+            const itemId = pet2.equipmentSlots[slot];
+            if (itemId) {
                 Economy.inventory[itemId] = (Economy.inventory[itemId] || 0) + 1;
-            });
+            }
         }
         
         const template = PetTypes[pet1.typeId];

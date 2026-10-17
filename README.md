@@ -335,17 +335,10 @@ Most abilities are flavor text only. These have real code:
 
 ## Equipment
 
-5 slots per pet. Each piece costs **4,000 gold** and grants **+10** to one stat.
+Equipment and recipes are defined in [`data/equipment.json`](./data/equipment.json) and appear on the Crafting screen. Each pet can equip one weapon, one armor piece, and one ring. Equipping another item of the same type returns the replaced item to inventory.
 
-| Item | Stat |
-|---|---|
-| Band of Swiftness | Speed |
-| Tough Collar | Defense |
-| Focus Band | Special |
-| Life Bangle | HP |
-| Attack Sunglasses | Attack |
+Equipped stat bonuses update the pet's displayed stats and maximum HP. Item bonuses are also active in battle and rewards: elemental damage, critical chance, evasion, damage reduction, healing, HP regeneration, XP gain, and material drop chance. Selling a pet or consuming it in a prestige fusion returns its equipped gear to inventory.
 
-Equipment stats are added into both max HP and the four offensive/defensive stats. Selling a pet or consuming it in a prestige fusion returns all equipped items to inventory.
 
 ## Party & Storage
 

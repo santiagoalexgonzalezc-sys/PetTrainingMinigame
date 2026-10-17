@@ -132,6 +132,38 @@ const BattleSystem = {
         return effectiveness[defenderType] ?? 1;
     },
 
+    getEquipmentDamageMultiplier(attacker, attackType) {
+        const specificBonus = EquipmentSystem.getBonus(attacker, `${attackType}Damage`);
+        const elementalBonus = EquipmentSystem.getBonus(attacker, "elementalDamage");
+        return (specificBonus || 1) * (1 + elementalBonus);
+    },
+
+    getEquipmentEvasionChance(pet) {
+        const template = PetTypes[pet.typeId];
+        const passiveEvasion = template?.passive?.includes("Fast feet") ? 0.1 : 0;
+        return Math.min(1, passiveEvasion + EquipmentSystem.getBonus(pet, "evasion"));
+    },
+
+    shouldDodge(pet) {
+        const evasionChance = this.getEquipmentEvasionChance(pet);
+        return evasionChance > 0 && Math.random() < evasionChance;
+    },
+
+    applyEquipmentDamageReduction(damage, defender) {
+        const reduction = Math.min(1, EquipmentSystem.getBonus(defender, "damageReduction"));
+        return Math.floor(damage * (1 - reduction));
+    },
+
+    regeneratePlayerPet() {
+        const regeneration = EquipmentSystem.getBonus(this.playerPet, "hpRegeneration");
+        if (regeneration <= 0) return;
+
+        const template = PetTypes[this.playerPet.typeId];
+        const maxHP = PetManager.calculateMaxHP(template, this.playerPet.level, this.playerPet);
+        const healAmount = Math.max(1, Math.floor(maxHP * regeneration));
+        this.playerPet.currentHP = Math.min(maxHP, this.playerPet.currentHP + healAmount);
+    },
+
     calculateDamage(attacker, defender) {
         const attackerTemplate = PetTypes[attacker.typeId];
         const defenderTemplate = PetTypes[defender.typeId];
@@ -161,9 +193,10 @@ const BattleSystem = {
         // Type effectiveness
         const typeMult = this.getTypeEffectiveness(attackerTemplate.type, defenderTemplate.type);
         damage = Math.floor(damage * typeMult);
+        damage = Math.floor(damage * this.getEquipmentDamageMultiplier(attacker, attackerTemplate.type));
         
         // Critical hit (10% chance, increased by speed)
-        const critChance = 0.1 + (attacker.stats.speed / 500);
+        const critChance = 0.1 + (attacker.stats.speed / 500) + EquipmentSystem.getBonus(attacker, "critChance");
         const isCrit = Math.random() < critChance;
         if (isCrit) {
             damage = Math.floor(damage * 1.5);
@@ -186,6 +219,7 @@ const BattleSystem = {
         if (defenderShield.turns > 0) {
             damage = Math.floor(damage * (1 - defenderShield.percent));
         }
+        damage = this.applyEquipmentDamageReduction(damage, defender);
 
         // Boss passive abilities
         if (this.isBossBattle && defender === this.enemyPet && this.currentBoss) {
@@ -232,6 +266,7 @@ const BattleSystem = {
     playerTurn() {
          if (!this.active || !this.isPlayerTurn) return;
          
+         this.regeneratePlayerPet();
          this.turnCount++;
          if (this.playerAbilityCooldown > 0) {
              this.playerAbilityCooldown--;
@@ -410,13 +445,11 @@ const BattleSystem = {
     attack(attacker, defender, isPlayerAttacker) {
          const attackerTemplate = PetTypes[attacker.typeId];
          const defenderTemplate = PetTypes[defender.typeId];
-        if (defenderTemplate.passive && defenderTemplate.passive.includes("Fast feet")) {
-            if (Math.random() < 0.10) {
-                const defenderName = this.getPetName(defender);
-                this.addLog(`${defenderName} dodged the attack!`);
-                UIManager.updateBattleScreen();
-                return;
-            }
+        if (this.shouldDodge(defender)) {
+            const defenderName = this.getPetName(defender);
+            this.addLog(`${defenderName} dodged the attack!`);
+            UIManager.updateBattleScreen();
+            return;
         }
         
         const result = this.calculateDamage(attacker, defender);
@@ -442,7 +475,7 @@ const BattleSystem = {
            
         // Sanguine Drain - heals a portion of damage dealt as HP (dark type passive)
             if (attackerTemplate.passive && attackerTemplate.passive.includes("Sanguine Drain") && attackerTemplate.type === "dark") {
-               const healAmount = Math.floor(result.damage * 0.15);
+               const healAmount = Math.floor(result.damage * 0.15 * (1 + EquipmentSystem.getBonus(attacker, "healingBonus")));
                if (healAmount > 0) {
                    attacker.currentHP = Math.min(PetManager.calculateMaxHP(attackerTemplate, attacker.level, attacker), attacker.currentHP + healAmount);
                    this.addLog(`🩸 ${this.getPetName(attacker)} heals ${healAmount} HP from Sanguine Drain!`);
@@ -546,11 +579,9 @@ const BattleSystem = {
         const attackerTemplate = PetTypes[attacker.typeId];
         const defenderTemplate = PetTypes[defender.typeId];
         
-        if (defenderTemplate.passive && defenderTemplate.passive.includes("Fast feet")) {
-            if (Math.random() < 0.10) {
-                const defenderName = this.getPetName(defender);
-                return { damage: 0, isCrit: false, typeMult: 1, dodged: true, dodgerName: defenderName };
-            }
+        if (this.shouldDodge(defender)) {
+            const defenderName = this.getPetName(defender);
+            return { damage: 0, isCrit: false, typeMult: 1, dodged: true, dodgerName: defenderName };
         }
         
         const attackerMods = attacker === this.playerPet ? this.playerStatMods : this.enemyStatMods;
@@ -572,8 +603,9 @@ const BattleSystem = {
         
         const typeMult = this.getTypeEffectiveness(abilityType, defenderTemplate.type);
         damage = Math.floor(damage * typeMult);
+        damage = Math.floor(damage * this.getEquipmentDamageMultiplier(attacker, abilityType));
         
-        const critChance = 0.1 + (attacker.stats.speed / 500);
+        const critChance = 0.1 + (attacker.stats.speed / 500) + EquipmentSystem.getBonus(attacker, "critChance");
         const isCrit = Math.random() < critChance;
         if (isCrit) {
             damage = Math.floor(damage * 1.5);
@@ -590,6 +622,7 @@ const BattleSystem = {
         if (defenderShield.turns > 0) {
             damage = Math.floor(damage * (1 - defenderShield.percent));
         }
+        damage = this.applyEquipmentDamageReduction(damage, defender);
         
         return { damage, isCrit, typeMult };
     },
@@ -602,6 +635,7 @@ const BattleSystem = {
         
         const ability = template.ability;
         if (this.playerAbilityCooldown > 0) return;
+        this.regeneratePlayerPet();
         
         // Electric Ball implementation
         if (ability.name === "Electric Ball") {
@@ -702,6 +736,7 @@ const BattleSystem = {
               
               let rawDmg = Math.floor((baseDamage * 40) / Math.max(1, defenderTemplate.stats.defense));
               rawDmg = Math.floor(rawDmg * typeMult);
+              rawDmg = Math.floor(rawDmg * this.getEquipmentDamageMultiplier(this.playerPet, "fire"));
               rawDmg = Math.floor(rawDmg * 0.25); // Global damage reduction
               
               this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - rawDmg);
@@ -828,7 +863,7 @@ const BattleSystem = {
                   this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
                   
                   // Heal user for 30% of damage dealt
-                  const healAmount = Math.floor(result.damage * ability.healPercent);
+                  const healAmount = Math.floor(result.damage * ability.healPercent * (1 + EquipmentSystem.getBonus(this.playerPet, "healingBonus")));
                   const maxHP = PetManager.calculateMaxHP(PetTypes[this.playerPet.typeId], this.playerPet.level, this.playerPet);
                   this.playerPet.currentHP = Math.min(maxHP, this.playerPet.currentHP + healAmount);
                   
@@ -954,6 +989,7 @@ const BattleSystem = {
                const typeMult = this.getTypeEffectiveness("grass", defenderTemplate.type);
                let rawDmg = Math.floor((baseDamage * 40) / Math.max(1, defenderTemplate.stats.defense));
                rawDmg = Math.floor(rawDmg * typeMult);
+               rawDmg = Math.floor(rawDmg * this.getEquipmentDamageMultiplier(this.playerPet, "grass"));
                rawDmg = Math.floor(rawDmg * 0.25);
                
                this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - rawDmg);
@@ -1033,7 +1069,7 @@ const BattleSystem = {
                } else {
                    this.enemyPet.currentHP = Math.max(0, this.enemyPet.currentHP - result.damage);
                    
-                   const healAmount = Math.floor(result.damage * ability.healPercent);
+                   const healAmount = Math.floor(result.damage * ability.healPercent * (1 + EquipmentSystem.getBonus(this.playerPet, "healingBonus")));
                    const playerMaxHP = PetManager.calculateMaxHP(PetTypes[this.playerPet.typeId], this.playerPet.level, this.playerPet);
                    this.playerPet.currentHP = Math.min(playerMaxHP, this.playerPet.currentHP + healAmount);
                    
@@ -1157,7 +1193,8 @@ const BattleSystem = {
             UIManager.triggerDefeatCinematic();
         }
 
-        const petXPReward = this.enemyPet.level * 20;
+        const xpMultiplier = 1 + EquipmentSystem.getBonus(this.playerPet, "xpGain");
+        const petXPReward = Math.floor(this.enemyPet.level * 20 * xpMultiplier);
         const moneyReward = this.enemyPet.level * 20;
 
         if (playerWon) {
@@ -1195,7 +1232,7 @@ const BattleSystem = {
 
             // Player XP (per plan: enemy.level * 10, with streak & type bonuses)
             const playerBaseXP = this.enemyPet.level * 10;
-            const totalXP = Math.floor(playerBaseXP * streakMultiplier * typeAdvantageMultiplier);
+            const totalXP = Math.floor(playerBaseXP * streakMultiplier * typeAdvantageMultiplier * xpMultiplier);
             const playerLevelUp = addXP(totalXP);
 
             const streakText = PlayerSystem.battleStreak > 0 ? ` [Streak: ${PlayerSystem.battleStreak}x${streakMultiplier.toFixed(1)}]` : "";
@@ -1240,7 +1277,8 @@ const BattleSystem = {
             };
             
             // Primary resource drop based on enemy element (25% chance, 1-2 qty)
-            if (Math.random() < 0.60) {
+            const materialDropBonus = EquipmentSystem.getBonus(this.playerPet, "materialDropChance");
+            if (Math.random() < Math.min(1, 0.60 + materialDropBonus)) {
                 const resource = elementToResource[enemyElement];
                 const qty = Math.random() < 0.3 ? 2 : 1;
                 if (resource) {
@@ -1255,7 +1293,7 @@ const BattleSystem = {
                 desert: "leather", ocean: "crystal", volcano: "darkRock", swamp: "herbs",
                 sky: "crystal", toxicMarsh: "herbs"
             };
-            if (Math.random() < 0.40) {
+            if (Math.random() < Math.min(1, 0.40 + materialDropBonus)) {
                 const resource = zoneId ? zoneSecondary[zoneId] : null;
                 if (resource) {
                     Economy.inventory[resource] = (Economy.inventory[resource] || 0) + 1;

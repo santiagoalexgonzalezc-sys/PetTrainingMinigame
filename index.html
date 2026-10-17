@@ -460,11 +460,19 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 my-5">
                 <div class="bg-white/10 rounded-xl p-4">
                     <h3>Pet 1</h3>
-                    <div id="comparePet1" class="text-center">Click a pet to select</div>
+                    <label for="comparePetSelect1" class="sr-only">Select first pet</label>
+                    <select id="comparePetSelect1" class="w-full p-2 rounded-lg bg-gray-800 border border-gray-600 text-white mb-4" onchange="UIManager.handleCompareSelection(1, this.value)">
+                        <option value="">Select a pet</option>
+                    </select>
+                    <div id="comparePet1" class="text-center">Select a pet above to compare</div>
                 </div>
                 <div class="bg-white/10 rounded-xl p-4">
                     <h3>Pet 2</h3>
-                    <div id="comparePet2" class="text-center">Click a pet to select</div>
+                    <label for="comparePetSelect2" class="sr-only">Select second pet</label>
+                    <select id="comparePetSelect2" class="w-full p-2 rounded-lg bg-gray-800 border border-gray-600 text-white mb-4" onchange="UIManager.handleCompareSelection(2, this.value)">
+                        <option value="">Select a pet</option>
+                    </select>
+                    <div id="comparePet2" class="text-center">Select a pet above to compare</div>
                 </div>
             </div>
             <div id="comparisonSection" class="comparison-section hidden bg-white/10 rounded-xl p-4 my-4">

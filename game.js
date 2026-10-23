@@ -33,8 +33,10 @@ const DataManager = {
                 achievements: Array.from(PlayerSystem.achievements),
                 partyPresets: PlayerSystem.partyPresets,
                 selectedTitle: PlayerSystem.selectedTitle,
+                unlockedTitles: PlayerSystem.unlockedTitles,
                 dailyQuests: PlayerSystem.dailyQuests,
-                lastQuestReset: PlayerSystem.lastQuestReset
+                lastQuestReset: PlayerSystem.lastQuestReset,
+                dailyQuestVersion: PlayerSystem.dailyQuestVersion
             },
              maxPartySize: PetManager.maxPartySize,
             maxTotalPets: PetManager.maxTotalPets
@@ -153,8 +155,10 @@ const DataManager = {
                 PlayerSystem.achievements = new Set(Array.isArray(data.player.achievements) ? data.player.achievements : []);
                 PlayerSystem.partyPresets = data.player.partyPresets || {};
                 PlayerSystem.selectedTitle = data.player.selectedTitle || null;
+                PlayerSystem.unlockedTitles = Array.isArray(data.player.unlockedTitles) ? data.player.unlockedTitles : [];
                 PlayerSystem.dailyQuests = data.player.dailyQuests || [];
                 PlayerSystem.lastQuestReset = data.player.lastQuestReset || null;
+                PlayerSystem.dailyQuestVersion = data.player.dailyQuestVersion || 0;
             } else {
                 PlayerSystem.level = 1;
                 PlayerSystem.xp = 0;
@@ -180,8 +184,10 @@ const DataManager = {
                 PlayerSystem.achievements = new Set();
                 PlayerSystem.partyPresets = {};
                 PlayerSystem.selectedTitle = null;
+                PlayerSystem.unlockedTitles = [];
                 PlayerSystem.dailyQuests = [];
                 PlayerSystem.lastQuestReset = null;
+                PlayerSystem.dailyQuestVersion = 0;
             }
             
             // Migration: restore maxPartySize and maxTotalPets from save or defaults
@@ -198,7 +204,7 @@ const DataManager = {
 
     checkDailyQuests() {
         const today = new Date().toDateString();
-        if (PlayerSystem.lastQuestReset !== today) {
+        if (PlayerSystem.lastQuestReset !== today || PlayerSystem.dailyQuestVersion < 2) {
             this.generateDailyQuests();
             PlayerSystem.lastQuestReset = today;
             DataManager.save();
@@ -207,38 +213,68 @@ const DataManager = {
 
     generateDailyQuests() {
         const questTemplates = [
-            { type: "defeat", target: "grass", count: 5, reward: 200, description: "Defeat 5 grass-type pets" },
-            { type: "defeat", target: "fire", count: 5, reward: 200, description: "Defeat 5 fire-type pets" },
-            { type: "defeat", target: "water", count: 5, reward: 200, description: "Defeat 5 water-type pets" },
+            { type: "defeat", target: "grass", count: 5, reward: 200, rewardMaterial: "herbs", rewardQty: 2, description: "Defeat 5 grass-type pets" },
+            { type: "defeat", target: "fire", count: 5, reward: 200, rewardMaterial: "fireEssence", rewardQty: 1, description: "Defeat 5 fire-type pets" },
+            { type: "defeat", target: "water", count: 5, reward: 200, rewardMaterial: "waterOrb", rewardQty: 1, description: "Defeat 5 water-type pets" },
             { type: "craft", target: "potion", count: 3, reward: 150, description: "Craft 3 potions" },
-            { type: "craft", target: "xpOrb", count: 2, reward: 200, description: "Craft 2 XP Orbs" },
-            { type: "explore", target: "any", count: 3, reward: 150, description: "Explore 3 times" },
+            { type: "craft", target: "xpOrb", count: 2, reward: 200, rewardMaterial: "crystal", rewardQty: 2, description: "Craft 2 XP Orbs" },
+            { type: "explore", target: "any", count: 3, reward: 150, rewardMaterial: "magicCrystal", rewardQty: 1, description: "Explore 3 times" },
             { type: "train", target: "any", count: 5, reward: 150, description: "Train 5 times" },
-            { type: "catch", target: "any", count: 3, reward: 200, description: "Catch 3 pets" }
+            { type: "catch", target: "any", count: 3, reward: 200, description: "Catch 3 pets" },
+            { type: "winNoSwitch", target: "any", count: 1, reward: 250, rewardTitle: "dailyChampion", description: "Win a battle without switching pets" },
+            { type: "winWithType", target: "water", count: 2, reward: 250, rewardMaterial: "waterOrb", rewardQty: 2, description: "Win 2 battles using a Water-type pet" },
+            { type: "winWithType", target: "electric", count: 2, reward: 250, rewardMaterial: "electricSpark", rewardQty: 2, description: "Win 2 battles using an Electric-type pet" },
+            { type: "defeat", target: "poison", count: 3, reward: 225, rewardMaterial: "snakeScale", rewardQty: 1, description: "Defeat 3 poison-type pets" }
         ];
 
-        const shuffled = questTemplates.sort(() => Math.random() - 0.5);
+        const shuffled = [...questTemplates].sort(() => Math.random() - 0.5);
         PlayerSystem.dailyQuests = shuffled.slice(0, 3).map((template, index) => ({
-            id: `quest_${Date.now()}_${index}`,
             ...template,
+            id: `quest_${Date.now()}_${index}`,
             progress: 0,
             completed: false
         }));
+        PlayerSystem.dailyQuestVersion = 2;
     },
 
     updateQuestProgress(type, target, amount = 1) {
         PlayerSystem.dailyQuests.forEach(quest => {
             if (quest.completed) return;
             if (quest.type === type && (quest.target === target || quest.target === "any")) {
-                quest.progress = Math.min(quest.progress + amount, quest.count);
-                if (quest.progress >= quest.count && !quest.completed) {
+                const questCount = quest.count || 1;
+                quest.progress = Math.min(quest.progress + amount, questCount);
+                if (quest.progress >= questCount) {
                     quest.completed = true;
-                    Economy.money += quest.reward;
-                    UIManager.showToast(`🎯 Quest Complete: ${quest.description} (+${quest.reward}💰)`);
+                    this.completeDailyQuest(quest);
                     DataManager.save();
                 }
             }
         });
+    },
+
+    completeDailyQuest(quest) {
+        const rewardGold = typeof quest.reward === "number" ? quest.reward : quest.reward?.gold || 0;
+        const rewardMaterial = quest.rewardMaterial || quest.reward?.material;
+        const rewardQty = quest.rewardQty || quest.reward?.qty || 0;
+        const rewardTitle = quest.rewardTitle;
+        Economy.money += rewardGold;
+
+        if (rewardMaterial && rewardQty > 0) {
+            Economy.inventory[rewardMaterial] = (Economy.inventory[rewardMaterial] || 0) + rewardQty;
+        }
+        if (rewardTitle && TitleSystem.titles[rewardTitle] && !PlayerSystem.unlockedTitles.includes(rewardTitle)) {
+            PlayerSystem.unlockedTitles.push(rewardTitle);
+        }
+
+        const rewards = [`+${rewardGold}💰`];
+        if (rewardMaterial && rewardQty > 0) {
+            const name = rewardMaterial.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase());
+            rewards.push(`+${rewardQty} ${name}`);
+        }
+        if (rewardTitle) {
+            rewards.push(`Title unlocked: ${TitleSystem.titles[rewardTitle].name}`);
+        }
+        UIManager.showToast(`🎯 Quest Complete: ${quest.description}! ${rewards.join(" · ")}`);
     },
 
     checkDailyLogin() {
@@ -1094,8 +1130,10 @@ const PlayerSystem = {
     achievements: new Set(),
     partyPresets: {},
     selectedTitle: null,
+    unlockedTitles: [],
     dailyQuests: [],
-    lastQuestReset: null
+    lastQuestReset: null,
+    dailyQuestVersion: 0
 };
 
 // ==================== EQUIPMENT SYSTEM ====================
@@ -1790,7 +1828,8 @@ const TitleSystem = {
         fireLord: { id: "fireLord", name: "Fire Lord", description: "Own 5 fire-type pets", requirement: () => TitleSystem.countPetType("fire") >= 5 },
         bossHunter: { id: "bossHunter", name: "Boss Hunter", description: "Defeat 5 bosses", requirement: () => PlayerSystem.totalBossesDefeated >= 5 },
         bossConqueror: { id: "bossConqueror", name: "Boss Conqueror", description: "Defeat 20 bosses", requirement: () => PlayerSystem.totalBossesDefeated >= 20 },
-        dragonSlayer: { id: "dragonSlayer", name: "Dragon Slayer", description: "Defeat the Dragon Lord", requirement: () => PlayerSystem.dragonLordDefeated }
+        dragonSlayer: { id: "dragonSlayer", name: "Dragon Slayer", description: "Defeat the Dragon Lord", requirement: () => PlayerSystem.dragonLordDefeated },
+        dailyChampion: { id: "dailyChampion", name: "Daily Champion", description: "Complete a special daily battle challenge", icon: "🏅", requirement: () => false }
     },
 
     countPetType(type) {
@@ -1801,7 +1840,7 @@ const TitleSystem = {
     getUnlockedTitles() {
         const unlocked = [];
         for (const [id, title] of Object.entries(this.titles)) {
-            if (title.requirement()) {
+            if (title.requirement() || PlayerSystem.unlockedTitles.includes(id)) {
                 unlocked.push(title);
             }
         }
@@ -1809,7 +1848,8 @@ const TitleSystem = {
     },
 
     selectTitle(titleId) {
-        if (titleId && this.titles[titleId] && this.titles[titleId].requirement()) {
+        if (titleId && this.titles[titleId] &&
+            (this.titles[titleId].requirement() || PlayerSystem.unlockedTitles.includes(titleId))) {
             PlayerSystem.selectedTitle = titleId;
             DataManager.save();
             return true;
@@ -2568,6 +2608,7 @@ const Game = {
         CraftingSystem.loadEquipmentRecipes(EquipmentSystem.equipment);
         AchievementSystem.loadAchievements(dataFiles.achievements);
         DataManager.load();
+        DataManager.checkDailyQuests();
         UIManager.init();
         UIManager.updateCurrency();
         UIManager.updateTeamPower();
@@ -2926,13 +2967,32 @@ const BossSystem = {
             Economy.inventory[material] = (Economy.inventory[material] || 0) + qty;
         }
 
+        const bonusBossDrops = [
+            { item: "poisonVial", bossId: "venomKing", chance: 0.2 },
+            { item: "phoenixFeather", bossId: "infernoEmperor", chance: 0.05 },
+            { item: "darkFragment", bossId: "venomKing", chance: 0.4 },
+            { item: "ruby", chance: 0.6 },
+            { item: "sapphire", chance: 0.6 },
+            { item: "titaniumPlate", chance: 0.6 },
+            { item: "mithrilThread", chance: 0.6 },
+            { item: "goldNugget", chance: 0.6 }
+        ];
+        const bonusDropNames = [];
+        for (const drop of bonusBossDrops) {
+            if ((!drop.bossId || drop.bossId === boss.id) && Math.random() < drop.chance) {
+                Economy.inventory[drop.item] = (Economy.inventory[drop.item] || 0) + 1;
+                bonusDropNames.push(drop.item.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase()));
+            }
+        }
+
         // Check boss achievements
         AchievementSystem.checkAchievement("bossSlayer1");
         AchievementSystem.checkAchievement("bossSlayer2");
         AchievementSystem.checkAchievement("dragonSlayer");
 
         DataManager.save();
-        UIManager.showToast(`🎉 Defeated ${boss.name}! Rewards: ${goldReward}💰 + materials!`);
+        const bonusRewards = bonusDropNames.length ? ` Bonus drops: ${bonusDropNames.join(", ")}!` : "";
+        UIManager.showToast(`🎉 Defeated ${boss.name}! Rewards: ${goldReward}💰 + materials!${bonusRewards}`);
     },
 
     renderBossScreen() {
@@ -3282,7 +3342,7 @@ const UIManager = {
             const isSelected = selectedTitle && selectedTitle.id === title.id;
             btn.className = `m-1 p-3 rounded-lg border-2 w-full text-left ${isSelected ? "bg-yellow-600/50 border-yellow-400" : "bg-gray-700/50 border-gray-600"}`;
             btn.innerHTML = `
-                <div class="font-bold">${title.icon} ${title.name}</div>
+                <div class="font-bold">${title.icon || "🏷️"} ${title.name}</div>
                 <div class="text-xs opacity-70">${title.description}</div>
             `;
             btn.onclick = () => {
@@ -3614,17 +3674,29 @@ const UIManager = {
             const card = document.createElement("div");
             card.className = `bg-white/10 rounded-xl p-4 ${quest.completed ? "opacity-50" : ""}`;
 
-            const progressPercent = (quest.progress / quest.count) * 100;
+            const questCount = quest.count || 1;
+            const rewardGold = typeof quest.reward === "number" ? quest.reward : quest.reward?.gold || 0;
+            const rewardMaterial = quest.rewardMaterial || quest.reward?.material;
+            const rewardQty = quest.rewardQty || quest.reward?.qty || 0;
+            const rewardTitle = quest.rewardTitle ? TitleSystem.titles[quest.rewardTitle]?.name : null;
+            const rewardDetails = [
+                `${rewardGold}💰`,
+                rewardMaterial && rewardQty > 0
+                    ? `${rewardQty}x ${rewardMaterial.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase())}`
+                    : null,
+                rewardTitle ? `Title: ${rewardTitle}` : null
+            ].filter(Boolean).join(" + ");
+            const progressPercent = Math.min(100, (quest.progress / questCount) * 100);
             const completedText = quest.completed ? '<p class="text-green-400">✓ Complete</p>' : '';
 
             card.innerHTML = `
                 <div class="flex justify-between items-center">
                     <div>
                         <h3 class="${quest.completed ? "line-through" : ""}">${quest.description}</h3>
-                        <p class="text-sm opacity-70">Reward: ${quest.reward}💰</p>
+                        <p class="text-sm opacity-70">Reward: ${rewardDetails}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold">${quest.progress}/${quest.count}</p>
+                        <p class="font-bold">${quest.progress}/${questCount}</p>
                         ${completedText}
                     </div>
                 </div>
@@ -4939,6 +5011,12 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             for (const [materialId, quantity] of Object.entries(boss.rewards.common)) {
                 addSource(materialId, `Defeat ${boss.name} (common reward: ${quantity}x).`);
             }
+        }
+        addSource("poisonVial", "Defeat the Venom King (20% chance).");
+        addSource("phoenixFeather", "Defeat the Inferno Emperor (5% chance).");
+        addSource("darkFragment", "Defeat the Venom King (40% chance).");
+        for (const materialId of ["ruby", "sapphire", "titaniumPlate", "mithrilThread", "goldNugget"]) {
+            addSource(materialId, "Defeat any boss (60% chance each).");
         }
         for (const quest of Object.values(DailyQuestSystem.questTypes)) {
             if (quest.reward.material) {

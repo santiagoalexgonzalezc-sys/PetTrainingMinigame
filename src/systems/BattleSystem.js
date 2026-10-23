@@ -5,6 +5,8 @@ const BattleSystem = {
     battleId: 0,
     playerPet: null,
     enemyPet: null,
+    hasSwitchedPet: false,
+    battlePetTypes: [],
     isPlayerTurn: true,
     battleLog: [],
     turnCount: 0,
@@ -126,6 +128,8 @@ const BattleSystem = {
         this.active = true;
         this.playerPet = { ...playerPet };
         this.enemyPet = { ...enemyPet };
+        this.hasSwitchedPet = false;
+        this.battlePetTypes = [PetTypes[playerPet.typeId]?.type].filter(Boolean);
         this.battleLog = [];
         this.playerStatMods = { attack: 0, defense: 0, speed: 0, special: 0 };
         this.enemyStatMods = { attack: 0, defense: 0, speed: 0, special: 0 };
@@ -182,8 +186,13 @@ const BattleSystem = {
         }
         
         // Switch to new pet
+        this.hasSwitchedPet = true;
         this.isPlayerTurn = false;
         this.playerPet = { ...partyPet };
+        const switchedPetType = PetTypes[this.playerPet.typeId]?.type;
+        if (switchedPetType && !this.battlePetTypes.includes(switchedPetType)) {
+            this.battlePetTypes.push(switchedPetType);
+        }
         this.addLog(`${this.getPetName(this.playerPet)} was sent out!`);
         
         // Trigger switch abilities
@@ -1287,6 +1296,12 @@ const BattleSystem = {
             const enemyType = PetTypes[this.enemyPet.typeId]?.type;
             if (enemyType) {
                 DataManager.updateQuestProgress("defeat", enemyType);
+            }
+            if (!this.hasSwitchedPet) {
+                DataManager.updateQuestProgress("winNoSwitch", "any");
+            }
+            for (const playerType of this.battlePetTypes) {
+                DataManager.updateQuestProgress("winWithType", playerType);
             }
 
             // Check achievements

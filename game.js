@@ -2926,13 +2926,32 @@ const BossSystem = {
             Economy.inventory[material] = (Economy.inventory[material] || 0) + qty;
         }
 
+        const bonusBossDrops = [
+            { item: "poisonVial", bossId: "venomKing", chance: 0.2 },
+            { item: "phoenixFeather", bossId: "infernoEmperor", chance: 0.05 },
+            { item: "darkFragment", bossId: "venomKing", chance: 0.4 },
+            { item: "ruby", chance: 0.6 },
+            { item: "sapphire", chance: 0.6 },
+            { item: "titaniumPlate", chance: 0.6 },
+            { item: "mithrilThread", chance: 0.6 },
+            { item: "goldNugget", chance: 0.6 }
+        ];
+        const bonusDropNames = [];
+        for (const drop of bonusBossDrops) {
+            if ((!drop.bossId || drop.bossId === boss.id) && Math.random() < drop.chance) {
+                Economy.inventory[drop.item] = (Economy.inventory[drop.item] || 0) + 1;
+                bonusDropNames.push(drop.item.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase()));
+            }
+        }
+
         // Check boss achievements
         AchievementSystem.checkAchievement("bossSlayer1");
         AchievementSystem.checkAchievement("bossSlayer2");
         AchievementSystem.checkAchievement("dragonSlayer");
 
         DataManager.save();
-        UIManager.showToast(`🎉 Defeated ${boss.name}! Rewards: ${goldReward}💰 + materials!`);
+        const bonusRewards = bonusDropNames.length ? ` Bonus drops: ${bonusDropNames.join(", ")}!` : "";
+        UIManager.showToast(`🎉 Defeated ${boss.name}! Rewards: ${goldReward}💰 + materials!${bonusRewards}`);
     },
 
     renderBossScreen() {
@@ -4939,6 +4958,12 @@ useRareXpOrb.style.display = (Economy.inventory.rareXpOrb > 0) ? "inline-block" 
             for (const [materialId, quantity] of Object.entries(boss.rewards.common)) {
                 addSource(materialId, `Defeat ${boss.name} (common reward: ${quantity}x).`);
             }
+        }
+        addSource("poisonVial", "Defeat the Venom King (20% chance).");
+        addSource("phoenixFeather", "Defeat the Inferno Emperor (5% chance).");
+        addSource("darkFragment", "Defeat the Venom King (40% chance).");
+        for (const materialId of ["ruby", "sapphire", "titaniumPlate", "mithrilThread", "goldNugget"]) {
+            addSource(materialId, "Defeat any boss (60% chance each).");
         }
         for (const quest of Object.values(DailyQuestSystem.questTypes)) {
             if (quest.reward.material) {

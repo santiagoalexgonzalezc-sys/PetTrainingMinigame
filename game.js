@@ -1052,7 +1052,7 @@ const Economy = {
                 }
             }
         }
-        const value = pet.level * 25 + (pet.prestigeLevel || 0) * 1000 + (pet.shiny ? 5000 : 0) + TierSystem.getTierSellValue(pet.tier);
+        const value = pet.level * 25 + (pet.prestigeLevel || 0) * 1000 + (pet.shiny ? 100000 : 0) + TierSystem.getTierSellValue(pet.tier);
         this.money += value;
         PetManager.deletePet(pet.id);
         return value;

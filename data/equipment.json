@@ -72,8 +72,8 @@
     "tier": 1,
     "emoji": "🐉",
     "stats": { "attack": 15 },
-    "bonuses": { "dragonDamage": 1.15 },
-    "description": "+15 Attack, +15% Dragon damage",
+    "bonuses": { "dragonDamage": 1.25 },
+    "description": "+15 Attack, +25% Dragon damage",
     "recipe": { "dragonScale": 3, "monsterHorn": 3, "starMetal": 2 }
   },
   "shadowScythe": {
@@ -83,8 +83,8 @@
     "tier": 1,
     "emoji": "🌑",
     "stats": { "attack": 10, "special": 5 },
-    "bonuses": { "darkDamage": 1.15 },
-    "description": "+10 Attack, +5 Special, +15% Dark damage",
+    "bonuses": { "darkDamage": 1.25 },
+    "description": "+10 Attack, +5 Special, +25% Dark damage",
     "recipe": { "darkFragment": 3, "soulStone": 2, "obsidianBlade": 2 }
   },
   "faeWand": {
@@ -105,8 +105,8 @@
     "tier": 1,
     "emoji": "🐍",
     "stats": { "attack": 12, "special": 3 },
-    "bonuses": { "poisonDamage": 1.15 },
-    "description": "+12 Attack, +3 Special, +15% Poison damage",
+    "bonuses": { "poisonDamage": 1.25 },
+    "description": "+12 Attack, +3 Special, +25% Poison damage",
     "recipe": { "snakeScale": 5, "venomSac": 3, "poisonVial": 2 }
   },
   "championsMaul": {
@@ -322,8 +322,8 @@
     "tier": 1,
     "emoji": "🐉",
     "stats": { "attack": 8 },
-    "bonuses": { "dragonDamage": 1.15 },
-    "description": "+8 Attack, +15% Dragon damage",
+    "bonuses": { "dragonDamage": 1.25 },
+    "description": "+8 Attack, +25% Dragon damage",
     "recipe": { "dragonScale": 3, "starMetal": 2, "monsterHorn": 1 }
   },
   "shadowRing": {
@@ -333,8 +333,8 @@
     "tier": 1,
     "emoji": "🌑",
     "stats": { "attack": 5, "special": 5 },
-    "bonuses": { "darkDamage": 1.15 },
-    "description": "+5 Attack, +5 Special, +15% Dark damage",
+    "bonuses": { "darkDamage": 1.25 },
+    "description": "+5 Attack, +5 Special, +25% Dark damage",
     "recipe": { "darkFragment": 3, "soulStone": 2, "voidEssence": 1 }
   },
   "faeRing": {
@@ -355,8 +355,8 @@
     "tier": 1,
     "emoji": "☠️",
     "stats": { "attack": 5, "special": 5 },
-    "bonuses": { "poisonDamage": 1.15 },
-    "description": "+5 Attack, +5 Special, +15% Poison damage",
+    "bonuses": { "poisonDamage": 1.25 },
+    "description": "+5 Attack, +5 Special, +25% Poison damage",
     "recipe": { "venomSac": 3, "poisonVial": 2, "snakeScale": 1 }
   },
   "championRing": {
